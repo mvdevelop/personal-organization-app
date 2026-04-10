@@ -1,12 +1,25 @@
 
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { ClerkProvider } from '@clerk/clerk-react';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import App from './App';
 import './index.css';
-import App from './App.tsx';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+// Substitua pela sua chave do Clerk
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+
+if (!CLERK_PUBLISHABLE_KEY) {
+  throw new Error("Missing Clerk Publishable Key")
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </ClerkProvider>
+  </React.StrictMode>
 );
