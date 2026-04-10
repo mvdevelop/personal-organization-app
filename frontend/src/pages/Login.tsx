@@ -1,6 +1,6 @@
 
-import React from 'react'
-import { SignIn } from '@clerk/clerk-react'
+import React from 'react';
+import { SignIn } from '@clerk/clerk-react';
 
 const Login: React.FC = () => {
   return (

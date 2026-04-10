@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, SignIn, SignUp } from '@clerk/clerk-react';
 import Layout from './components/Layout';
-import Login from './pages/Login';
 import Tasks from './pages/Tasks';
 import { Toaster } from 'react-hot-toast';
 
@@ -28,19 +27,65 @@ const Calendar = () => (
   </div>
 )
 
+// Componente para proteger rotas
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isSignedIn, isLoaded } = useAuth()
+  
+  if (!isLoaded) {
+    return <div className="flex items-center justify-center h-screen">Carregando...</div>
+  }
+  
+  if (!isSignedIn) {
+    return <Navigate to="/sign-in" replace />
+  }
+  
+  return <>{children}</>
+}
+
 function App() {
-  const { isSignedIn } = useAuth()
+  const { isLoaded } = useAuth()
+
+  if (!isLoaded) {
+    return <div className="flex items-center justify-center h-screen">Carregando...</div>
+  }
 
   return (
     <BrowserRouter>
       <Toaster position="top-right" />
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={isSignedIn ? <Dashboard /> : <Navigate to="/sign-in" />} />
-          <Route path="tasks" element={isSignedIn ? <Tasks /> : <Navigate to="/sign-in" />} />
-          <Route path="notes" element={isSignedIn ? <Notes /> : <Navigate to="/sign-in" />} />
-          <Route path="calendar" element={isSignedIn ? <Calendar /> : <Navigate to="/sign-in" />} />
-          <Route path="sign-in/*" element={<Login />} />
+        {/* Rotas públicas */}
+        <Route path="/sign-in/*" element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <SignIn 
+              routing="path" 
+              path="/sign-in"
+              signUpUrl="/sign-up"
+              redirectUrl="/"
+            />
+          </div>
+        } />
+        
+        <Route path="/sign-up/*" element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <SignUp 
+              routing="path" 
+              path="/sign-up"
+              signInUrl="/sign-in"
+              redirectUrl="/"
+            />
+          </div>
+        } />
+        
+        {/* Rotas protegidas */}
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="notes" element={<Notes />} />
+          <Route path="calendar" element={<Calendar />} />
         </Route>
       </Routes>
     </BrowserRouter>

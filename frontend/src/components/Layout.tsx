@@ -1,18 +1,12 @@
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAppSelector } from '../hooks/redux';
 
 const Layout: React.FC = () => {
-  const { isSignedIn } = useAuth()
   const { sidebarCollapsed } = useAppSelector(state => state.userPreferences)
-
-  if (!isSignedIn) {
-    return <Outlet />
-  }
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">

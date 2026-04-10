@@ -7,16 +7,21 @@ import { store } from './store';
 import App from './App';
 import './index.css';
 
-// Substitua pela sua chave do Clerk
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
 if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing Clerk Publishable Key")
+  console.error('Missing Clerk Publishable Key')
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={CLERK_PUBLISHABLE_KEY || ''}
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+    >
       <Provider store={store}>
         <App />
       </Provider>
