@@ -9,6 +9,7 @@ import * as goalController from '../controllers/goalController.js';
 import * as studyController from '../controllers/studyController.js';
 import * as aiController from '../controllers/aiController.js';
 import * as dashboardController from '../controllers/dashboardController.js';
+import * as gamificationController from '../controllers/gamificationController.js';
 
 const router = Router();
 
@@ -73,6 +74,11 @@ router.delete('/study-sessions/:id', authMiddleware, studyController.deleteSessi
 
 // ===== Dashboard =====
 router.get('/dashboard', authMiddleware, dashboardController.getDashboardData);
+
+// ===== Gamification =====
+router.get('/gamification/stats', authMiddleware, gamificationController.getStats);
+router.post('/gamification/recalculate', authMiddleware, gamificationController.recalculate);
+router.get('/gamification/achievements', authMiddleware, gamificationController.getAchievements);
 
 // ===== AI =====
 router.post('/ai/chat', authMiddleware, aiController.chat);

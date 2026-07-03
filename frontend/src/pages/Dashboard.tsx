@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchDashboard } from '../store/slices/dashboardSlice';
 import { Link } from 'react-router-dom';
+import GamificationPanel from '../components/GamificationPanel';
 import {
   CheckSquare, TrendingUp, Flame, Target, BookOpen,
   FileText, AlertCircle, Loader2, Sparkles, Clock,
@@ -296,6 +297,9 @@ const Dashboard: React.FC = () => {
             Falar com IA
           </Link>
         </div>
+
+        {/* Gamification */}
+        <GamificationPanel />
       </div>
     </div>
   );

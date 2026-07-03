@@ -9,6 +9,7 @@ import goalsReducer from './slices/goalsSlice';
 import studiesReducer from './slices/studiesSlice';
 import aiReducer from './slices/aiSlice';
 import dashboardReducer from './slices/dashboardSlice';
+import gamificationReducer from './slices/gamificationSlice';
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     studies: studiesReducer,
     ai: aiReducer,
     dashboard: dashboardReducer,
+    gamification: gamificationReducer,
   },
 })
 

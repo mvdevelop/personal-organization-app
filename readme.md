@@ -212,13 +212,9 @@ IA               POST /api/ai/chat  GET /api/ai/daily-briefing  GET /api/ai/sugg
 | **Fase 1** | Base refinada: Notas, persistência localStorage, animações, responsividade | ✅ |
 | **Fase 2** | Expansão: Domínios, Hábitos, Metas, Estudos, Sidebar renovada | ✅ |
 | **Fase 3** | IA: OpenRouter, chat inteligente, briefing diário, sugestões | ✅ |
-| **Fase 4** | Dashboard inteligente com widgets e analytics | 📅 Planejado |
-| **Fase 5** | Gamificação: XP, níveis, conquistas | 📅 Planejado |
+| **Fase 4** | Dashboard inteligente com widgets e analytics | ✅ |
+| **Fase 5** | Gamificação: XP, níveis, conquistas | ✅ |
 | **Fase 6** | Deploy Vercel + MongoDB Atlas | 📅 Planejado |
-
-## 👨‍💻 Autor
-
-Feito com ❤️ por **mvdevelop**
 
 ---
 
