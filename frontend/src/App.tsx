@@ -4,6 +4,10 @@ import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Tasks from './pages/Tasks';
 import Notes from './pages/Notes';
+import Habits from './pages/Habits';
+import Goals from './pages/Goals';
+import Studies from './pages/Studies';
+import AIAssistantPage from './pages/AIAssistantPage';
 import Login from './pages/Login';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
@@ -11,7 +15,7 @@ import { Loader2 } from 'lucide-react';
 const Dashboard = () => (
   <div className="text-center py-12">
     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bem-vindo ao Organizador Pessoal</h1>
-    <p className="text-gray-600 dark:text-gray-400 mt-2">Gerencie suas tarefas e notas de forma eficiente</p>
+    <p className="text-gray-600 dark:text-gray-400 mt-2">Gerencie suas tarefas, hábitos, metas e estudos</p>
   </div>
 )
 
@@ -58,6 +62,10 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="notes" element={<Notes />} />
+          <Route path="habits" element={<Habits />} />
+          <Route path="goals" element={<Goals />} />
+          <Route path="studies" element={<Studies />} />
+          <Route path="ai" element={<AIAssistantPage />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>
 
