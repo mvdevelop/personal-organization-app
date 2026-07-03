@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import {
@@ -24,6 +25,8 @@ const Tasks: React.FC = () => {
   const { tasks, filter, searchQuery, loading, error } = useAppSelector(state => state.tasks)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     dispatch(fetchTasks({ filter, search: searchQuery || undefined }))
@@ -44,21 +47,21 @@ const Tasks: React.FC = () => {
     : tasks
 
   const handleSaveTask = async (taskData: CreateTaskInput) => {
+    setSaving(true)
     try {
       if (editingTask) {
         await dispatch(updateTask({ id: editingTask.id, data: taskData })).unwrap()
         toast.success('Tarefa atualizada!')
       } else {
-        await dispatch(createTask({
-          ...taskData,
-          userId: userId!,
-        })).unwrap()
+        await dispatch(createTask(taskData)).unwrap()
         toast.success('Tarefa criada!')
       }
       setIsModalOpen(false)
       setEditingTask(null)
     } catch (err: any) {
       toast.error(err.message || 'Erro ao salvar tarefa')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -71,11 +74,15 @@ const Tasks: React.FC = () => {
   }
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja deletar esta tarefa?')) return
+    setDeletingId(id)
     try {
       await dispatch(deleteTask(id)).unwrap()
       toast.success('Tarefa removida!')
     } catch {
       toast.error('Erro ao remover tarefa')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -141,6 +148,7 @@ const Tasks: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-3">
+          <AnimatePresence>
           {filteredTasks.map(task => (
             <TaskCard
               key={task.id}
@@ -151,8 +159,10 @@ const Tasks: React.FC = () => {
                 setEditingTask(task)
                 setIsModalOpen(true)
               }}
+              deleting={deletingId === task.id}
             />
           ))}
+          </AnimatePresence>
         </div>
       )}
 
@@ -164,6 +174,7 @@ const Tasks: React.FC = () => {
         }}
         onSave={handleSaveTask}
         editingTask={editingTask}
+        saving={saving}
       />
     </div>
   )

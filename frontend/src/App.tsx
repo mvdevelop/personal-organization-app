@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Tasks from './pages/Tasks';
+import Notes from './pages/Notes';
 import Login from './pages/Login';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
@@ -11,13 +12,6 @@ const Dashboard = () => (
   <div className="text-center py-12">
     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bem-vindo ao Organizador Pessoal</h1>
     <p className="text-gray-600 dark:text-gray-400 mt-2">Gerencie suas tarefas e notas de forma eficiente</p>
-  </div>
-)
-
-const Notes = () => (
-  <div className="text-center py-12">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notas</h1>
-    <p className="text-gray-600 dark:text-gray-400 mt-2">Em breve...</p>
   </div>
 )
 

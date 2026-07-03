@@ -40,6 +40,17 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'Personal Org API Docs',
 }));
 
+// Root — status do backend
+app.get('/', (_req, res) => {
+  res.json({
+    message: '🚀 Backend do Personal Organization está rodando!',
+    version: '1.0.0',
+    docs: '/api-docs',
+    health: '/health',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Health check
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
