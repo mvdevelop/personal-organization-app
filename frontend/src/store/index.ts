@@ -8,6 +8,7 @@ import habitsReducer from './slices/habitsSlice';
 import goalsReducer from './slices/goalsSlice';
 import studiesReducer from './slices/studiesSlice';
 import aiReducer from './slices/aiSlice';
+import dashboardReducer from './slices/dashboardSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     goals: goalsReducer,
     studies: studiesReducer,
     ai: aiReducer,
+    dashboard: dashboardReducer,
   },
 })
 

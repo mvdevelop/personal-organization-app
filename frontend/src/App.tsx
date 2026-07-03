@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Notes from './pages/Notes';
 import Habits from './pages/Habits';
@@ -11,13 +12,6 @@ import AIAssistantPage from './pages/AIAssistantPage';
 import Login from './pages/Login';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-
-const Dashboard = () => (
-  <div className="text-center py-12">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bem-vindo ao Organizador Pessoal</h1>
-    <p className="text-gray-600 dark:text-gray-400 mt-2">Gerencie suas tarefas, hábitos, metas e estudos</p>
-  </div>
-)
 
 const Calendar = () => (
   <div className="text-center py-12">
