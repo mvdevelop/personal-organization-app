@@ -1,45 +1,82 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { addTask, toggleTask, deleteTask, setFilter, setSearchQuery, type Task } from '../store/slices/tasksSlice';
+import {
+  fetchTasks,
+  createTask,
+  updateTask,
+  toggleTask,
+  deleteTask,
+  setFilter,
+  setSearchQuery,
+  clearError,
+  type Task,
+  type CreateTaskInput,
+} from '../store/slices/tasksSlice';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, AlertCircle, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Tasks: React.FC = () => {
   const { userId } = useAuth()
   const dispatch = useAppDispatch()
-  const { tasks, filter, searchQuery } = useAppSelector(state => state.tasks)
+  const { tasks, filter, searchQuery, loading, error } = useAppSelector(state => state.tasks)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
-  const filteredTasks = tasks
-    .filter(task => task.userId === userId)
-    .filter(task => {
-      if (filter === 'active') return !task.completed
-      if (filter === 'completed') return task.completed
-      return true
-    })
-    .filter(task => 
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+  useEffect(() => {
+    dispatch(fetchTasks({ filter, search: searchQuery || undefined }))
+  }, [dispatch, filter])
 
-  const handleSaveTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'userId'>) => {
-    if (editingTask) {
-      // Update task logic here
-      setEditingTask(null)
-    } else {
-      const newTask: Task = {
-        ...taskData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        userId: userId!,
-      }
-      dispatch(addTask(newTask))
+  useEffect(() => {
+    if (error) {
+      toast.error(error)
+      dispatch(clearError())
     }
-    setIsModalOpen(false)
+  }, [error, dispatch])
+
+  const filteredTasks = searchQuery
+    ? tasks.filter(task =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : tasks
+
+  const handleSaveTask = async (taskData: CreateTaskInput) => {
+    try {
+      if (editingTask) {
+        await dispatch(updateTask({ id: editingTask.id, data: taskData })).unwrap()
+        toast.success('Tarefa atualizada!')
+      } else {
+        await dispatch(createTask({
+          ...taskData,
+          userId: userId!,
+        })).unwrap()
+        toast.success('Tarefa criada!')
+      }
+      setIsModalOpen(false)
+      setEditingTask(null)
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao salvar tarefa')
+    }
+  }
+
+  const handleToggle = async (id: string) => {
+    try {
+      await dispatch(toggleTask(id)).unwrap()
+    } catch {
+      toast.error('Erro ao atualizar tarefa')
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteTask(id)).unwrap()
+      toast.success('Tarefa removida!')
+    } catch {
+      toast.error('Erro ao remover tarefa')
+    }
   }
 
   return (
@@ -86,25 +123,38 @@ const Tasks: React.FC = () => {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {filteredTasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onToggle={(id) => dispatch(toggleTask(id))}
-            onDelete={(id) => dispatch(deleteTask(id))}
-            onEdit={(task) => {
-              setEditingTask(task)
-              setIsModalOpen(true)
-            }}
-          />
-        ))}
-        {filteredTasks.length === 0 && (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            Nenhuma tarefa encontrada
-          </div>
-        )}
-      </div>
+      {loading && tasks.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+          <span className="ml-2 text-gray-500 dark:text-gray-400">Carregando tarefas...</span>
+        </div>
+      ) : filteredTasks.length === 0 ? (
+        <div className="text-center py-12">
+          <AlertCircle className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+          <p className="text-gray-500 dark:text-gray-400">
+            {searchQuery
+              ? 'Nenhuma tarefa encontrada para essa busca'
+              : filter !== 'all'
+                ? `Nenhuma tarefa ${filter === 'active' ? 'ativa' : 'concluída'}`
+                : 'Nenhuma tarefa ainda. Crie uma!'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredTasks.map(task => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              onEdit={(task) => {
+                setEditingTask(task)
+                setIsModalOpen(true)
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <TaskModal
         isOpen={isModalOpen}
@@ -119,4 +169,4 @@ const Tasks: React.FC = () => {
   )
 }
 
-export default Tasks;
+export default Tasks
