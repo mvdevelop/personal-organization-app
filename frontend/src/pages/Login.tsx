@@ -17,7 +17,7 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50/70 dark:bg-gray-900/70 backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
           <LogIn className="w-8 h-8 text-blue-500" />

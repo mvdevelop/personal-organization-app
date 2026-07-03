@@ -10,8 +10,6 @@ const Header: React.FC = () => {
   const dispatch = useAppDispatch()
   const { theme } = useAppSelector(state => state.userPreferences)
 
-  if (!isSignedIn) return null
-
   React.useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark')
@@ -19,6 +17,8 @@ const Header: React.FC = () => {
       document.documentElement.classList.remove('dark')
     }
   }, [theme])
+
+  if (!isSignedIn) return null
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm">

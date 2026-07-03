@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "installCommand": "npm install",
+  "buildCommand": "echo 'Vercel handles api/ functions automatically'",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 10,
+      "memory": 256
+    }
+  }
+}

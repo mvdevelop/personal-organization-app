@@ -1,4 +1,39 @@
 
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
 
+html {
+  transition: color 0.3s, background-color 0.3s;
+}
 
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Fundo quadriculado sutil - tema claro */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(192, 192, 192, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 192, 192, 0.2) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Fundo quadriculado sutil - tema escuro */
+html.dark body::before {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Garante que o conteúdo fique acima do grid */
+#root {
+  position: relative;
+  z-index: 1;
+}
