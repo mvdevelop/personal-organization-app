@@ -10,7 +10,8 @@ const FloatingAIButton: React.FC = () => {
       {/* Floating button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+        style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))' }}
         title="Assistente IA"
       >
         {open ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6" />}

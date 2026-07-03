@@ -129,7 +129,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, onSave, editingN
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium"
+              className="px-4 py-2 text-sm rounded-lg btn-primary font-medium"
             >
               {editingNote ? 'Atualizar' : 'Criar'}
             </button>

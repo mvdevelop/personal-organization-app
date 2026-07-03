@@ -132,7 +132,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onClose, minimal }) => {
             <div className={`max-w-[80%] ${msg.role === 'user' ? 'order-1' : ''}`}>
               <div className={`rounded-2xl px-4 py-2.5 text-sm ${
                 msg.role === 'user'
-                  ? 'bg-blue-500 text-white rounded-br-md'
+                  ? 'bg-primary text-white rounded-br-md'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-md'
               }`}>
                 <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -165,7 +165,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onClose, minimal }) => {
           <button
             type="submit"
             disabled={!input.trim() || loading}
-            className="px-4 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>

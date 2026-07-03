@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm ${
       isActive
-        ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-medium'
+        ? 'bg-primary-light text-primary font-medium'
         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
     } ${collapsed ? 'justify-center px-0' : ''}`
 
@@ -44,10 +44,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     <aside className="h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col w-full">
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50">
         {collapsed ? (
-          <h1 className="text-xl font-bold text-blue-600 text-center">O</h1>
+          <h1 className="text-xl font-bold text-primary text-center">O</h1>
         ) : (
           <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <span className="text-blue-600">◆</span> OrgApp
+            <span className="text-primary" style={{ color: 'var(--color-primary)' }}>◆</span> OrgApp
           </h1>
         )}
       </div>

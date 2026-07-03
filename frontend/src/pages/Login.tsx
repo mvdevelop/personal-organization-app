@@ -114,7 +114,7 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Aguarde...' : isSignUp ? 'Criar Conta' : 'Entrar'}
           </button>
@@ -123,7 +123,7 @@ const Login: React.FC = () => {
         <div className="text-center mt-6">
           <button
             onClick={switchMode}
-            className="text-sm text-blue-500 hover:text-blue-600 transition-colors"
+            className="text-sm text-primary hover:text-primary-hover transition-colors"
           >
             {isSignUp
               ? 'Já tem conta? Faça login'

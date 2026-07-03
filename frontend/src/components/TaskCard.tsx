@@ -35,7 +35,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit, d
           onClick={() => onToggle(task.id)}
           className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
             task.completed
-              ? 'bg-blue-500 border-blue-500'
+              ? 'bg-primary border-primary'
               : 'border-gray-300 dark:border-gray-600'
           }`}
         >

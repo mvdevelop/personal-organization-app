@@ -1,25 +1,18 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Menu, Sun, Moon, LogOut, User } from 'lucide-react';
+import { Menu, Sun, Moon, LogOut, User, Palette } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
 
 interface HeaderProps {
   onMenuToggle: () => void
+  onThemeSettings?: () => void
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
   const { isSignedIn, user, signOut } = useAuth()
   const dispatch = useAppDispatch()
   const { theme } = useAppSelector(state => state.userPreferences)
-
-  React.useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [theme])
 
   if (!isSignedIn) return null
 
@@ -34,14 +27,21 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
 
-        {/* Spacer to keep title centered-ish on mobile */}
         <div className="lg:hidden" />
 
         <div className="flex items-center gap-2 sm:gap-4">
           <button
+            onClick={onThemeSettings}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            title="Personalizar tema"
+          >
+            <Palette className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          </button>
+
+          <button
             onClick={() => dispatch(toggleTheme())}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-            title="Alternar tema"
+            title="Alternar modo"
           >
             {theme === 'light' ? (
               <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />

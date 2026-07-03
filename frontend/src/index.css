@@ -1,6 +1,6 @@
-
 @import "tailwindcss";
 @custom-variant dark (&:is(.dark *));
+@import "./theme/theme.css";
 
 html {
   transition: color 0.3s, background-color 0.3s;
@@ -8,7 +8,6 @@ html {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 /* Fundo quadriculado sutil - tema claro */
@@ -24,7 +23,6 @@ body::before {
   background-size: 32px 32px;
 }
 
-/* Fundo quadriculado sutil - tema escuro */
 html.dark body::before {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
@@ -32,7 +30,6 @@ html.dark body::before {
   background-size: 32px 32px;
 }
 
-/* Garante que o conteúdo fique acima do grid */
 #root {
   position: relative;
   z-index: 1;

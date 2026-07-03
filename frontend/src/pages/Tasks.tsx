@@ -95,7 +95,7 @@ const Tasks: React.FC = () => {
             setEditingTask(null)
             setIsModalOpen(true)
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4" />
           Nova Tarefa
@@ -120,7 +120,7 @@ const Tasks: React.FC = () => {
               onClick={() => dispatch(setFilter(f))}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filter === f
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >

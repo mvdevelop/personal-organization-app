@@ -63,7 +63,7 @@ const Goals: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Metas</h1>
         <button onClick={() => { setShowForm(!showForm); setEditingId(null); setTitle(''); setTargetValue(''); setDeadline('') }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         ><Plus className="w-4 h-4" /> Nova Meta</button>
       </div>
 
@@ -81,7 +81,7 @@ const Goals: React.FC = () => {
             <input value={deadline} onChange={e => setDeadline(e.target.value)} type="date"
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
             <button type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm col-span-full sm:col-span-1">
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm col-span-full sm:col-span-1">
               {editingId ? 'Atualizar' : 'Criar'}
             </button>
           </div>
@@ -112,7 +112,7 @@ const Goals: React.FC = () => {
                             <span>R$ {goal.currentValue} / R$ {goal.targetValue}</span>
                           </div>
                           <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${progress(goal)}%` }} />
+                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress(goal)}%` }} />
                           </div>
                         </div>
                       )}
