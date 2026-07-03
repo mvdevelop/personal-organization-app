@@ -1,15 +1,19 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Home, CheckSquare, FileText, Calendar,
+  Home, CheckSquare, FileText,
   Dumbbell, Target, BookOpen, Bot,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { useAppDispatch } from '../hooks/redux';
+import { toggleSidebar } from '../store/slices/userPreferencesSlice';
 
 interface SidebarProps {
   collapsed: boolean
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
+  const dispatch = useAppDispatch()
   const mainNav = [
     { path: '/', icon: Home, label: 'Dashboard' },
     { path: '/tasks', icon: CheckSquare, label: 'Tarefas' },
@@ -24,10 +28,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
 
   const toolsNav = [
     { path: '/ai', icon: Bot, label: 'Assistente IA' },
-  ]
-
-  const bottomNav = [
-    { path: '/calendar', icon: Calendar, label: 'Calendário' },
   ]
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -78,12 +78,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       </nav>
 
       <div className="border-t border-gray-100 dark:border-gray-700/50 py-2 px-3">
-        {bottomNav.map((item) => (
-          <NavLink key={item.path} to={item.path} className={linkClass}>
-            <item.icon className={iconClass} />
-            {!collapsed && <span>{item.label}</span>}
-          </NavLink>
-        ))}
+        <button
+          onClick={() => dispatch(toggleSidebar())}
+          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg transition-colors text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          title={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+        >
+          {collapsed ? (
+            <ChevronRight className="w-5 h-5 mx-auto" />
+          ) : (
+            <>
+              <ChevronLeft className="w-5 h-5 flex-shrink-0" />
+              <span>Recolher</span>
+            </>
+          )}
+        </button>
       </div>
     </aside>
   )
