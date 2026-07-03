@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '../context/AuthContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { addTask, toggleTask, deleteTask, setFilter, setSearchQuery, type Task } from '../store/slices/tasksSlice';
 import TaskCard from '../components/TaskCard';
