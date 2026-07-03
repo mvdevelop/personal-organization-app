@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
   if (!isSignedIn) return null
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm">
+    <header className="bg-white dark:bg-gray-800 shadow-sm relative">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
         <button
           onClick={onMenuToggle}
@@ -27,9 +27,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
           <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
 
+        {/* Spacer on mobile so menu stays left */}
         <div className="lg:hidden" />
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        {/* Options — aligned to the right on all screens */}
+        <div className="flex items-center gap-1 sm:gap-3 ml-auto">
           <button
             onClick={onThemeSettings}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"

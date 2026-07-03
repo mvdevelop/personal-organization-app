@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import FloatingAIButton from './FloatingAIButton';
+import InstallPWA from './InstallPWA';
 import ThemeCustomizer from './ThemeCustomizer';
 import { useAppSelector } from '../hooks/redux';
 
@@ -47,6 +48,7 @@ const Layout: React.FC = () => {
         </main>
       </div>
       <FloatingAIButton />
+      <InstallPWA />
 
       {themeCustomizerOpen && (
         <ThemeCustomizer onClose={() => setThemeCustomizerOpen(false)} />
