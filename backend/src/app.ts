@@ -17,6 +17,7 @@ app.use(cors({ origin: env.corsOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 
 // Swagger
+const isProduction = env.nodeEnv === 'production';
 const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: '3.0.0',
@@ -30,6 +31,7 @@ const swaggerSpec = swaggerJsdoc({
     },
     servers: [
       { url: `http://localhost:${env.port}`, description: 'Development' },
+      ...(isProduction ? [{ url: env.corsOrigin.replace(/\/$/, ''), description: 'Production' }] : []),
     ],
   },
   apis: ['./src/routes/*.ts', './src/controllers/*.ts'],

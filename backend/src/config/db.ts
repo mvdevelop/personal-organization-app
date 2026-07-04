@@ -1,14 +1,23 @@
 import mongoose from 'mongoose';
 import { env } from './env.js';
 
+let isConnected = false;
+
 export async function connectDB(): Promise<void> {
+  if (isConnected) return;
+
   try {
     await mongoose.connect(env.mongodbUri);
+    isConnected = true;
     console.log('📦 MongoDB connected');
+
     await seedAchievements();
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    process.exit(1);
+    // Don't crash in serverless — let the next request retry
+    if (env.nodeEnv !== 'production') {
+      process.exit(1);
+    }
   }
 }
 
@@ -25,6 +34,7 @@ async function seedAchievements(): Promise<void> {
 }
 
 mongoose.connection.on('disconnected', () => {
+  isConnected = false;
   console.warn('⚠️  MongoDB disconnected');
 });
 
