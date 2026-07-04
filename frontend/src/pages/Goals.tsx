@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchGoals, createGoal, updateGoal, deleteGoal, type Goal } from '../store/slices/goalsSlice';
-import { Plus, Target, CheckCircle, Clock, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GOAL_TYPES: { value: Goal['type']; label: string; emoji: string }[] = [

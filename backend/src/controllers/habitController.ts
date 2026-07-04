@@ -15,10 +15,7 @@ export async function createHabit(req: Request, res: Response, next: NextFunctio
     const data = createHabitSchema.parse(req.body);
     const habit = await Habit.create({ ...data, userId: req.user!.userId });
     res.status(201).json(habit);
-  } catch (error) {
-    if ((error as any).name === 'ZodError') { res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 export async function updateHabit(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -31,11 +28,7 @@ export async function updateHabit(req: Request, res: Response, next: NextFunctio
     );
     if (!habit) throw new AppError('Hábito não encontrado', 404);
     res.json(habit);
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    if ((error as any).name === 'ZodError') { res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 export async function deleteHabit(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -44,10 +37,7 @@ export async function deleteHabit(req: Request, res: Response, next: NextFunctio
     if (!habit) throw new AppError('Hábito não encontrado', 404);
     await HabitLog.deleteMany({ habitId: req.params.id });
     res.status(204).send();
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 // Habit Logs
@@ -73,11 +63,7 @@ export async function createLog(req: Request, res: Response, next: NextFunction)
       { upsert: true, new: true },
     );
     res.status(201).json(log);
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    if ((error as any).name === 'ZodError') { res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 export async function getStreaks(req: Request, res: Response, next: NextFunction): Promise<void> {

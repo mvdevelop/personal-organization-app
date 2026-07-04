@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import GamificationPanel from '../components/GamificationPanel';
 import { ChartsWidget, MiniCalendar } from '../components/DashboardWidgets';
 import {
-  CheckSquare, TrendingUp, Flame, Target, BookOpen,
-  FileText, AlertCircle, Loader2, Sparkles, Clock,
+  CheckSquare, Flame, Target, BookOpen,
+  FileText, AlertCircle, Loader2, Sparkles,
   ArrowRight, ListTodo, BrainCircuit,
 } from 'lucide-react';
 
@@ -53,10 +53,10 @@ const Dashboard: React.FC = () => {
 
       {/* === Quick Stats Row === */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <MiniStat icon={ListTodo} label="Tarefas" value={`${t?.pending ?? 0} pendentes`} highlight={t?.pending ? `${t.pending}` : '0'} color="text-primary" />
-        <MiniStat icon={Flame} label="Streak" value={`${h?.bestStreak ?? 0} dias`} highlight={`${h?.bestStreak ?? 0}`} color="text-orange-500" />
-        <MiniStat icon={Target} label="Metas ativas" value={`${g?.active ?? 0} metas`} highlight={`${g?.active ?? 0}`} color="text-purple-500" />
-        <MiniStat icon={BrainCircuit} label="Horas estudo" value={`${st?.weekStudyHours ?? 0}h na semana`} highlight={`${st?.weekStudyHours ?? 0}h`} color="text-green-500" />
+        <MiniStat icon={ListTodo} label="Tarefas" highlight={t?.pending ? `${t.pending}` : '0'} color="text-primary" />
+        <MiniStat icon={Flame} label="Streak" highlight={`${h?.bestStreak ?? 0}`} color="text-orange-500" />
+        <MiniStat icon={Target} label="Metas ativas" highlight={`${g?.active ?? 0}`} color="text-purple-500" />
+        <MiniStat icon={BrainCircuit} label="Horas estudo" highlight={`${st?.weekStudyHours ?? 0}h`} color="text-green-500" />
       </div>
 
       {/* === Main 2-Column Grid === */}
@@ -265,8 +265,8 @@ const Dashboard: React.FC = () => {
 };
 
 /* Mini Stat — compact stat card for the top row */
-function MiniStat({ icon: Icon, label, value, highlight, color }: {
-  icon: React.FC<any>; label: string; value: string; highlight: string; color: string
+function MiniStat({ icon: Icon, label, highlight, color }: {
+  icon: React.FC<any>; label: string; highlight: string; color: string
 }) {
   const bgMap: Record<string, string> = {
     'text-primary': 'bg-blue-50 dark:bg-blue-900/20',

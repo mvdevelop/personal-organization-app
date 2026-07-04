@@ -13,33 +13,52 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
 
-    // Tasks
-    const totalTasks = await Task.countDocuments({ userId });
-    const pendingTasks = await Task.countDocuments({ userId, completed: false });
-    const completedTasks = await Task.countDocuments({ userId, completed: true });
-    const todayTasks = await Task.countDocuments({
-      userId,
-      dueDate: { $gte: today, $lt: tomorrow },
-    });
-    const overdueTasks = await Task.countDocuments({
-      userId,
-      completed: false,
-      dueDate: { $lt: today, $ne: null },
-    });
-    const recentTasks = await Task.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean();
+    const objectId = new mongoose.Types.ObjectId(userId);
 
-    // Habits
-    const totalHabits = await Habit.countDocuments({ userId });
-    const todayLogs = await HabitLog.countDocuments({
-      userId,
-      date: { $gte: today, $lt: tomorrow },
-      completed: true,
-    });
+    // Run all independent queries in parallel
+    const [
+      totalTasks,
+      pendingTasks,
+      completedTasks,
+      todayTasks,
+      overdueTasks,
+      recentTasksRaw,
+      totalHabits,
+      todayLogs,
+      activeGoals,
+      completedGoals,
+      recentGoalsRaw,
+      totalSubjects,
+      weekSessions,
+      weekStudyHoursAgg,
+      totalNotes,
+      recentNotesRaw,
+    ] = await Promise.all([
+      Task.countDocuments({ userId }),
+      Task.countDocuments({ userId, completed: false }),
+      Task.countDocuments({ userId, completed: true }),
+      Task.countDocuments({ userId, dueDate: { $gte: today, $lt: tomorrow } }),
+      Task.countDocuments({ userId, completed: false, dueDate: { $lt: today, $ne: null } }),
+      Task.find({ userId }).sort({ createdAt: -1 }).limit(5).lean(),
+      Habit.countDocuments({ userId }),
+      HabitLog.countDocuments({ userId, date: { $gte: today, $lt: tomorrow }, completed: true }),
+      Goal.countDocuments({ userId, status: 'active' }),
+      Goal.countDocuments({ userId, status: 'completed' }),
+      Goal.find({ userId, status: 'active' }).sort({ createdAt: -1 }).limit(3).lean(),
+      Subject.countDocuments({ userId }),
+      StudySession.countDocuments({ userId, date: { $gte: weekAgo } }),
+      StudySession.aggregate([
+        { $match: { userId: objectId, date: { $gte: weekAgo } } },
+        { $group: { _id: null, total: { $sum: '$duration' } } },
+      ]),
+      Note.countDocuments({ userId }),
+      Note.find({ userId }).sort({ updatedAt: -1 }).limit(3).select('title updatedAt').lean(),
+    ]);
 
+    // Streaks — also parallelized
     const habits = await Habit.find({ userId }).lean();
     const streaks = await Promise.all(
       habits.map(async (h) => {
@@ -62,35 +81,7 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
     );
     const bestStreak = streaks.reduce((max, s) => (s.streak > max ? s.streak : max), 0);
 
-    // Goals
-    const activeGoals = await Goal.countDocuments({ userId, status: 'active' });
-    const completedGoals = await Goal.countDocuments({ userId, status: 'completed' });
-    const recentGoals = await Goal.find({ userId, status: 'active' })
-      .sort({ createdAt: -1 })
-      .limit(3)
-      .lean();
-
-    // Studies
-    const totalSubjects = await Subject.countDocuments({ userId });
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const weekSessions = await StudySession.countDocuments({
-      userId,
-      date: { $gte: weekAgo },
-    });
-    const weekStudyHours = await StudySession.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId), date: { $gte: weekAgo } } },
-      { $group: { _id: null, total: { $sum: '$duration' } } },
-    ]);
-    const totalStudyMinutes = weekStudyHours[0]?.total || 0;
-
-    // Notes
-    const totalNotes = await Note.countDocuments({ userId });
-    const recentNotes = await Note.find({ userId })
-      .sort({ updatedAt: -1 })
-      .limit(3)
-      .select('title updatedAt')
-      .lean();
+    const totalStudyMinutes = weekStudyHoursAgg[0]?.total || 0;
 
     res.json({
       tasks: {
@@ -99,7 +90,7 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
         completed: completedTasks,
         today: todayTasks,
         overdue: overdueTasks,
-        recent: recentTasks.map((t: any) => ({
+        recent: recentTasksRaw.map((t: any) => ({
           id: t._id.toString(),
           title: t.title,
           completed: t.completed,
@@ -116,7 +107,7 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
       goals: {
         active: activeGoals,
         completed: completedGoals,
-        recent: recentGoals.map((g: any) => ({
+        recent: recentGoalsRaw.map((g: any) => ({
           id: g._id.toString(),
           title: g.title,
           type: g.type,
@@ -132,7 +123,7 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
       },
       notes: {
         total: totalNotes,
-        recent: recentNotes.map((n: any) => ({
+        recent: recentNotesRaw.map((n: any) => ({
           id: n._id.toString(),
           title: n.title,
           updatedAt: n.updatedAt,

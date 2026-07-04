@@ -1,5 +1,6 @@
 import mongoose, { Schema, type Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { toJSONTransform } from '../utils/toJSON.js';
 
 export interface IUser extends Document {
   name: string
@@ -38,11 +39,10 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       transform(_doc, ret) {
-        ret.id = ret._id.toString();
-        delete ret._id;
-        delete ret.__v;
-        delete ret.password;
-        return ret;
+        toJSONTransform(_doc, ret);
+        const r = ret as Record<string, unknown>;
+        delete r.password;
+        return r;
       },
     },
   },

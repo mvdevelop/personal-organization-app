@@ -4,8 +4,6 @@ import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 
 type ChartType = 'pie' | 'bar' | 'line'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
-
 interface ChartsWidgetProps {
   tasks: { total: number; pending: number; completed: number; today: number; overdue: number } | undefined
   habits: { total: number; todayCheckIns: number } | undefined
@@ -67,7 +65,7 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
         ) : chartType === 'pie' ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value" label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
                 {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip />

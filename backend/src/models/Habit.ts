@@ -1,4 +1,5 @@
 import mongoose, { Schema, type Document } from 'mongoose';
+import { toJSONTransform } from '../utils/toJSON.js';
 
 export interface IHabit extends Document {
   title: string
@@ -51,14 +52,7 @@ const habitSchema = new Schema<IHabit>(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        ret.id = ret._id.toString()
-        delete ret._id
-        delete ret.__v
-        return ret
-      },
-    },
+    toJSON: { transform: toJSONTransform },
   },
 )
 
@@ -92,14 +86,7 @@ const habitLogSchema = new Schema<IHabitLog>(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        ret.id = ret._id.toString()
-        delete ret._id
-        delete ret.__v
-        return ret
-      },
-    },
+    toJSON: { transform: toJSONTransform },
   },
 )
 

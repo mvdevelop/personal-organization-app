@@ -11,7 +11,7 @@ import {
 } from '../store/slices/notesSlice';
 import NoteCard from '../components/NoteCard';
 import NoteModal from '../components/NoteModal';
-import { Plus, Search, FileText, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Search, FileText, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Notes: React.FC = () => {

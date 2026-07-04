@@ -16,10 +16,7 @@ export async function createSubject(req: Request, res: Response, next: NextFunct
     const data = createSubjectSchema.parse(req.body);
     const subject = await Subject.create({ ...data, userId: req.user!.userId });
     res.status(201).json(subject);
-  } catch (error) {
-    if ((error as any).name === 'ZodError') { res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 export async function updateSubject(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -32,11 +29,7 @@ export async function updateSubject(req: Request, res: Response, next: NextFunct
     );
     if (!subject) throw new AppError('Matéria não encontrada', 404);
     res.json(subject);
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    if ((error as any).name === 'ZodError') { res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 export async function deleteSubject(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,10 +38,7 @@ export async function deleteSubject(req: Request, res: Response, next: NextFunct
     if (!subject) throw new AppError('Matéria não encontrada', 404);
     await StudySession.deleteMany({ subjectId: req.params.id });
     res.status(204).send();
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 // Study Sessions
@@ -74,11 +64,7 @@ export async function createSession(req: Request, res: Response, next: NextFunct
       userId: req.user!.userId,
     });
     res.status(201).json(session);
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    if ((error as any).name === 'ZodError') { res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }
 
 export async function deleteSession(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -86,8 +72,5 @@ export async function deleteSession(req: Request, res: Response, next: NextFunct
     const session = await StudySession.findOneAndDelete({ _id: req.params.id, userId: req.user!.userId });
     if (!session) throw new AppError('Sessão não encontrada', 404);
     res.status(204).send();
-  } catch (error) {
-    if (error instanceof AppError) { res.status(error.statusCode).json({ error: error.message }); return; }
-    next(error);
-  }
+  } catch (error) { next(error); }
 }

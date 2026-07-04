@@ -1,4 +1,5 @@
 import mongoose, { Schema, type Document } from 'mongoose';
+import { toJSONTransform } from '../utils/toJSON.js';
 
 export interface ISubject extends Document {
   name: string
@@ -38,14 +39,7 @@ const subjectSchema = new Schema<ISubject>(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        ret.id = ret._id.toString()
-        delete ret._id
-        delete ret.__v
-        return ret
-      },
-    },
+    toJSON: { transform: toJSONTransform },
   },
 )
 
@@ -92,14 +86,7 @@ const studySessionSchema = new Schema<IStudySession>(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        ret.id = ret._id.toString()
-        delete ret._id
-        delete ret.__v
-        return ret
-      },
-    },
+    toJSON: { transform: toJSONTransform },
   },
 )
 

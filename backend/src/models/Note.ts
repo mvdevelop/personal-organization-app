@@ -1,4 +1,5 @@
 import mongoose, { Schema, type Document } from 'mongoose';
+import { toJSONTransform } from '../utils/toJSON.js';
 
 export interface INote extends Document {
   title: string
@@ -36,14 +37,7 @@ const noteSchema = new Schema<INote>(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        ret.id = ret._id.toString();
-        delete ret._id;
-        delete ret.__v;
-        return ret;
-      },
-    },
+    toJSON: { transform: toJSONTransform },
   },
 );
 

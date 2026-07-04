@@ -110,10 +110,6 @@ export async function create(req: Request, res: Response, next: NextFunction): P
     });
     res.status(201).json(note);
   } catch (error) {
-    if ((error as any).name === 'ZodError') {
-      res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors });
-      return;
-    }
     next(error);
   }
 }
@@ -158,14 +154,6 @@ export async function update(req: Request, res: Response, next: NextFunction): P
     }
     res.json(note);
   } catch (error) {
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-      return;
-    }
-    if ((error as any).name === 'ZodError') {
-      res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors });
-      return;
-    }
     next(error);
   }
 }
@@ -203,10 +191,6 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
     }
     res.status(204).send();
   } catch (error) {
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-      return;
-    }
     next(error);
   }
 }

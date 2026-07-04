@@ -63,7 +63,7 @@ import { AppError } from '../middleware/errorHandler.js';
 
 function generateToken(userId: string, email: string): string {
   return jwt.sign({ userId, email }, env.jwtSecret, {
-    expiresIn: env.jwtExpiresIn,
+    expiresIn: env.jwtExpiresIn as any,
   });
 }
 
@@ -106,14 +106,6 @@ export async function register(req: Request, res: Response, next: NextFunction):
 
     res.status(201).json({ user: user.toJSON(), token });
   } catch (error) {
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-      return;
-    }
-    if ((error as any).name === 'ZodError') {
-      res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors });
-      return;
-    }
     next(error);
   }
 }
@@ -153,14 +145,6 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     const token = generateToken(user.id, user.email);
     res.json({ user: user.toJSON(), token });
   } catch (error) {
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-      return;
-    }
-    if ((error as any).name === 'ZodError') {
-      res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors });
-      return;
-    }
     next(error);
   }
 }
@@ -192,10 +176,6 @@ export async function me(req: Request, res: Response, next: NextFunction): Promi
     }
     res.json(user.toJSON());
   } catch (error) {
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-      return;
-    }
     next(error);
   }
 }

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import {
   fetchTasks,
@@ -20,7 +19,6 @@ import { Plus, Search, AlertCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Tasks: React.FC = () => {
-  const { userId } = useAuth()
   const dispatch = useAppDispatch()
   const { tasks, filter, searchQuery, loading, error } = useAppSelector(state => state.tasks)
   const [isModalOpen, setIsModalOpen] = useState(false)

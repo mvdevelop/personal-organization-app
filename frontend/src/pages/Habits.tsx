@@ -3,9 +3,9 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import {
   fetchHabits, createHabit, updateHabit, deleteHabit,
   fetchLogs, createLog, fetchStreaks,
-  type Habit, type HabitLog,
+  type HabitLog,
 } from '../store/slices/habitsSlice';
-import { Plus, Check, X, Trash2, ChevronLeft, ChevronRight, Palette } from 'lucide-react';
+import { Plus, Check, Trash2, ChevronLeft, ChevronRight, Palette } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -26,14 +26,14 @@ const Habits: React.FC = () => {
     dispatch(fetchStreaks())
   }, [dispatch])
 
-  // Fetch logs for visible range
+  // Fetch logs for visible range (derived from calDate to avoid stale week)
   const weekStart = useMemo(() => {
-    const d = new Date()
+    const d = new Date(calDate)
     const day = d.getDay()
     d.setDate(d.getDate() - day + (day === 0 ? -6 : 1))
     d.setHours(0, 0, 0, 0)
     return d
-  }, [])
+  }, [calDate])
 
   const weekEnd = useMemo(() => {
     const d = new Date(weekStart)
@@ -120,15 +120,6 @@ const Habits: React.FC = () => {
     }
     return days
   }, [calDate, logs])
-
-  const dayCell = (date: Date) => {
-    const isToday = date.getTime() === today.getTime()
-    return (
-      <span className={`text-xs font-medium ${isToday ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}>
-        {date.getDate()}
-      </span>
-    )
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

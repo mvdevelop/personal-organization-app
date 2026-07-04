@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchSubjects, createSubject, deleteSubject, fetchSessions, createSession, deleteSession, type Subject, type StudySession } from '../store/slices/studiesSlice';
-import { Plus, BookOpen, Trash2, ChevronLeft, ChevronRight, Clock, Brain, Play } from 'lucide-react';
+import { Plus, BookOpen, Trash2, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
@@ -23,15 +23,13 @@ const Studies: React.FC = () => {
   const [logDuration, setLogDuration] = useState('')
   const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0])
   const [logTechnique, setLogTechnique] = useState('pomodoro')
-  const [activeSession, setActiveSession] = useState<{ subjectId: string; start: Date } | null>(null)
-
   useEffect(() => { dispatch(fetchSubjects()) }, [dispatch])
 
   const weekStart = useMemo(() => {
-    const d = new Date(); const day = d.getDay()
+    const d = new Date(calDate); const day = d.getDay()
     d.setDate(d.getDate() - day + (day === 0 ? -6 : 1))
     d.setHours(0, 0, 0, 0); return d
-  }, [])
+  }, [calDate])
 
   const weekEnd = useMemo(() => { const d = new Date(weekStart); d.setDate(d.getDate() + 6); return d }, [weekStart])
   const monthStart = useMemo(() => new Date(calDate.getFullYear(), calDate.getMonth(), 1), [calDate])
@@ -79,16 +77,6 @@ const Studies: React.FC = () => {
 
   const handleDeleteSession = async (id: string) => {
     try { await dispatch(deleteSession(id)).unwrap() } catch { toast.error('Erro') }
-  }
-
-  const startPomodoro = (subjectId: string) => {
-    setActiveSession({ subjectId, start: new Date() })
-    toast.success('Pomodoro iniciado! 25 minutos.')
-    setTimeout(() => {
-      if (activeSession?.subjectId === subjectId) {
-        toast.success('Pomodoro completo! Registre sua sessão.')
-      }
-    }, 25 * 60 * 1000)
   }
 
   const handleAddSubject = async (e: React.FormEvent) => {

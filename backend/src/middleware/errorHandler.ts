@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 
 export class AppError extends Error {
   statusCode: number;
@@ -18,6 +19,12 @@ export function errorHandler(
 ): void {
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+
+  // Zod validation error
+  if (err instanceof ZodError) {
+    res.status(400).json({ error: 'Dados inválidos', details: err.errors });
     return;
   }
 

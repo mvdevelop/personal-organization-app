@@ -10,8 +10,11 @@ import studiesReducer from './slices/studiesSlice';
 import aiReducer from './slices/aiSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import gamificationReducer from './slices/gamificationSlice';
+import { preferencesMiddleware, initPreferences } from './preferencesMiddleware';
 
 export const store = configureStore({
+  devTools: import.meta.env.DEV,
+
   reducer: {
     tasks: tasksReducer,
     notes: notesReducer,
@@ -24,7 +27,12 @@ export const store = configureStore({
     dashboard: dashboardReducer,
     gamification: gamificationReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(preferencesMiddleware),
 })
+
+// Initialize DOM-side effects (theme, font) from persisted preferences.
+initPreferences(store)
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

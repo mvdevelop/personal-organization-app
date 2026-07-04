@@ -1,34 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchGamificationStats } from '../store/slices/gamificationSlice';
-import { Trophy, Zap, Award, Flame, Target, BookOpen, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, Award, ChevronDown, ChevronUp } from 'lucide-react';
 
 const LEVEL_TITLES = [
   '', 'Iniciante', 'Aprendiz', 'Dedicado', 'Focado', 'Persistente',
   'Determinado', 'Disciplinado', 'Mestre', 'Lendário', 'Supremo',
 ]
 
-const CATEGORY_ICONS: Record<string, React.FC<any>> = {
-  tasks: Zap,
-  habits: Flame,
-  goals: Target,
-  studies: BookOpen,
-  streak: Flame,
-  special: Star,
-}
-
-const CATEGORY_COLORS: Record<string, string> = {
-  tasks: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
-  habits: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
-  goals: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20',
-  studies: 'text-green-500 bg-green-50 dark:bg-green-900/20',
-  streak: 'text-red-500 bg-red-50 dark:bg-red-900/20',
-  special: 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
-}
-
 const GamificationPanel: React.FC = () => {
   const dispatch = useAppDispatch()
-  const { level, currentXp, nextLevelXp, progress, achievements, counters, loading } = useAppSelector(s => s.gamification)
+  const { level, currentXp, nextLevelXp, progress, achievements, counters } = useAppSelector(s => s.gamification)
   const [showAchievements, setShowAchievements] = useState(false)
   const [showCounters, setShowCounters] = useState(false)
 

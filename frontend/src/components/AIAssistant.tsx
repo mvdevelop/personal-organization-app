@@ -59,8 +59,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onClose, minimal }) => {
         dispatch(addMessage({ role: 'assistant', content: result.payload.suggestions, timestamp: new Date().toISOString() }))
       }
     } else if (action === 'tip') {
-      handleSend(undefined)
-      setInput('Me dê uma dica rápida de produtividade para hoje')
+      const tipMsg = 'Me dê uma dica rápida de produtividade para hoje'
+      dispatch(addMessage({ role: 'user', content: tipMsg, timestamp: new Date().toISOString() }))
+      const result = await dispatch(sendMessage(tipMsg))
+      if (sendMessage.fulfilled.match(result)) {
+        dispatch(addMessage({ role: 'assistant', content: result.payload.response, timestamp: new Date().toISOString() }))
+      } else {
+        toast.error('Erro ao obter dica')
+      }
     }
   }
 
@@ -123,7 +129,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onClose, minimal }) => {
           </div>
         )}
         {messages.map((msg, i) => (
-          <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+          <div key={`msg-${msg.timestamp}-${i}`} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'assistant' && (
               <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-blue-500" />

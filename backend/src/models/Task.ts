@@ -1,4 +1,5 @@
 import mongoose, { Schema, type Document } from 'mongoose';
+import { toJSONTransform } from '../utils/toJSON.js';
 
 export interface ITask extends Document {
   title: string
@@ -46,14 +47,7 @@ const taskSchema = new Schema<ITask>(
   },
   {
     timestamps: true,
-    toJSON: {
-      transform(_doc, ret) {
-        ret.id = ret._id.toString();
-        delete ret._id;
-        delete ret.__v;
-        return ret;
-      },
-    },
+    toJSON: { transform: toJSONTransform },
   },
 );
 
