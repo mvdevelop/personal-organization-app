@@ -1,5 +1,5 @@
 import type { Middleware } from '@reduxjs/toolkit';
-import { FONT_OPTIONS } from '../theme/themes';
+import { COLOR_THEMES, FONT_OPTIONS } from '../theme/themes';
 import {
   toggleTheme, setTheme, setColorTheme, setFont,
 } from './slices/userPreferencesSlice';
@@ -49,9 +49,13 @@ function applyFont(fontName: string) {
   }
 }
 
-/** Apply color theme to the document */
+/** Apply color theme CSS variables to :root based on the TypeScript theme config */
 function applyColorTheme(themeName: string) {
-  document.documentElement.setAttribute('data-theme', themeName)
+  const theme = COLOR_THEMES.find(t => t.name === themeName) || COLOR_THEMES[0]
+  const root = document.documentElement
+  for (const [key, value] of Object.entries(theme.colors)) {
+    root.style.setProperty(`--color-${key}`, value)
+  }
 }
 
 /** Dispatch-type → side-effect map */

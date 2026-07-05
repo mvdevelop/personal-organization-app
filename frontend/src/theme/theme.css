@@ -1,4 +1,5 @@
-/* ===== Color Themes ===== */
+/* ===== Theme Utility Classes ===== */
+/* CSS variables are set dynamically by preferenceMiddleware from themes.ts */
 :root {
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
@@ -9,63 +10,6 @@
   --color-sidebar: #3b82f6;
   --color-sidebar-hover: #2563eb;
 }
-
-[data-theme="emerald"] {
-  --color-primary: #10b981;
-  --color-primary-hover: #059669;
-  --color-primary-light: #ecfdf5;
-  --color-primary-dark: #047857;
-  --color-accent: #14b8a6;
-  --color-accent-hover: #0d9488;
-  --color-sidebar: #10b981;
-  --color-sidebar-hover: #059669;
-}
-
-[data-theme="violet"] {
-  --color-primary: #8b5cf6;
-  --color-primary-hover: #7c3aed;
-  --color-primary-light: #f5f3ff;
-  --color-primary-dark: #6d28d9;
-  --color-accent: #ec4899;
-  --color-accent-hover: #db2777;
-  --color-sidebar: #8b5cf6;
-  --color-sidebar-hover: #7c3aed;
-}
-
-[data-theme="rose"] {
-  --color-primary: #f43f5e;
-  --color-primary-hover: #e11d48;
-  --color-primary-light: #fff1f2;
-  --color-primary-dark: #be123c;
-  --color-accent: #f97316;
-  --color-accent-hover: #ea580c;
-  --color-sidebar: #f43f5e;
-  --color-sidebar-hover: #e11d48;
-}
-
-[data-theme="amber"] {
-  --color-primary: #f59e0b;
-  --color-primary-hover: #d97706;
-  --color-primary-light: #fffbeb;
-  --color-primary-dark: #b45309;
-  --color-accent: #ef4444;
-  --color-accent-hover: #dc2626;
-  --color-sidebar: #f59e0b;
-  --color-sidebar-hover: #d97706;
-}
-
-[data-theme="teal"] {
-  --color-primary: #14b8a6;
-  --color-primary-hover: #0d9488;
-  --color-primary-light: #f0fdfa;
-  --color-primary-dark: #0f766e;
-  --color-accent: #3b82f6;
-  --color-accent-hover: #2563eb;
-  --color-sidebar: #14b8a6;
-  --color-sidebar-hover: #0d9488;
-}
-
-/* ===== Utility Classes ===== */
 .bg-primary { background-color: var(--color-primary); }
 .bg-primary-hover:hover { background-color: var(--color-primary-hover); }
 .bg-primary-light { background-color: var(--color-primary-light); }
@@ -92,7 +36,7 @@
   cursor: not-allowed;
 }
 
-/* ===== Accent ===== */
+/* Accent */
 .bg-accent { background-color: var(--color-accent); }
 .text-accent { color: var(--color-accent); }
 .border-accent { border-color: var(--color-accent); }
