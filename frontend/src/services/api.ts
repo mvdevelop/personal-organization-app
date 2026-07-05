@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const rawBase = import.meta.env.VITE_API_URL || '';
+const API_BASE = rawBase.replace(/\/+$/, '');
 
 interface ApiError {
   status: number

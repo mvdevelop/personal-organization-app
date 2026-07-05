@@ -19,6 +19,7 @@ export const env = {
   jwtSecret: requireEnv('JWT_SECRET', 'fallback-dev-secret'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim()),
   openRouterKey: process.env.OPENROUTER_API_KEY || '',
   openRouterModel: process.env.OPENROUTER_MODEL || 'gpt-4o-mini',
 };

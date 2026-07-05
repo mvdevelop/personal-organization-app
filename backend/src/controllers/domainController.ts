@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Domain, DEFAULT_DOMAINS } from '../models/Domain.js';
-import { createDomainSchema, updateDomainSchema, seedDefaultDomains } from '../validators/domainValidator.js';
+import { createDomainSchema, updateDomainSchema } from '../validators/domainValidator.js';
+import { seedDefaultDomains } from '../services/domainService.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 export async function list(req: Request, res: Response, next: NextFunction): Promise<void> {
