@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveCo
 import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 
 type ChartType = 'pie' | 'bar' | 'line'
+type LucideIcon = React.FC<{ className?: string; style?: React.CSSProperties }>
 
 interface ChartsWidgetProps {
   tasks: { total: number; pending: number; completed: number; today: number; overdue: number } | undefined
@@ -38,7 +39,7 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
     { name: 'Estudos', valor: studies?.weekSessions || 0 },
   ], [tasks, habits, goals, studies])
 
-  const chartTypes: { key: ChartType; icon: React.FC<any>; label: string }[] = [
+  const chartTypes: { key: ChartType; icon: LucideIcon; label: string }[] = [
     { key: 'bar', icon: BarChart3, label: 'Barras' },
     { key: 'pie', icon: PieChartIcon, label: 'Pizza' },
     { key: 'line', icon: TrendingUp, label: 'Linha' },
@@ -65,7 +66,7 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
         ) : chartType === 'pie' ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value" label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
+              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value" label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`}>
                 {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip />
@@ -121,7 +122,7 @@ const MiniCalendar: React.FC<CalWidgetProps> = ({ tasks }) => {
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), i + 1)
     const isToday = d.getTime() === today.getTime()
-    const hasTask = tasks?.recent?.some((t: any) => t.dueDate && new Date(t.dueDate).toDateString() === d.toDateString())
+    const hasTask = tasks?.recent?.some((t: { dueDate?: string | null }) => t.dueDate && new Date(t.dueDate).toDateString() === d.toDateString())
     return { date: d, day: i + 1, isToday, hasTasks: !!hasTask }
   })
 

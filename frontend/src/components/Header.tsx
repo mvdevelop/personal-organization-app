@@ -9,7 +9,9 @@ import {
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
 
-const ROUTE_META: Record<string, { icon: React.FC<any>; label: string }> = {
+type LucideIcon = React.FC<{ className?: string; style?: React.CSSProperties }>
+
+const ROUTE_META: Record<string, { icon: LucideIcon; label: string }> = {
   '/': { icon: Home, label: 'Dashboard' },
   '/tasks': { icon: CheckSquare, label: 'Tarefas' },
   '/notes': { icon: FileText, label: 'Notas' },

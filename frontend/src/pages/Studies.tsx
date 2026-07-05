@@ -98,7 +98,7 @@ const Studies: React.FC = () => {
       days.push({ date: new Date(d), minutes: getDayMinutes(d) })
     }
     return days
-  }, [calDate, sessions])
+  }, [calDate, sessions, getDayMinutes])
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

@@ -10,7 +10,7 @@ interface DashboardData {
     completed: number
     today: number
     overdue: number
-    recent: Pick<Task, 'id' | 'title' | 'completed' | 'priority'> & { dueDate: string | null }[]
+    recent: (Pick<Task, 'id' | 'title' | 'completed' | 'priority'> & { dueDate: string | null })[]
   }
   habits: {
     total: number
@@ -21,7 +21,7 @@ interface DashboardData {
   goals: {
     active: number
     completed: number
-    recent: Pick<Goal, 'id' | 'title' | 'type' | 'targetValue' | 'currentValue'> & { deadline: string | null }[]
+    recent: (Pick<Goal, 'id' | 'title' | 'type' | 'targetValue' | 'currentValue'> & { deadline: string | null })[]
   }
   studies: {
     subjects: number

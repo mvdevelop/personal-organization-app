@@ -101,7 +101,7 @@ const Dashboard: React.FC = () => {
 
               {/* Recent tasks */}
               <div className="space-y-2">
-                {t?.recent?.slice(0, 3).map((task: any) => (
+                {t?.recent?.slice(0, 3).map((task) => (
                   <div key={task.id} className="flex items-center gap-3 text-sm">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : task.priority === 'high' ? 'bg-red-400' : task.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-300'}`} />
                     <span className={`flex-1 truncate ${task.completed ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>{task.title}</span>
@@ -140,7 +140,7 @@ const Dashboard: React.FC = () => {
 
               {/* Streak list */}
               <div className="space-y-1.5">
-                {h?.streaks?.length ? h.streaks.slice(0, 4).map((s: any) => (
+                {h?.streaks?.length ? h.streaks.slice(0, 4).map((s) => (
                   <div key={s.title} className="flex items-center gap-2 text-sm py-0.5">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
                     <span className="flex-1 truncate text-gray-700 dark:text-gray-300 text-xs">{s.title}</span>
@@ -171,7 +171,7 @@ const Dashboard: React.FC = () => {
                 <Link to="/goals" className="text-xs text-gray-400 hover:text-primary transition-colors"><ArrowRight className="w-4 h-4" /></Link>
               </div>
               <div className="space-y-3">
-                {g?.recent?.length ? g.recent.slice(0, 3).map((goal: any) => (
+                {g?.recent?.length ? g.recent.slice(0, 3).map((goal) => (
                   <div key={goal.id} className="text-sm">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-gray-700 dark:text-gray-300 truncate text-xs font-medium">{goal.title}</span>
@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
                 <Link to="/notes" className="text-xs text-gray-400 hover:text-primary transition-colors"><ArrowRight className="w-4 h-4" /></Link>
               </div>
               <div className="space-y-2">
-                {n?.recent?.length ? n.recent.slice(0, 4).map((note: any) => (
+                {n?.recent?.length ? n.recent.slice(0, 4).map((note) => (
                   <div key={note.id} className="flex items-center gap-2 text-sm py-0.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-pink-400 flex-shrink-0" />
                     <span className="flex-1 truncate text-gray-700 dark:text-gray-300 text-xs">{note.title}</span>
@@ -258,7 +258,7 @@ const Dashboard: React.FC = () => {
         {/* --- Right Column (1/3) --- */}
         <div className="space-y-6">
           <ClockWidget />
-          <MiniCalendar tasks={data?.tasks as any} />
+          <MiniCalendar tasks={data?.tasks as { recent?: { id: string; title: string; dueDate: string | null }[] } | undefined} />
           <GamificationPanel />
         </div>
       </div>
@@ -268,7 +268,7 @@ const Dashboard: React.FC = () => {
 
 /* Mini Stat — compact stat card for the top row */
 function MiniStat({ icon: Icon, label, highlight, color }: {
-  icon: React.FC<any>; label: string; highlight: string; color: string
+  icon: React.FC<{ className?: string; style?: React.CSSProperties }>; label: string; highlight: string; color: string
 }) {
   const bgMap: Record<string, string> = {
     'text-primary': 'bg-blue-50 dark:bg-blue-900/20',

@@ -6,7 +6,7 @@ import type { Task } from '../store/slices/tasksSlice';
 interface TaskModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (task: any) => void
+  onSave: (task: { title: string; description?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string | null; completed?: boolean }) => void
   editingTask?: Task | null
   saving?: boolean
 }
