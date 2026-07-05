@@ -1,6 +1,6 @@
 {
-  "name": "OrgApp — Organizador Pessoal",
-  "short_name": "OrgApp",
+  "name": "Schedule",
+  "short_name": "Schedule",
   "description": "Sua super agenda inteligente para tarefas, hábitos, metas, estudos e notas com IA",
   "start_url": "/",
   "display": "standalone",

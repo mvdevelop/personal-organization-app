@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home, CheckSquare, FileText,
-  Dumbbell, Target, BookOpen, Bot,
+  Lightbulb, Target, BookOpen, Bot,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useAppDispatch } from '../hooks/redux';
@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   ]
 
   const lifeNav = [
-    { path: '/habits', icon: Dumbbell, label: 'Hábitos' },
+    { path: '/habits', icon: Lightbulb, label: 'Hábitos' },
     { path: '/goals', icon: Target, label: 'Metas' },
     { path: '/studies', icon: BookOpen, label: 'Estudos' },
   ]
@@ -44,10 +44,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     <aside className="h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col w-full">
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50">
         {collapsed ? (
-          <h1 className="text-xl font-bold text-primary text-center">O</h1>
+          <h1 className="text-xl font-bold text-primary text-center">S</h1>
         ) : (
           <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <span className="text-primary" style={{ color: 'var(--color-primary)' }}>◆</span> OrgApp
+            <span className="text-primary" style={{ color: 'var(--color-primary)' }}>◆</span> Schedule
           </h1>
         )}
       </div>

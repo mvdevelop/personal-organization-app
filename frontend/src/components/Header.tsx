@@ -1,8 +1,23 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Menu, Sun, Moon, LogOut, User, Palette } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import {
+  Menu, Sun, Moon, LogOut, User, Palette,
+  Home, CheckSquare, FileText,
+  Lightbulb, Target, BookOpen, Bot,
+} from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
+
+const ROUTE_META: Record<string, { icon: React.FC<any>; label: string }> = {
+  '/': { icon: Home, label: 'Dashboard' },
+  '/tasks': { icon: CheckSquare, label: 'Tarefas' },
+  '/notes': { icon: FileText, label: 'Notas' },
+  '/habits': { icon: Lightbulb, label: 'Hábitos' },
+  '/goals': { icon: Target, label: 'Metas' },
+  '/studies': { icon: BookOpen, label: 'Estudos' },
+  '/ai': { icon: Bot, label: 'Assistente IA' },
+}
 
 interface HeaderProps {
   onMenuToggle: () => void
@@ -12,25 +27,40 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
   const { isSignedIn, user, signOut } = useAuth()
   const dispatch = useAppDispatch()
-  const { theme } = useAppSelector(state => state.userPreferences)
+  const { theme, sidebarCollapsed } = useAppSelector(state => state.userPreferences)
+  const location = useLocation()
 
   if (!isSignedIn) return null
+
+  // Find current route meta
+  const currentRoute = ROUTE_META[location.pathname]
+  const PageIcon = currentRoute?.icon || Home
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm relative">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
-        <button
-          onClick={onMenuToggle}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-          title="Menu"
-        >
-          <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Mobile hamburger — always visible on small screens */}
+          <button
+            onClick={onMenuToggle}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
+            title="Menu"
+          >
+            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          </button>
 
-        {/* Spacer on mobile so menu stays left */}
-        <div className="lg:hidden" />
+          {/* Page icon + title — visible on desktop when sidebar collapsed, always on mobile */}
+          {(sidebarCollapsed || window.innerWidth < 1024) && currentRoute && (
+            <div className="flex items-center gap-3">
+              <PageIcon className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {currentRoute.label}
+              </h2>
+            </div>
+          )}
+        </div>
 
-        {/* Options — aligned to the right on all screens */}
+        {/* Options — aligned to the right */}
         <div className="flex items-center gap-1 sm:gap-3 ml-auto">
           <button
             onClick={onThemeSettings}

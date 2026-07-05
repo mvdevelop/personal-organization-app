@@ -103,7 +103,7 @@ async function networkFirst(request) {
     const cached = await caches.match(request);
     if (cached) return cached;
     return new Response(
-      "<html><body style='text-align:center;padding:2rem;font-family:sans-serif;background:#111;color:#f0f0f0'><h1 style='color:#3b82f6'>◆ OrgApp</h1><p>Você está offline. Conecte-se à internet para continuar.</p></body></html>",
+      "<html><body style='text-align:center;padding:2rem;font-family:sans-serif;background:#111;color:#f0f0f0'><h1 style='color:#3b82f6'>◆ Schedule</h1><p>Você está offline. Conecte-se à internet para continuar.</p></body></html>",
       { headers: { "Content-Type": "text/html" } },
     );
   }
