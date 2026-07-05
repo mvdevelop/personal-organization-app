@@ -49,9 +49,17 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
             <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
 
-          {/* Page icon + title — visible on desktop when sidebar collapsed, always on mobile */}
-          {(sidebarCollapsed || window.innerWidth < 1024) && currentRoute && (
-            <div className="flex items-center gap-3">
+          {/* Page icon + title — on mobile always, on desktop when sidebar is collapsed */}
+          {currentRoute && (
+            <div className="flex items-center gap-3 lg:hidden">
+              <PageIcon className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {currentRoute.label}
+              </h2>
+            </div>
+          )}
+          {sidebarCollapsed && currentRoute && (
+            <div className="hidden lg:flex items-center gap-3">
               <PageIcon className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {currentRoute.label}
