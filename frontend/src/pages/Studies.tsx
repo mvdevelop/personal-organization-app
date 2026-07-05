@@ -67,7 +67,7 @@ const Studies: React.FC = () => {
       await dispatch(createSession({
         subjectId: logSubject,
         duration: Number(logDuration),
-        technique: logTechnique as any,
+        technique: logTechnique as typeof TECHNIQUES[number],
         date: new Date(logDate).toISOString(),
       })).unwrap()
       setLogDuration('')
@@ -98,7 +98,7 @@ const Studies: React.FC = () => {
       days.push({ date: new Date(d), minutes: getDayMinutes(d) })
     }
     return days
-  }, [calDate, sessions, getDayMinutes])
+  }, [calDate, getDayMinutes])
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -116,7 +116,7 @@ const Studies: React.FC = () => {
           <div className="flex gap-3 flex-wrap">
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Nome da matéria" required
               className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
-            <select value={category} onChange={e => setCategory(e.target.value as any)}
+            <select value={category} onChange={e => setCategory(e.target.value as Subject['category'])}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
               <option value="faculdade">🎓 Faculdade</option>
               <option value="concurso">📋 Concurso</option>

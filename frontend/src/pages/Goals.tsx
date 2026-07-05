@@ -72,7 +72,7 @@ const Goals: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título da meta" required
               className="col-span-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
-            <select value={type} onChange={e => setType(e.target.value as any)}
+            <select value={type} onChange={e => setType(e.target.value as Goal['type'])}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
               {GOAL_TYPES.map(t => <option key={t.value} value={t.value}>{t.emoji} {t.label}</option>)}
             </select>

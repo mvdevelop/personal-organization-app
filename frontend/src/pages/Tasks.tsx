@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { ApiClientError } from '../services/api';
 import {
   fetchTasks,
   createTask,
@@ -56,8 +57,8 @@ const Tasks: React.FC = () => {
       }
       setIsModalOpen(false)
       setEditingTask(null)
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao salvar tarefa')
+    } catch (err: unknown) {
+      toast.error(err instanceof ApiClientError ? err.message : 'Erro ao salvar tarefa')
     } finally {
       setSaving(false)
     }

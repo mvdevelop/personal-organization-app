@@ -58,12 +58,6 @@ async function request<T>(
   })
 
   if (!response.ok) {
-    // If 401, session expired or not authenticated — redirect to login
-    if (response.status === 401 && !window.location.pathname.includes('/sign-in')) {
-      window.location.href = '/sign-in'
-      throw new ApiClientError({ status: 401, message: 'Sessão expirada' })
-    }
-
     let body: { error?: string; details?: unknown }
     try {
       body = await response.json()

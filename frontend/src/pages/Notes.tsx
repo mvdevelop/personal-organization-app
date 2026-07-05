@@ -12,6 +12,7 @@ import {
 import NoteCard from '../components/NoteCard';
 import NoteModal from '../components/NoteModal';
 import { Plus, Search, FileText, Loader2 } from 'lucide-react';
+import { ApiClientError } from '../services/api';
 import toast from 'react-hot-toast';
 
 const Notes: React.FC = () => {
@@ -50,8 +51,8 @@ const Notes: React.FC = () => {
       }
       setIsModalOpen(false)
       setEditingNote(null)
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao salvar nota')
+    } catch (err: unknown) {
+      toast.error(err instanceof ApiClientError ? err.message : 'Erro ao salvar nota')
     }
   }
 
