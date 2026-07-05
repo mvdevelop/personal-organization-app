@@ -23,15 +23,20 @@ export interface ApiOptions {
   signal?: AbortSignal
 }
 
-// In-memory token (not localStorage — XSS-safe, cleared on page refresh)
-let _authToken: string | null = null
+// Token storage: sessionStorage (survives F5, cleared on tab close)
+// For same-origin (Vercel), httpOnly cookie handles auth automatically.
+const TOKEN_KEY = 'auth_token'
 
 export function setAuthToken(token: string | null): void {
-  _authToken = token
+  if (token) {
+    sessionStorage.setItem(TOKEN_KEY, token)
+  } else {
+    sessionStorage.removeItem(TOKEN_KEY)
+  }
 }
 
 export function getAuthToken(): string | null {
-  return _authToken
+  return sessionStorage.getItem(TOKEN_KEY)
 }
 
 async function request<T>(
@@ -43,9 +48,10 @@ async function request<T>(
     ...(options.headers as Record<string, string> | undefined),
   }
 
-  // Send in-memory token as Authorization header (works cross-origin for local dev)
-  if (_authToken) {
-    headers['Authorization'] = `Bearer ${_authToken}`
+  // Send session token as Authorization header (works cross-origin for local dev)
+  const token = getAuthToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
   const { signal, ...fetchOptions } = options
