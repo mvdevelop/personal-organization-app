@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchDashboard } from '../store/slices/dashboardSlice';
 import { Link } from 'react-router-dom';
 import GamificationPanel from '../components/GamificationPanel';
+import ClockWidget from '../components/ClockWidget';
 import { ChartsWidget, MiniCalendar } from '../components/DashboardWidgets';
 import {
   CheckSquare, Flame, Target, BookOpen,
@@ -256,6 +257,7 @@ const Dashboard: React.FC = () => {
 
         {/* --- Right Column (1/3) --- */}
         <div className="space-y-6">
+          <ClockWidget />
           <MiniCalendar tasks={data?.tasks as any} />
           <GamificationPanel />
         </div>
