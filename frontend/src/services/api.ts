@@ -23,6 +23,17 @@ export interface ApiOptions {
   signal?: AbortSignal
 }
 
+// In-memory token (not localStorage — XSS-safe, cleared on page refresh)
+let _authToken: string | null = null
+
+export function setAuthToken(token: string | null): void {
+  _authToken = token
+}
+
+export function getAuthToken(): string | null {
+  return _authToken
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestInit & ApiOptions = {},
@@ -32,17 +43,22 @@ async function request<T>(
     ...(options.headers as Record<string, string> | undefined),
   }
 
+  // Send in-memory token as Authorization header (works cross-origin for local dev)
+  if (_authToken) {
+    headers['Authorization'] = `Bearer ${_authToken}`
+  }
+
   const { signal, ...fetchOptions } = options
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...fetchOptions,
     headers,
     signal,
-    credentials: 'include', // httpOnly cookie handles auth
+    credentials: 'include', // httpOnly cookie as fallback for Vercel-to-Vercel
   })
 
   if (!response.ok) {
-    // If 401, the cookie may have expired — redirect to login
+    // If 401, session expired or not authenticated — redirect to login
     if (response.status === 401 && !window.location.pathname.includes('/sign-in')) {
       window.location.href = '/sign-in'
       throw new ApiClientError({ status: 401, message: 'Sessão expirada' })

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { api } from '../services/api';
+import { api, setAuthToken } from '../services/api';
 
 interface User {
   id: string
@@ -44,21 +44,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { user } = await api.post<AuthResponse>('/api/auth/login', {
+    const { user, token } = await api.post<AuthResponse>('/api/auth/login', {
       email,
       password,
     })
-    // Cookie is set automatically by backend (httpOnly)
+    // Store token in memory (not localStorage — XSS-safe) for cross-origin API calls
+    setAuthToken(token)
     setUser(user)
   }
 
   const signUp = async (name: string, email: string, password: string) => {
-    const { user } = await api.post<AuthResponse>('/api/auth/register', {
+    const { user, token } = await api.post<AuthResponse>('/api/auth/register', {
       name,
       email,
       password,
     })
-    // Cookie is set automatically by backend (httpOnly)
+    setAuthToken(token)
     setUser(user)
   }
 
@@ -68,6 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch {
       // ignore — backend may be unreachable, clear locally anyway
     }
+    setAuthToken(null)
     setUser(null)
   }
 
