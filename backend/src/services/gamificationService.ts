@@ -114,29 +114,25 @@ async function checkAchievements(stats: IUserStats): Promise<string[]> {
       }
       case 'streak_7':
       case 'streak_30': {
-        // Check if user has a habit with streak >= value
-        const habits = await Habit.find({ userId: stats.userId });
-        for (const habit of habits) {
-          const logs = await HabitLog.find({ habitId: habit._id, completed: true })
-            .sort({ date: -1 })
-            .limit(value);
-          // Simple streak check
-          if (logs.length >= value) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            let streakOk = true;
-            for (let i = 0; i < value; i++) {
-              const expected = new Date(today);
-              expected.setDate(expected.getDate() - i);
-              const logDate = new Date(logs[i].date);
-              logDate.setHours(0, 0, 0, 0);
-              if (logDate.getTime() !== expected.getTime()) {
-                streakOk = false;
-                break;
-              }
-            }
-            if (streakOk) { earned = true; break; }
+        // Check streaks via single aggregation (avoids N+1)
+        const streakGroups = await HabitLog.aggregate([
+          { $match: { completed: true, userId: stats.userId } },
+          { $sort: { date: -1 } },
+          { $group: { _id: '$habitId', logs: { $push: { date: '$date' } } } },
+        ] as any);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        for (const group of streakGroups) {
+          let streak = 0;
+          for (let i = 0; i < Math.min(group.logs.length, value); i++) {
+            const expected = new Date(today);
+            expected.setDate(expected.getDate() - i);
+            const logDate = new Date(group.logs[i].date);
+            logDate.setHours(0, 0, 0, 0);
+            if (logDate.getTime() === expected.getTime()) streak++;
+            else break;
           }
+          if (streak >= value) { earned = true; break; }
         }
         break;
       }

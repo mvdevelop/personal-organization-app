@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 import * as authController from '../controllers/authController.js';
 import * as taskController from '../controllers/taskController.js';
 import * as noteController from '../controllers/noteController.js';
@@ -24,8 +25,8 @@ const router = Router();
  */
 
 // ===== Auth =====
-router.post('/auth/register', authController.register);
-router.post('/auth/login', authController.login);
+router.post('/auth/register', authLimiter, authController.register);
+router.post('/auth/login', authLimiter, authController.login);
 router.post('/auth/logout', authController.logout);
 router.get('/auth/me', authMiddleware, authController.me);
 

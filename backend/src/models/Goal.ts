@@ -60,5 +60,7 @@ const goalSchema = new Schema<IGoal>(
 )
 
 goalSchema.index({ userId: 1, status: 1 })
+goalSchema.index({ userId: 1, deadline: 1 })
+goalSchema.index({ userId: 1, createdAt: -1 })
 
 export const Goal = mongoose.model<IGoal>('Goal', goalSchema)

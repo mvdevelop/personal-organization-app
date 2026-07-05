@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Quality Check
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # === Backend ===
+      - name: Setup Node.js (Backend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: cd backend && npm ci
+
+      - name: Type-check backend
+        run: cd backend && npx tsc --noEmit
+        env:
+          MONGODB_URI: mongodb://localhost:27017/test
+          JWT_SECRET: test-secret
+          NODE_ENV: test
+
+      - name: Lint backend
+        run: cd backend && npx tsc --noEmit
+        continue-on-error: true
+
+      # === Frontend ===
+      - name: Setup Node.js (Frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Type-check frontend
+        run: cd frontend && npx tsc -b --noEmit
+
+      - name: Lint frontend
+        run: cd frontend && npm run lint
+
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+      # === Security Audit ===
+      - name: Audit backend dependencies
+        run: cd backend && npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Audit frontend dependencies
+        run: cd frontend && npm audit --audit-level=high
+        continue-on-error: true

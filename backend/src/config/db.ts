@@ -7,7 +7,13 @@ export async function connectDB(): Promise<void> {
   if (isConnected) return;
 
   try {
-    await mongoose.connect(env.mongodbUri);
+    await mongoose.connect(env.mongodbUri, {
+      maxPoolSize: env.nodeEnv === 'production' ? 5 : 10,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      heartbeatFrequencyMS: 10000,
+    });
     isConnected = true;
     console.log('📦 MongoDB connected');
 

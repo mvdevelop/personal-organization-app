@@ -19,20 +19,6 @@ export class ApiClientError extends Error {
   }
 }
 
-// --- Token management (will migrate to httpOnly cookie later) ---
-
-export function getToken(): string | null {
-  return localStorage.getItem('auth_token')
-}
-
-export function setToken(token: string): void {
-  localStorage.setItem('auth_token', token)
-}
-
-export function clearToken(): void {
-  localStorage.removeItem('auth_token')
-}
-
 export interface ApiOptions {
   signal?: AbortSignal
 }
@@ -41,14 +27,9 @@ async function request<T>(
   endpoint: string,
   options: RequestInit & ApiOptions = {},
 ): Promise<T> {
-  const token = getToken()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
-  }
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
   }
 
   const { signal, ...fetchOptions } = options
@@ -57,10 +38,16 @@ async function request<T>(
     ...fetchOptions,
     headers,
     signal,
-    credentials: 'include', // send httpOnly cookie if available
+    credentials: 'include', // httpOnly cookie handles auth
   })
 
   if (!response.ok) {
+    // If 401, the cookie may have expired — redirect to login
+    if (response.status === 401 && !window.location.pathname.includes('/sign-in')) {
+      window.location.href = '/sign-in'
+      throw new ApiClientError({ status: 401, message: 'Sessão expirada' })
+    }
+
     let body: { error?: string; details?: unknown }
     try {
       body = await response.json()

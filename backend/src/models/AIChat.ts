@@ -26,4 +26,6 @@ const aiChatSchema = new Schema<IAIChat>(
   { timestamps: true },
 );
 
+aiChatSchema.index({ userId: 1 });
+
 export const AIChat = mongoose.model<IAIChat>('AIChat', aiChatSchema);

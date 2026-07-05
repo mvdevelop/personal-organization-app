@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { api, setToken, clearToken, getToken } from '../services/api';
+import { api } from '../services/api';
 
 interface User {
   id: string
@@ -27,20 +27,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Restore session on mount
+  // Restore session on mount — cookie is sent automatically
   useEffect(() => {
     const restoreSession = async () => {
-      const token = getToken()
-      if (!token) {
-        setIsLoaded(true)
-        return
-      }
-
       try {
         const user = await api.get<User>('/api/auth/me')
         setUser(user)
       } catch {
-        clearToken()
+        // No valid session — user will see login page
       } finally {
         setIsLoaded(true)
       }
@@ -50,21 +44,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { user, token } = await api.post<AuthResponse>('/api/auth/login', {
+    const { user } = await api.post<AuthResponse>('/api/auth/login', {
       email,
       password,
     })
-    setToken(token)
+    // Cookie is set automatically by backend (httpOnly)
     setUser(user)
   }
 
   const signUp = async (name: string, email: string, password: string) => {
-    const { user, token } = await api.post<AuthResponse>('/api/auth/register', {
+    const { user } = await api.post<AuthResponse>('/api/auth/register', {
       name,
       email,
       password,
     })
-    setToken(token)
+    // Cookie is set automatically by backend (httpOnly)
     setUser(user)
   }
 
@@ -74,7 +68,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch {
       // ignore — backend may be unreachable, clear locally anyway
     }
-    clearToken()
     setUser(null)
   }
 

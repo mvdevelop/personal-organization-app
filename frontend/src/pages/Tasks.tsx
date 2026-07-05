@@ -28,7 +28,7 @@ const Tasks: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchTasks({ filter, search: searchQuery || undefined }))
-  }, [dispatch, filter])
+  }, [dispatch, filter, searchQuery])
 
   useEffect(() => {
     if (error) {

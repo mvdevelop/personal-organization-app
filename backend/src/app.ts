@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 
@@ -28,6 +29,9 @@ app.use(express.json({ limit: '1mb' }));
 
 // Cookie parser (for httpOnly JWT cookie)
 app.use(cookieParser());
+
+// Rate limiting
+app.use('/api/', apiLimiter);
 
 // Swagger
 const isProduction = env.nodeEnv === 'production';
