@@ -15,10 +15,17 @@ const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (curl, mobile apps, server-to-server)
     if (!origin || env.corsOrigins.includes(origin) || env.corsOrigins.includes('*')) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // In development, be more permissive
+      if (env.nodeEnv !== 'production') {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked origin: ${origin}`);
+        callback(null, false);
+      }
     }
   },
   credentials: true,
