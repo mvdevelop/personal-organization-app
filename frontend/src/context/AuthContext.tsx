@@ -68,7 +68,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(user)
   }
 
-  const signOut = () => {
+  const signOut = async () => {
+    try {
+      await api.post('/api/auth/logout')
+    } catch {
+      // ignore — backend may be unreachable, clear locally anyway
+    }
     clearToken()
     setUser(null)
   }

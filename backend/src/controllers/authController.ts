@@ -4,6 +4,7 @@ import { User } from '../models/User.js';
 import { env } from '../config/env.js';
 import { registerSchema, loginSchema } from '../validators/authValidator.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { setAuthCookie, clearAuthCookie } from '../utils/cookies.js';
 
 /**
  * @swagger
@@ -104,6 +105,7 @@ export async function register(req: Request, res: Response, next: NextFunction):
     const user = await User.create(data);
     const token = generateToken(user.id, user.email);
 
+    setAuthCookie(res, token);
     res.status(201).json({ user: user.toJSON(), token });
   } catch (error) {
     next(error);
@@ -143,6 +145,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     }
 
     const token = generateToken(user.id, user.email);
+    setAuthCookie(res, token);
     res.json({ user: user.toJSON(), token });
   } catch (error) {
     next(error);
@@ -168,6 +171,15 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
  *       401:
  *         description: Não autenticado
  */
+export async function logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    clearAuthCookie(res);
+    res.json({ message: 'Logout realizado com sucesso' });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function me(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = await User.findById(req.user!.userId);

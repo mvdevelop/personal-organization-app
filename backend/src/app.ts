@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
@@ -13,7 +14,6 @@ const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin || env.corsOrigins.includes(origin) || env.corsOrigins.includes('*')) {
       callback(null, true);
     } else {
@@ -25,6 +25,9 @@ app.use(cors({
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
+
+// Cookie parser (for httpOnly JWT cookie)
+app.use(cookieParser());
 
 // Swagger
 const isProduction = env.nodeEnv === 'production';

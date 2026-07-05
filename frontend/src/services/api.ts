@@ -57,6 +57,7 @@ async function request<T>(
     ...fetchOptions,
     headers,
     signal,
+    credentials: 'include', // send httpOnly cookie if available
   })
 
   if (!response.ok) {
