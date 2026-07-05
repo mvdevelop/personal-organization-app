@@ -19,6 +19,8 @@ export class ApiClientError extends Error {
   }
 }
 
+// --- Token management (will migrate to httpOnly cookie later) ---
+
 export function getToken(): string | null {
   return localStorage.getItem('auth_token')
 }
@@ -31,9 +33,13 @@ export function clearToken(): void {
   localStorage.removeItem('auth_token')
 }
 
+export interface ApiOptions {
+  signal?: AbortSignal
+}
+
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {},
+  options: RequestInit & ApiOptions = {},
 ): Promise<T> {
   const token = getToken()
   const headers: Record<string, string> = {
@@ -45,9 +51,12 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
+  const { signal, ...fetchOptions } = options
+
   const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
+    ...fetchOptions,
     headers,
+    signal,
   })
 
   if (!response.ok) {
@@ -72,26 +81,30 @@ async function request<T>(
 }
 
 export const api = {
-  get: <T>(endpoint: string) => request<T>(endpoint, { method: 'GET' }),
+  get: <T>(endpoint: string, opts?: ApiOptions) =>
+    request<T>(endpoint, { method: 'GET', ...opts }),
 
-  post: <T>(endpoint: string, data?: unknown) =>
+  post: <T>(endpoint: string, data?: unknown, opts?: ApiOptions) =>
     request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      ...opts,
     }),
 
-  put: <T>(endpoint: string, data?: unknown) =>
+  put: <T>(endpoint: string, data?: unknown, opts?: ApiOptions) =>
     request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
+      ...opts,
     }),
 
-  patch: <T>(endpoint: string, data?: unknown) =>
+  patch: <T>(endpoint: string, data?: unknown, opts?: ApiOptions) =>
     request<T>(endpoint, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
+      ...opts,
     }),
 
-  delete: <T>(endpoint: string) =>
-    request<T>(endpoint, { method: 'DELETE' }),
+  delete: <T>(endpoint: string, opts?: ApiOptions) =>
+    request<T>(endpoint, { method: 'DELETE', ...opts }),
 }

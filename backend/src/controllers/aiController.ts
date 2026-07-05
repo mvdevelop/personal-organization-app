@@ -8,15 +8,23 @@ import { Subject } from '../models/Subject.js';
 import { User } from '../models/User.js';
 import { chatWithAI, generateDailyBriefing, suggestTasks } from '../services/aiService.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { getCached, setCache, cacheKey } from '../utils/cache.js';
 
 async function buildUserContext(userId: string): Promise<string> {
-  const user = await User.findById(userId);
-  const tasks = await Task.find({ userId }).sort({ createdAt: -1 }).limit(10);
-  const notes = await Note.find({ userId }).sort({ updatedAt: -1 }).limit(5);
-  const habits = await Habit.find({ userId });
-  const logs = await HabitLog.find({ userId }).sort({ date: -1 }).limit(30);
-  const goals = await Goal.find({ userId, status: 'active' });
-  const subjects = await Subject.find({ userId });
+  // Cache context for 15s to avoid 6+ DB queries on rapid messages
+  const key = cacheKey(userId, 'ai-context');
+  const cached = getCached<string>(key);
+  if (cached) return cached;
+
+  const [user, tasks, notes, habits, logs, goals, subjects] = await Promise.all([
+    User.findById(userId),
+    Task.find({ userId }).sort({ createdAt: -1 }).limit(10),
+    Note.find({ userId }).sort({ updatedAt: -1 }).limit(5),
+    Habit.find({ userId }),
+    HabitLog.find({ userId }).sort({ date: -1 }).limit(30),
+    Goal.find({ userId, status: 'active' }),
+    Subject.find({ userId }),
+  ]);
 
   const today = new Date().toLocaleDateString('pt-BR');
   const pendingTasks = tasks.filter(t => !t.completed);
@@ -25,7 +33,7 @@ async function buildUserContext(userId: string): Promise<string> {
     return logDate === today;
   });
 
-  return `
+  const context = `
 Nome: ${user?.name || 'Usuário'}
 Data: ${today}
 Tarefas pendentes: ${pendingTasks.length}
@@ -36,6 +44,8 @@ Metas ativas: ${goals.length}
 Matérias de estudo: ${subjects.length}
 Notas recentes: ${notes.length}
   `.trim();
+  setCache(key, context, 15_000);
+  return context;
 }
 
 export async function chat(req: Request, res: Response, next: NextFunction): Promise<void> {

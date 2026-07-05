@@ -5,6 +5,7 @@ import { Habit, HabitLog } from '../models/Habit.js';
 import { Goal } from '../models/Goal.js';
 import { Subject, StudySession } from '../models/Subject.js';
 import { Note } from '../models/Note.js';
+import { getBestStreak, calculateAllStreaks } from '../services/streakService.js';
 
 export async function getDashboardData(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -58,28 +59,10 @@ export async function getDashboardData(req: Request, res: Response, next: NextFu
       Note.find({ userId }).sort({ updatedAt: -1 }).limit(3).select('title updatedAt').lean(),
     ]);
 
-    // Streaks — also parallelized
-    const habits = await Habit.find({ userId }).lean();
-    const streaks = await Promise.all(
-      habits.map(async (h) => {
-        const logs = await HabitLog.find({ habitId: h._id, completed: true })
-          .sort({ date: -1 })
-          .lean();
-        let streak = 0;
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        for (let i = 0; i < logs.length; i++) {
-          const expected = new Date(now);
-          expected.setDate(expected.getDate() - i);
-          const logDate = new Date(logs[i].date);
-          logDate.setHours(0, 0, 0, 0);
-          if (logDate.getTime() === expected.getTime()) streak++;
-          else break;
-        }
-        return { title: h.title, streak, color: h.color };
-      }),
-    );
-    const bestStreak = streaks.reduce((max, s) => (s.streak > max ? s.streak : max), 0);
+    // Streaks — using shared service with optimized queries
+    const streakResults = await calculateAllStreaks(userId);
+    const bestStreak = streakResults.reduce((max, s) => (s.streak > max ? s.streak : max), 0);
+    const streaks = streakResults.map(s => ({ title: s.title, streak: s.streak, color: s.color }));
 
     const totalStudyMinutes = weekStudyHoursAgg[0]?.total || 0;
 

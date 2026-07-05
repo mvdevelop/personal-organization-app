@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Habit, HabitLog } from '../models/Habit.js';
 import { createHabitSchema, updateHabitSchema, createHabitLogSchema } from '../validators/habitValidator.js';
+import { calculateAllStreaks } from '../services/streakService.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 export async function listHabits(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -68,25 +69,7 @@ export async function createLog(req: Request, res: Response, next: NextFunction)
 
 export async function getStreaks(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const habits = await Habit.find({ userId: req.user!.userId });
-    const streaks = await Promise.all(habits.map(async (habit) => {
-      const logs = await HabitLog.find({ habitId: habit._id, completed: true }).sort({ date: -1 });
-      let streak = 0;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      for (let i = 0; i < logs.length; i++) {
-        const logDate = new Date(logs[i].date);
-        logDate.setHours(0, 0, 0, 0);
-        const expected = new Date(today);
-        expected.setDate(expected.getDate() - i);
-        if (logDate.getTime() === expected.getTime()) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-      return { habitId: habit._id.toString(), title: habit.title, streak };
-    }));
+    const streaks = await calculateAllStreaks(req.user!.userId);
     res.json(streaks);
   } catch (error) { next(error); }
 }
