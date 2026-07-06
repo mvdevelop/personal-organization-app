@@ -15,6 +15,9 @@ interface WeatherData {
 const WEATHER_CACHE_KEY = '@schedule:weather-cache'
 const CITY_CACHE_KEY = '@schedule:city-cache'
 
+// Fallback city quando geolocalização não está disponível
+const FALLBACK_CITY = 'Teresópolis'
+
 /**
  * Maps WMO weather codes to emoji + label.
  * See https://open-meteo.com/en/docs#weathervariables
@@ -83,7 +86,29 @@ const WeatherWidget: React.FC = () => {
     }
   }, [])
 
-  // Get user location (cached)
+  // Geocode a city name to coordinates (fallback when geolocation fails)
+  const fetchCoordsFromCity = useCallback(async (cityName: string) => {
+    try {
+      const res = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=pt`
+      )
+      const data = await res.json()
+      const result = data?.results?.[0]
+      if (result) {
+        const { latitude: lat, longitude: lon, name, admin1, country } = result
+        const city = [name, admin1, country].filter(Boolean).join(', ')
+        localStorage.setItem(CITY_CACHE_KEY, JSON.stringify({ lat, lon, city, ts: Date.now() }))
+        setCoords({ lat, lon })
+        setWeather(prev => ({ ...prev, city }))
+      } else {
+        setWeather(prev => ({ ...prev, city: cityName, loading: false }))
+      }
+    } catch {
+      setWeather(prev => ({ ...prev, city: cityName, loading: false }))
+    }
+  }, [])
+
+  // Get user location (cached) — fallback para cidade fixa se geolocation falhar
   useEffect(() => {
     const cached = localStorage.getItem(CITY_CACHE_KEY)
     if (cached) {
@@ -91,6 +116,7 @@ const WeatherWidget: React.FC = () => {
         const { lat, lon, city } = JSON.parse(cached)
         setCoords({ lat, lon })
         setWeather(prev => ({ ...prev, city }))
+        return // cache válido, não precisa de geolocation
       } catch { /* ignore */ }
     }
 
@@ -103,15 +129,16 @@ const WeatherWidget: React.FC = () => {
           fetchCityFromCoords(lat, lon)
         },
         () => {
-          setCoords(null)
-          setWeather(prev => ({ ...prev, city: 'Localização desconhecida', loading: false }))
+          // Geolocation falhou — usa fallback por nome da cidade
+          fetchCoordsFromCity(FALLBACK_CITY)
         },
         { timeout: 5000, enableHighAccuracy: false }
       )
     } else {
-      setWeather(prev => ({ ...prev, loading: false }))
+      // Sem suporte a geolocation — usa fallback por nome
+      fetchCoordsFromCity(FALLBACK_CITY)
     }
-  }, [fetchCityFromCoords])
+  }, [fetchCityFromCoords, fetchCoordsFromCity])
 
   // Fetch weather from Open-Meteo
   useEffect(() => {

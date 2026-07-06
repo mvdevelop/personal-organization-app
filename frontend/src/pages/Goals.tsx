@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchGoals, createGoal, updateGoal, deleteGoal, type Goal } from '../store/slices/goalsSlice';
-import { Plus, CheckCircle, Clock, Trash2 } from 'lucide-react';
+import { Plus, CheckCircle, Clock, Trash2, Trophy } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GOAL_TYPES: { value: Goal['type']; label: string; emoji: string }[] = [
@@ -61,7 +61,10 @@ const Goals: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Metas</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <Trophy className="w-7 h-7 text-primary" />
+          Metas
+        </h1>
         <button onClick={() => { setShowForm(!showForm); setEditingId(null); setTitle(''); setTargetValue(''); setDeadline('') }}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         ><Plus className="w-4 h-4" /> Nova Meta</button>

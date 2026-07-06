@@ -11,7 +11,7 @@ import {
 } from '../store/slices/notesSlice';
 import NoteCard from '../components/NoteCard';
 import NoteModal from '../components/NoteModal';
-import { Plus, Search, FileText, Loader2 } from 'lucide-react';
+import { Plus, Search, StickyNote, Loader2 } from 'lucide-react';
 import { ApiClientError } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -74,7 +74,10 @@ const Notes: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Minhas Notas</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <StickyNote className="w-7 h-7 text-primary" />
+          Minhas Notas
+        </h1>
         <button
           onClick={() => {
             setEditingNote(null)
@@ -105,7 +108,7 @@ const Notes: React.FC = () => {
         </div>
       ) : filteredNotes.length === 0 ? (
         <div className="text-center py-16">
-          <FileText className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+          <StickyNote className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
           <p className="text-lg text-gray-500 dark:text-gray-400">
             {searchQuery
               ? 'Nenhuma nota encontrada para essa busca'

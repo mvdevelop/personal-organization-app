@@ -6,8 +6,8 @@ import GamificationPanel from '../components/GamificationPanel';
 import WeatherWidget from '../components/WeatherWidget';
 import { ChartsWidget, MiniCalendar } from '../components/DashboardWidgets';
 import {
-  CheckSquare, Flame, Target, BookOpen,
-  FileText, AlertCircle, Loader2, Sparkles,
+  ClipboardList, Flame, Trophy, GraduationCap,
+  StickyNote, AlertCircle, Loader2, Sparkles,
   ArrowRight, ListTodo, BrainCircuit,
 } from 'lucide-react';
 
@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <MiniStat icon={ListTodo} label="Tarefas" highlight={t?.pending ? `${t.pending}` : '0'} color="text-primary" />
         <MiniStat icon={Flame} label="Streak" highlight={`${h?.bestStreak ?? 0}`} color="text-orange-500" />
-        <MiniStat icon={Target} label="Metas ativas" highlight={`${g?.active ?? 0}`} color="text-purple-500" />
+        <MiniStat icon={Trophy} label="Metas ativas" highlight={`${g?.active ?? 0}`} color="text-purple-500" />
         <MiniStat icon={BrainCircuit} label="Horas estudo" highlight={`${st?.weekStudyHours ?? 0}h`} color="text-green-500" />
       </div>
 
@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                    <CheckSquare className="w-5 h-5 text-primary" />
+                    <ClipboardList className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Tarefas</h2>
@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-purple-500" />
+                    <Trophy className="w-5 h-5 text-purple-500" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Metas</h2>
@@ -178,7 +178,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-pink-500" />
+                    <StickyNote className="w-5 h-5 text-pink-500" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Notas</h2>
@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-green-500" />
+                    <GraduationCap className="w-5 h-5 text-green-500" />
                   </div>
                   <div>
                     <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Estudos</h2>

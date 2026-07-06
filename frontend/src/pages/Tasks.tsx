@@ -16,7 +16,7 @@ import {
 } from '../store/slices/tasksSlice';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
-import { Plus, Search, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, Search, AlertCircle, Loader2, ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Tasks: React.FC = () => {
@@ -88,7 +88,10 @@ const Tasks: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Minhas Tarefas</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <ClipboardList className="w-7 h-7 text-primary" />
+          Minhas Tarefas
+        </h1>
         <button
           onClick={() => {
             setEditingTask(null)

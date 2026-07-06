@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchSubjects, createSubject, deleteSubject, fetchSessions, createSession, deleteSession, type Subject, type StudySession } from '../store/slices/studiesSlice';
-import { Plus, BookOpen, Trash2, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Plus, GraduationCap, BookOpen, Trash2, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
@@ -105,7 +105,10 @@ const Studies: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Estudos</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <GraduationCap className="w-7 h-7 text-primary" />
+          Estudos
+        </h1>
         <button onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 px-4 py-2.5 btn-primary rounded-xl text-sm font-medium">
           <Plus className="w-4 h-4" /> Matéria

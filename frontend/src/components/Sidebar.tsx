@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Home, CheckSquare, FileText,
-  Lightbulb, Target, BookOpen, Bot,
+  Gauge, ClipboardList, StickyNote,
+  Zap, Trophy, GraduationCap, Brain,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useAppDispatch } from '../hooks/redux';
@@ -13,13 +13,13 @@ interface SidebarProps {
 }
 
 const ALL_NAV = [
-  { path: '/', icon: Home, label: 'Dashboard' },
-  { path: '/tasks', icon: CheckSquare, label: 'Tarefas' },
-  { path: '/notes', icon: FileText, label: 'Notas' },
-  { path: '/habits', icon: Lightbulb, label: 'Hábitos' },
-  { path: '/goals', icon: Target, label: 'Metas' },
-  { path: '/studies', icon: BookOpen, label: 'Estudos' },
-  { path: '/ai', icon: Bot, label: 'Assistente IA' },
+  { path: '/', icon: Gauge, label: 'Dashboard' },
+  { path: '/tasks', icon: ClipboardList, label: 'Tarefas' },
+  { path: '/notes', icon: StickyNote, label: 'Notas' },
+  { path: '/habits', icon: Zap, label: 'Hábitos' },
+  { path: '/goals', icon: Trophy, label: 'Metas' },
+  { path: '/studies', icon: GraduationCap, label: 'Estudos' },
+  { path: '/ai', icon: Brain, label: 'Assistente IA' },
 ]
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {

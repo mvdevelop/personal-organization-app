@@ -5,7 +5,7 @@ import {
   fetchLogs, createLog, fetchStreaks,
   type HabitLog,
 } from '../store/slices/habitsSlice';
-import { Plus, Check, Trash2, ChevronLeft, ChevronRight, Palette } from 'lucide-react';
+import { Plus, Check, Trash2, ChevronLeft, ChevronRight, Palette, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -124,7 +124,10 @@ const Habits: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Hábitos</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <Zap className="w-7 h-7 text-primary" />
+          Hábitos
+        </h1>
       </div>
 
       {/* Add habit form */}
