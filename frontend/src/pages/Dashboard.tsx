@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchDashboard } from '../store/slices/dashboardSlice';
 import { Link } from 'react-router-dom';
 import GamificationPanel from '../components/GamificationPanel';
-import ClockWidget from '../components/ClockWidget';
+import WeatherWidget from '../components/WeatherWidget';
 import { ChartsWidget, MiniCalendar } from '../components/DashboardWidgets';
 import {
   CheckSquare, Flame, Target, BookOpen,
@@ -35,22 +35,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* === Header / Greeting === */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {new Date().getHours() < 12 ? 'Bom dia! ☀️' : new Date().getHours() < 18 ? 'Boa tarde! 🌤️' : 'Boa noite! 🌙'}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
-        </div>
-        <Link to="/ai" className="hidden sm:flex items-center gap-2 px-5 py-2.5 mt-4 sm:mt-0 text-sm font-medium text-white rounded-xl transition-all hover:scale-[1.02]"
-          style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))' }}>
-          <Sparkles className="w-4 h-4" />
-          Resumo do dia com IA
-        </Link>
-      </div>
+      {/* === Weather / Greeting Header === */}
+      <WeatherWidget />
 
       {/* === Quick Stats Row === */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -257,7 +243,6 @@ const Dashboard: React.FC = () => {
 
         {/* --- Right Column (1/3) --- */}
         <div className="space-y-6">
-          <ClockWidget />
           <MiniCalendar tasks={data?.tasks as { recent?: { id: string; title: string; dueDate: string | null }[] } | undefined} />
           <GamificationPanel />
         </div>
