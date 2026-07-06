@@ -3,22 +3,18 @@ import { useAuth } from '../hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 import {
   Menu, Sun, Moon, LogOut, User, Palette,
-  Home, CheckSquare, FileText,
-  Lightbulb, Target, BookOpen, Bot,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
 
-type LucideIcon = React.FC<{ className?: string; style?: React.CSSProperties }>
-
-const ROUTE_META: Record<string, { icon: LucideIcon; label: string }> = {
-  '/': { icon: Home, label: 'Dashboard' },
-  '/tasks': { icon: CheckSquare, label: 'Tarefas' },
-  '/notes': { icon: FileText, label: 'Notas' },
-  '/habits': { icon: Lightbulb, label: 'Hábitos' },
-  '/goals': { icon: Target, label: 'Metas' },
-  '/studies': { icon: BookOpen, label: 'Estudos' },
-  '/ai': { icon: Bot, label: 'Assistente IA' },
+const ROUTE_META: Record<string, { label: string }> = {
+  '/': { label: 'Dashboard' },
+  '/tasks': { label: 'Tarefas' },
+  '/notes': { label: 'Notas' },
+  '/habits': { label: 'Hábitos' },
+  '/goals': { label: 'Metas' },
+  '/studies': { label: 'Estudos' },
+  '/ai': { label: 'Assistente IA' },
 }
 
 interface HeaderProps {
@@ -36,7 +32,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
 
   // Find current route meta
   const currentRoute = ROUTE_META[location.pathname]
-  const PageIcon = currentRoute?.icon || Home
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm relative">
@@ -54,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
           {/* Page icon + title — on mobile always, on desktop when sidebar is collapsed */}
           {currentRoute && (
             <div className="flex items-center gap-3 lg:hidden">
-              <PageIcon className="w-5 h-5 text-primary" />
+              <img src="/icon.png" alt="" className="w-5 h-5" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {currentRoute.label}
               </h2>
@@ -62,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
           )}
           {sidebarCollapsed && currentRoute && (
             <div className="hidden lg:flex items-center gap-3">
-              <PageIcon className="w-5 h-5 text-primary" />
+              <img src="/icon.png" alt="" className="w-5 h-5" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {currentRoute.label}
               </h2>

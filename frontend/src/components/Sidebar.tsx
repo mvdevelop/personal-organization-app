@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   Home, CheckSquare, FileText,
   Lightbulb, Target, BookOpen, Bot,
@@ -24,10 +24,6 @@ const ALL_NAV = [
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const dispatch = useAppDispatch()
-  const location = useLocation()
-  const currentPage = ALL_NAV.find(n => location.pathname === n.path)
-  const PageIcon = currentPage?.icon || Home
-
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm ${
       isActive
@@ -41,12 +37,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     <aside className="h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col w-full">
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50">
         {collapsed ? (
-          <h1 className="text-xl font-bold text-primary text-center">
-            <PageIcon className="w-6 h-6 mx-auto" />
+          <h1 className="text-xl font-bold text-primary text-center" title="Schedule">
+            <img src="/icon.png" alt="Schedule" className="w-7 h-7 mx-auto" />
           </h1>
         ) : (
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <span className="text-primary" style={{ color: 'var(--color-primary)' }}>◆</span> Schedule
+          <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 px-1">
+            <img src="/icon.png" alt="Schedule" className="w-7 h-7" />
+            Schedule
           </h1>
         )}
       </div>
