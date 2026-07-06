@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAppDispatch } from '../hooks/redux';
 import { toggleSidebar } from '../store/slices/userPreferencesSlice';
+import LogoIcon from './LogoIcon';
 
 interface SidebarProps {
   collapsed: boolean
@@ -37,13 +38,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
     <aside className="h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col w-full">
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50">
         {collapsed ? (
-          <h1 className="text-xl font-bold text-primary text-center" title="Schedule">
-            <img src="/icon.png" alt="Schedule" className="w-7 h-7 mx-auto" />
+          <h1 className="text-xl font-bold text-center text-primary" title="Schedule">
+            <LogoIcon className="mx-auto" size={28} />
           </h1>
         ) : (
           <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 px-1">
-            <img src="/icon.png" alt="Schedule" className="w-7 h-7" />
-            Schedule
+            <span className="text-primary"><LogoIcon size={28} /></span>
+            <span className="text-primary" style={{ fontWeight: 800 }}>Schedule</span>
           </h1>
         )}
       </div>

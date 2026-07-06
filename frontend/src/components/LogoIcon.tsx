@@ -1,0 +1,54 @@
+import React from 'react';
+
+interface LogoIconProps {
+  className?: string
+  size?: number
+}
+
+const LogoIcon: React.FC<LogoIconProps> = ({ className, size }) => {
+  const s = size || 28
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      width={s}
+      height={s}
+      className={className}
+      fill="none"
+    >
+      {/* Outer rounded square */}
+      <rect x="32" y="32" width="448" height="448" rx="96"
+            stroke="currentColor" strokeWidth="28" strokeLinejoin="round" />
+
+      {/* Inner glow accent */}
+      <rect x="56" y="56" width="400" height="400" rx="72"
+            stroke="currentColor" strokeWidth="4" opacity="0.15" />
+
+      {/* Calendar top bar */}
+      <rect x="116" y="108" width="280" height="52" rx="14" fill="currentColor" opacity="0.12" />
+      <line x1="168" y1="108" x2="168" y2="160" stroke="currentColor" strokeWidth="10" strokeLinecap="round" opacity="0.35" />
+      <line x1="344" y1="108" x2="344" y2="160" stroke="currentColor" strokeWidth="10" strokeLinecap="round" opacity="0.35" />
+
+      {/* Calendar grid */}
+      <g stroke="currentColor" strokeWidth="10" strokeLinecap="round" opacity="0.2">
+        <line x1="116" y1="216" x2="396" y2="216" />
+        <line x1="116" y1="296" x2="396" y2="296" />
+        <line x1="116" y1="376" x2="310" y2="376" />
+        <line x1="200" y1="180" x2="200" y2="400" />
+        <line x1="296" y1="180" x2="296" y2="400" />
+      </g>
+
+      {/* Bold checkmark */}
+      <g fill="none" stroke="currentColor" strokeWidth="40" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="164,324 216,376 348,244" />
+      </g>
+
+      {/* Accent dots */}
+      <circle cx="140" cy="250" r="8" fill="currentColor" opacity="0.45" />
+      <circle cx="230" cy="330" r="8" fill="currentColor" opacity="0.45" />
+      <circle cx="370" cy="200" r="8" fill="currentColor" opacity="0.45" />
+    </svg>
+  )
+}
+
+export default LogoIcon

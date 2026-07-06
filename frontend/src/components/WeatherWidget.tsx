@@ -59,6 +59,9 @@ const WeatherWidget: React.FC = () => {
   })
   const [time, setTime] = useState(new Date())
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
+  const [clockMode, setClockMode] = useState<'digital' | 'analog'>(() => {
+    return (localStorage.getItem('@schedule:clock-mode') as 'digital' | 'analog') || 'digital'
+  })
 
   // Update clock every second
   useEffect(() => {
@@ -191,6 +194,17 @@ const WeatherWidget: React.FC = () => {
   const hourStr = String(h).padStart(2, '0')
   const minStr = String(m).padStart(2, '0')
 
+  const s = time.getSeconds()
+  const secStr = String(s).padStart(2, '0')
+
+  // Analog clock angles
+  const secondAngle = s * 6
+  const minuteAngle = m * 6 + s * 0.1
+  const hourAngle = (h % 12) * 30 + m * 0.5
+
+  const isPM = h >= 12
+  const h12 = h % 12 || 12
+
   const greeting = h < 12 ? 'Bom dia! ☀️' : h < 18 ? 'Boa tarde! 🌤️' : 'Boa noite! 🌙'
 
   const dateStr = time.toLocaleDateString('pt-BR', {
@@ -200,18 +214,116 @@ const WeatherWidget: React.FC = () => {
     year: 'numeric',
   })
 
+  const toggleClock = () => {
+    setClockMode(m => {
+      const next = m === 'digital' ? 'analog' : 'digital'
+      localStorage.setItem('@schedule:clock-mode', next)
+      return next
+    })
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 p-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        {/* Left: Greeting + Time + Date */}
+        {/* Left: Greeting + Clock + Date */}
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              {greeting}
-            </h1>
-            <span className="text-2xl sm:text-3xl font-mono font-bold text-primary tabular-nums tracking-wider">
-              {hourStr}:{minStr}
-            </span>
+            <div className="flex items-center gap-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                {greeting}
+              </h1>
+            </div>
+
+            {clockMode === 'digital' ? (
+              /* ⏱ Digital clock with seconds */
+              <div className="flex items-baseline gap-0.5 select-none">
+                <span className="text-3xl sm:text-4xl font-mono font-bold text-primary tabular-nums tracking-wider">
+                  {hourStr}
+                </span>
+                <span className="text-3xl sm:text-4xl font-mono font-bold text-primary tabular-nums animate-colon">
+                  :
+                </span>
+                <span className="text-3xl sm:text-4xl font-mono font-bold text-primary tabular-nums tracking-wider">
+                  {minStr}
+                </span>
+                <span className="text-base sm:text-lg font-mono font-semibold text-gray-400 tabular-nums ml-1 self-end mb-1">
+                  {secStr}
+                </span>
+              </div>
+            ) : (
+              /* 🕰 Retro analog clock */
+              <div className="flex items-center gap-3" style={{ fontFamily: 'Georgia, serif' }}>
+                <svg width="56" height="56" viewBox="0 0 100 100" className="flex-shrink-0">
+                  {/* Outer ring */}
+                  <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor"
+                    className="text-amber-600 dark:text-amber-400" strokeWidth="2.5" />
+                  <circle cx="50" cy="50" r="43" fill="none" stroke="currentColor"
+                    className="text-amber-500/30 dark:text-amber-300/20" strokeWidth="1" />
+
+                  {/* Hour markers — Roman numeral style dots */}
+                  {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => {
+                    const rad = (angle - 90) * Math.PI / 180
+                    const isMain = i % 3 === 0
+                    return (
+                      <circle
+                        key={i}
+                        cx={50 + (isMain ? 39 : 41) * Math.cos(rad)}
+                        cy={50 + (isMain ? 39 : 41) * Math.sin(rad)}
+                        r={isMain ? 2.5 : 1.2}
+                        className={isMain ? 'fill-amber-700 dark:fill-amber-300' : 'fill-amber-500/60 dark:fill-amber-400/50'}
+                      />
+                    )
+                  })}
+
+                  {/* Hour hand */}
+                  <line x1="50" y1="50"
+                    x2={50 + 22 * Math.cos((hourAngle - 90) * Math.PI / 180)}
+                    y2={50 + 22 * Math.sin((hourAngle - 90) * Math.PI / 180)}
+                    stroke="currentColor" className="text-amber-800 dark:text-amber-200"
+                    strokeWidth="3.5" strokeLinecap="round" />
+
+                  {/* Minute hand */}
+                  <line x1="50" y1="50"
+                    x2={50 + 32 * Math.cos((minuteAngle - 90) * Math.PI / 180)}
+                    y2={50 + 32 * Math.sin((minuteAngle - 90) * Math.PI / 180)}
+                    stroke="currentColor" className="text-amber-700 dark:text-amber-300"
+                    strokeWidth="2.5" strokeLinecap="round" />
+
+                  {/* Second hand */}
+                  <line x1="50" y1="50"
+                    x2={50 + 35 * Math.cos((secondAngle - 90) * Math.PI / 180)}
+                    y2={50 + 35 * Math.sin((secondAngle - 90) * Math.PI / 180)}
+                    stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" />
+
+                  {/* Center cap */}
+                  <circle cx="50" cy="50" r="3.5" className="fill-amber-700 dark:fill-amber-300" />
+                  <circle cx="50" cy="50" r="1.5" fill="#dc2626" />
+
+                  {/* Glass effect */}
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor"
+                    className="text-amber-500/20 dark:text-amber-300/10" strokeWidth="0.5" />
+                </svg>
+
+                {/* Digital reading below analog */}
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold text-gray-900 dark:text-white font-mono tabular-nums leading-tight">
+                    {String(h12).padStart(2, '0')}:{minStr}
+                  </span>
+                  <span className="text-xs text-gray-400 font-medium leading-tight">
+                    {secStr}s · {isPM ? 'PM' : 'AM'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Clock toggle button */}
+            <button
+              onClick={toggleClock}
+              className="text-xs text-gray-400 hover:text-primary transition-colors px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
+              title={clockMode === 'digital' ? 'Ver relógio analógico' : 'Ver relógio digital'}
+            >
+              {clockMode === 'digital' ? '🕰' : '⏱'}
+            </button>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {dateStr}
