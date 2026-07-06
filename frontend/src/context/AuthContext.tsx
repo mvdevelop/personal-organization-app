@@ -1,13 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 import { api, setAuthToken } from '../services/api';
 
-interface User {
+export interface User {
   id: string
   name: string
   email: string
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null
   isSignedIn: boolean
   isLoaded: boolean
@@ -89,10 +89,4 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   )
 }
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+export { AuthContext }

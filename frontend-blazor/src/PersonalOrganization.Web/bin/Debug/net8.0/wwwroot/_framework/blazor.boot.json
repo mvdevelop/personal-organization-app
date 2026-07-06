@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "PersonalOrganization.Web",
   "resources": {
-    "hash": "sha256-zG4fnrkhJCkD3dILpRZGEWmNDYeBRJ52FU8gSiUtt+o=",
+    "hash": "sha256-PZOkP05KC9Ge/kuAZkPzEbe4efG4HFIcbw94dctmGzA=",
     "jsModuleNative": {
       "dotnet.native.8.0.28.hnboehic1t.js": "sha256-YDHEHpc+/PUWFYa9BMCN3EcVlpemjKD024swcpPfMIQ="
     },
@@ -212,10 +212,10 @@
       "mscorlib.wasm": "sha256-K9Dyt2y2qc5iOiFtzVJ54OrivbmVXDxkD16w+GkNz6Y=",
       "netstandard.wasm": "sha256-cdbfmZR3ZtA/HeSPpbwrUoRjB1vl4OgPSKGeGSmtiug=",
       "System.Private.CoreLib.wasm": "sha256-naY/8zY/5LD24ypcNRlECeSByBMi44aNk+g16oi63Mc=",
-      "PersonalOrganization.Web.wasm": "sha256-aSxzzwQFxxfKJ2GTMwkPpwMZDQTjbYF7hOIyzpZz/GM="
+      "PersonalOrganization.Web.wasm": "sha256-n5Dlhe4W9UydX//pfhaiMzPBZMu4wmPayIqFkLHIJf8="
     },
     "pdb": {
-      "PersonalOrganization.Web.pdb": "sha256-39N/9x77MHoQ6GT4nZDZ/9AhAf9mUTQsoi3Nda/J+zo="
+      "PersonalOrganization.Web.pdb": "sha256-smxE5B2ocgGraRU+6p/JfAmSThb7N8Lrh+TLqq5N54U="
     }
   },
   "cacheBootResources": true,

@@ -19,5 +19,9 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Syncing props to state for editable modals is a valid pattern
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

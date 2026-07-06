@@ -52,10 +52,6 @@ const Studies: React.FC = () => {
     return sessions.filter(s => s.date.startsWith(dateStr))
   }
 
-  const getDayMinutes = (date: Date): number => {
-    return getDaySessions(date).reduce((acc, s) => acc + s.duration, 0)
-  }
-
   const getSubjectDayMinutes = (subjectId: string, date: Date): number => {
     return getDaySessions(date).filter(s => s.subjectId === subjectId).reduce((acc, s) => acc + s.duration, 0)
   }
@@ -91,14 +87,20 @@ const Studies: React.FC = () => {
   today.setHours(0, 0, 0, 0)
 
   const calDays = useMemo(() => {
+    const toDateStr = (date: Date) => date.toISOString().split('T')[0]
+    const dayMinutes = (date: Date): number => {
+      const ds = toDateStr(date)
+      return sessions.filter(s => s.date.startsWith(ds)).reduce((acc, s) => acc + s.duration, 0)
+    }
+
     const days: { date: Date; minutes: number }[] = []
     const first = new Date(calDate.getFullYear(), calDate.getMonth(), 1)
     const last = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 0)
     for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)) {
-      days.push({ date: new Date(d), minutes: getDayMinutes(d) })
+      days.push({ date: new Date(d), minutes: dayMinutes(d) })
     }
     return days
-  }, [calDate, getDayMinutes])
+  }, [calDate, sessions])
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
