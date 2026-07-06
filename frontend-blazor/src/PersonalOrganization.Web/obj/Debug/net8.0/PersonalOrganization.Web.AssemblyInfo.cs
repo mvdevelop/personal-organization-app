@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PersonalOrganization.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25c2bcbd296723865a42f229d5c42a3a08caebb3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+92b7b59bf8ea3596bd827c086435789ce75e5103")]
 [assembly: System.Reflection.AssemblyProductAttribute("PersonalOrganization.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PersonalOrganization.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

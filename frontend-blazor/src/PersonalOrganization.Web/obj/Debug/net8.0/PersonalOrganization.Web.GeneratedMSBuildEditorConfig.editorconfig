@@ -1,8 +1,4 @@
 is_global = true
-build_property.EnableAotAnalyzer = 
-build_property.EnableSingleFileAnalyzer = 
-build_property.EnableTrimAnalyzer = false
-build_property.IncludeAllContentForSelfExtract = 
 build_property.MudDebugAnalyzer = 
 build_property.MudAllowedAttributePattern = 
 build_property.MudIllegalParameters = 
@@ -18,7 +14,7 @@ build_property.RootNamespace = PersonalOrganization.Web
 build_property.RootNamespace = PersonalOrganization.Web
 build_property.ProjectDir = /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/
 build_property.EnableComHosting = 
-build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 

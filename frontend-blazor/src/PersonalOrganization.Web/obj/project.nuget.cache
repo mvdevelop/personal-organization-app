@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "QbGP3ud+dXG4uLAATwaObMa4RmOQ1636C3IG0SJiZJk5B/bMEV4R6foD3Q/4T6FEXsl2QStFX/bi17aZtZVftg==",
+  "dgSpecHash": "B5fpU8GBHT9dTo6WJMmO3crOzETVxdx1cG2dx+22BQJNtRVVr+tbgv3O+6mBqREOwiXtM6OFglWjp77pJfvIIQ==",
   "success": true,
   "projectFilePath": "/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/PersonalOrganization.Web.csproj",
   "expectedPackageFiles": [
@@ -31,7 +31,6 @@
     "/home/vinicius10011/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "/home/vinicius10011/.nuget/packages/microsoft.jsinterop/8.0.28/microsoft.jsinterop.8.0.28.nupkg.sha512",
     "/home/vinicius10011/.nuget/packages/microsoft.jsinterop.webassembly/8.0.28/microsoft.jsinterop.webassembly.8.0.28.nupkg.sha512",
-    "/home/vinicius10011/.nuget/packages/microsoft.net.illink.tasks/8.0.28/microsoft.net.illink.tasks.8.0.28.nupkg.sha512",
     "/home/vinicius10011/.nuget/packages/microsoft.net.sdk.webassembly.pack/8.0.28/microsoft.net.sdk.webassembly.pack.8.0.28.nupkg.sha512",
     "/home/vinicius10011/.nuget/packages/mudblazor/7.16.0/mudblazor.7.16.0.nupkg.sha512",
     "/home/vinicius10011/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
