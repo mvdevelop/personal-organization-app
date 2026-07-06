@@ -1,0 +1,24 @@
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Não encontrado</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="d-flex flex-column align-center justify-center" style="min-height: 60vh;">
+                    <MudText Typo="Typo.h4" Align="Align.Center">Página não encontrada</MudText>
+                    <MudText Typo="Typo.body2" Align="Align.Center">A página que você procura não existe.</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" Href="/">
+                        Voltar ao Dashboard
+                    </MudButton>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

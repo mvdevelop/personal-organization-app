@@ -1,0 +1,88 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthProvider
+@inject UserPreferencesService Prefs
+
+<MudThemeProvider />
+<MudLayout>
+    <MudDrawer @bind-Open="_drawerOpen"
+               Variant="DrawerVariant.Responsive"
+               ClipMode="DrawerClipMode.Always"
+               Elevation="1">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6" Class="d-flex align-center gap-2 pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.Home" Color="Color.Primary" />
+                <span Style="color: var(--mud-palette-primary); font-weight: 700;">Schedule</span>
+            </MudText>
+        </MudDrawerHeader>
+
+        <MudNavMenu Class="px-2">
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Dashboard</MudNavLink>
+            <MudNavLink Href="/tasks" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ListAlt">Tarefas</MudNavLink>
+            <MudNavLink Href="/notes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAlt">Notas</MudNavLink>
+            <MudNavLink Href="/habits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TipsAndUpdates">Hábitos</MudNavLink>
+            <MudNavLink Href="/goals" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Star">Metas</MudNavLink>
+            <MudNavLink Href="/studies" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Estudos</MudNavLink>
+            <MudNavLink Href="/ai" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SmartToy">Assistente IA</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="d-flex flex-column" Style="min-height: 100vh;">
+        <MudAppBar Elevation="0" Class="px-4 app-bar">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Class="mr-2" />
+            <MudText Typo="Typo.h6" Class="flex-grow-1">@GetPageTitle()</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.DarkMode" OnClick="@ToggleDarkMode" Title="Alternar tema" />
+            <MudChip Size="Size.Small" Class="ml-2 mr-2 user-chip" T="string">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+                @_userName
+            </MudChip>
+            <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" OnClick="@HandleLogout" Title="Sair" Color="Color.Default" />
+        </MudAppBar>
+
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-6 px-4 main-content">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isMobile;
+    private string _userName = "";
+
+    protected override void OnInitialized()
+    {
+        var user = AuthProvider.GetCurrentUser();
+        _userName = user?.Name ?? "Usuário";
+    }
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private void ToggleDarkMode()
+    {
+        Prefs.ToggleTheme();
+        StateHasChanged();
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthProvider.SignOut();
+        Navigation.NavigateTo("/sign-in", forceLoad: true);
+    }
+
+    private string GetPageTitle()
+    {
+        var uri = Navigation.ToBaseRelativePath(Navigation.Uri);
+        return uri switch
+        {
+            "" or "/" => "Dashboard",
+            "tasks" => "Tarefas",
+            "notes" => "Notas",
+            "habits" => "Hábitos",
+            "goals" => "Metas",
+            "studies" => "Estudos",
+            "ai" => "Assistente IA",
+            _ => "Schedule"
+        };
+    }
+}

@@ -1,0 +1,124 @@
+@page "/sign-in"
+@inject CustomAuthStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<RedirectIfAuthenticated />
+
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="d-flex flex-column align-center justify-center" Style="min-height: 80vh;">
+    <MudPaper Elevation="8" Class="pa-8 rounded-lg" Style="width: 100%; max-width: 420px;">
+        <div class="d-flex flex-column align-center mb-6">
+            <MudIcon Icon="@(_isSignUp ? Icons.Material.Filled.PersonAdd : Icons.Material.Filled.Login)" Size="Size.Large" Color="Color.Primary" />
+            <MudText Typo="Typo.h5" Class="mt-2">
+                @(_isSignUp ? "Criar Conta" : "Entrar")
+            </MudText>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">
+                @_errorMessage
+            </MudAlert>
+        }
+
+        <MudForm @ref="_form" @bind-IsValid="_isValid">
+            @if (_isSignUp)
+            {
+                <MudTextField @bind-Value="_name"
+                              Label="Nome"
+                              Placeholder="Seu nome"
+                              Required="true"
+                              RequiredError="Nome é obrigatório"
+                              Class="mb-4" />
+            }
+
+            <MudTextField @bind-Value="_email"
+                          Label="Email"
+                          Placeholder="seu@email.com"
+                          Required="true"
+                          RequiredError="Email é obrigatório"
+                          Class="mb-4" />
+
+            <MudTextField @bind-Value="_password"
+                          Label="Senha"
+                          InputType="InputType.Password"
+                          Placeholder="Mínimo 6 caracteres"
+                          Required="true"
+                          RequiredError="Senha é obrigatória"
+                          Class="mb-4">
+            </MudTextField>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Class="mt-4 mb-4"
+                       Disabled="@_loading"
+                       OnClick="@HandleSubmit">
+                @if (_loading)
+                {
+                    <MudProgressCircular Size="Size.Small" Class="mr-2" />
+                }
+                @(_isSignUp ? "Criar Conta" : "Entrar")
+            </MudButton>
+        </MudForm>
+
+        <div class="d-flex flex-column align-center">
+            <MudText Typo="Typo.body2" Class="mb-2">
+                @(_isSignUp ? "Já tem conta?" : "Não tem conta?")
+            </MudText>
+            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@ToggleMode">
+                @(_isSignUp ? "Faça login" : "Cadastre-se")
+            </MudButton>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool _isSignUp;
+    private string _name = "";
+    private string _email = "";
+    private string _password = "";
+    private string _errorMessage = "";
+    private bool _loading;
+    private bool _isValid;
+    private MudForm? _form;
+
+    private void ToggleMode()
+    {
+        _isSignUp = !_isSignUp;
+        _errorMessage = "";
+    }
+
+    private async Task HandleSubmit()
+    {
+        await _form!.Validate();
+        if (!_isValid) return;
+
+        _loading = true;
+        _errorMessage = "";
+
+        try
+        {
+            if (_isSignUp)
+            {
+                await AuthProvider.SignUp(_name, _email, _password);
+            }
+            else
+            {
+                await AuthProvider.SignIn(_email, _password);
+            }
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+        catch (ApiClientError e)
+        {
+            _errorMessage = e.Message;
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Erro de conexão com o servidor";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
