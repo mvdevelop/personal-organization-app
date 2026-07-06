@@ -1,0 +1,7 @@
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.csproj.AssemblyReference.cache
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.GeneratedMSBuildEditorConfig.editorconfig
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.AssemblyInfoInputs.cache
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.AssemblyInfo.cs
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.csproj.CoreCompileInputs.cache
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.MvcApplicationPartsAssemblyInfo.cache
+/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.sourcelink.json

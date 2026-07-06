@@ -1,11 +1,437 @@
 @page "/"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject CustomAuthStateProvider AuthProvider
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Dashboard — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Dashboard</MudText>
+<!-- Loading -->
+@if (_loading && _data == null)
+{
+    <div class="d-flex flex-column align-center justify-center py-20">
+        <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando dashboard...</MudText>
+    </div>
+}
+else
+{
+    <!-- Greeting -->
+    <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-content-between mb-6">
+        <div>
+            <MudText Typo="Typo.h4">@_greeting</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@_dateStr</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.SmartToy"
+                   Href="/ai"
+                   Class="mt-2 mt-sm-0">
+            Resumo do dia com IA
+        </MudButton>
+    </div>
 
-<MudAlert Severity="Severity.Info">Dashboard em construção!</MudAlert>
+    <!-- Quick Stats Row -->
+    <div class="d-flex gap-3 flex-wrap mb-6">
+        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
+                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
+            <div class="stat-icon" Style="background: rgba(59,130,246,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <MudIcon Icon="@Icons.Material.Filled.Checklist" Color="Color.Primary" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h5" Color="Color.Primary">@(_data?.Tasks.Pending ?? 0)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Tarefas pendentes</MudText>
+            </div>
+        </MudPaper>
+        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
+                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
+            <div class="stat-icon" Style="background: rgba(249,115,22,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Style="color: #f97316;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h5" Style="color: #f97316;">@(_data?.Habits.BestStreak ?? 0)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Melhor streak</MudText>
+            </div>
+        </MudPaper>
+        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
+                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
+            <div class="stat-icon" Style="background: rgba(168,85,247,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #a855f7;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h5" Style="color: #a855f7;">@(_data?.Goals.Active ?? 0)</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Metas ativas</MudText>
+            </div>
+        </MudPaper>
+        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
+                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
+            <div class="stat-icon" Style="background: rgba(34,197,94,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Style="color: #22c55e;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h5" Style="color: #22c55e;">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Horas de estudo</MudText>
+            </div>
+        </MudPaper>
+    </div>
+
+    <!-- Main 2-Column Grid -->
+    <div class="dashboard-grid-2cols">
+        <!-- Left Column -->
+        <div class="d-flex flex-column gap-4">
+
+            <!-- Tasks + Habits Row -->
+            <div class="d-flex gap-4 flex-wrap">
+                <!-- Tasks Card -->
+                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                    <div class="d-flex align-center justify-content-between mb-3">
+                        <div class="d-flex align-center gap-3">
+                            <div Style="background: rgba(59,130,246,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Size="Size.Medium" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.subtitle2">Tarefas</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Tasks.Completed ?? 0)/@(_data?.Tasks.Total ?? 0) concluídas</MudText>
+                            </div>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/tasks" Color="Color.Default" />
+                    </div>
+
+                    <!-- Progress bar -->
+                    @{
+                        var taskProgress = (_data?.Tasks.Total ?? 0) > 0 ? (_data!.Tasks.Completed * 100.0 / _data.Tasks.Total) : 0.0;
+                    }
+                    <MudProgressLinear Value="@taskProgress" Color="Color.Primary" Class="mb-3" />
+
+                    <!-- Overdue alert -->
+                    @if (_data?.Tasks.Overdue > 0)
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-3" Dense="true">
+                            <MudText Typo="Typo.caption">
+                                @_data.Tasks.Overdue tarefa@(_data.Tasks.Overdue > 1 ? "s" : "") atrasada@(_data.Tasks.Overdue > 1 ? "s" : "")
+                            </MudText>
+                        </MudAlert>
+                    }
+                    else if (_data?.Tasks.Total == 0)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-4">Nenhuma tarefa ainda</MudText>
+                    }
+
+                    <!-- Recent tasks -->
+                    @if (_data?.Tasks.Recent != null)
+                    {
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var task in _data.Tasks.Recent.Take(3))
+                            {
+                                <div class="d-flex align-center gap-2">
+                                    @{
+                                        var circleColor = task.Completed ? "#22c55e" : task.Priority == "high" ? "#ef4444" : task.Priority == "medium" ? "#f59e0b" : "#d1d5db";
+                                    }
+                                    <div Style="width: 8px; height: 8px; border-radius: 50%; background-color: @circleColor; flex-shrink: 0;"></div>
+                                    <MudText Typo="Typo.body2"
+                                             Class="@(task.Completed ? "flex-grow-1 text-truncate text-decoration-line-through mud-text-secondary" : "flex-grow-1 text-truncate")">
+                                        @task.Title
+                                    </MudText>
+                                    @if (!string.IsNullOrEmpty(task.DueDate))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @(DateTime.Parse(task.DueDate).ToString("dd/MM"))
+                                        </MudText>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </MudPaper>
+
+                <!-- Habits Card -->
+                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                    <div class="d-flex align-center justify-content-between mb-3">
+                        <div class="d-flex align-center gap-3">
+                            <div Style="background: rgba(249,115,22,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Style="color: #f97316;" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.subtitle2">Hábitos</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Habits.TodayCheckIns ?? 0) check-ins hoje</MudText>
+                            </div>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/habits" Color="Color.Default" />
+                    </div>
+
+                    <div class="d-flex align-center gap-4 mb-3">
+                        <div class="d-flex align-center gap-1">
+                            <MudText Typo="Typo.h4" Style="color: #f97316;">@(_data?.Habits.BestStreak ?? 0)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">🔥 max</MudText>
+                        </div>
+                        <div class="d-flex align-center gap-1">
+                            <MudText Typo="Typo.h4" Color="Color.Default">@(_data?.Habits.Total ?? 0)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">hábitos</MudText>
+                        </div>
+                    </div>
+
+                    @if (_data?.Habits.Streaks != null && _data.Habits.Streaks.Length > 0)
+                    {
+                        <div class="d-flex flex-column gap-1">
+                            @foreach (var s in _data.Habits.Streaks.Take(4))
+                            {
+                                <div class="d-flex align-center gap-2">
+                                    <div Style="width: 8px; height: 8px; border-radius: 50%; background-color: @(s.Color ?? "#3b82f6"); flex-shrink: 0;"></div>
+                                    <MudText Typo="Typo.caption" Class="flex-grow-1 text-truncate">@s.Title</MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #f97316; font-weight: 500;">@s.Streak d</MudText>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-3">Nenhum hábito ainda</MudText>
+                    }
+                </MudPaper>
+            </div>
+
+            <!-- Goals + Notes Row -->
+            <div class="d-flex gap-4 flex-wrap">
+                <!-- Goals Card -->
+                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                    <div class="d-flex align-center justify-content-between mb-3">
+                        <div class="d-flex align-center gap-3">
+                            <div Style="background: rgba(168,85,247,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #a855f7;" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.subtitle2">Metas</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Goals.Active ?? 0) ativas · @(_data?.Goals.Completed ?? 0) concluídas</MudText>
+                            </div>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/goals" Color="Color.Default" />
+                    </div>
+
+                    @if (_data?.Goals.Recent != null && _data.Goals.Recent.Length > 0)
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var goal in _data.Goals.Recent.Take(3))
+                            {
+                                <div>
+                                    <div class="d-flex justify-content-between align-center mb-1">
+                                        <MudText Typo="Typo.caption" Class="text-truncate font-weight-medium">@goal.Title</MudText>
+                                        @if (goal.TargetValue.HasValue && goal.TargetValue > 0)
+                                        {
+                                            var pct = Math.Min(100, (int)(goal.CurrentValue / goal.TargetValue.Value * 100));
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@pct%</MudText>
+                                        }
+                                    </div>
+                                    @if (goal.TargetValue.HasValue && goal.TargetValue > 0)
+                                    {
+                                        var pct = Math.Min(100.0, goal.CurrentValue / goal.TargetValue.Value * 100.0);
+                                        <MudProgressLinear Value="@pct" Color="Color.Secondary" Class="rounded" Style="height: 6px;" />
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-3">Nenhuma meta ativa</MudText>
+                    }
+                </MudPaper>
+
+                <!-- Notes Card -->
+                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                    <div class="d-flex align-center justify-content-between mb-3">
+                        <div class="d-flex align-center gap-3">
+                            <div Style="background: rgba(236,72,153,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.NoteAlt" Style="color: #ec4899;" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.subtitle2">Notas</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Notes.Total ?? 0) notas criadas</MudText>
+                            </div>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/notes" Color="Color.Default" />
+                    </div>
+
+                    @if (_data?.Notes.Recent != null && _data.Notes.Recent.Length > 0)
+                    {
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var note in _data.Notes.Recent.Take(4))
+                            {
+                                <div class="d-flex align-center gap-2">
+                                    <div Style="width: 6px; height: 6px; border-radius: 50%; background-color: #ec4899; flex-shrink: 0;"></div>
+                                    <MudText Typo="Typo.caption" Class="flex-grow-1 text-truncate">@note.Title</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @(DateTime.Parse(note.UpdatedAt).ToString("dd/MM"))
+                                    </MudText>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-3">Nenhuma nota ainda</MudText>
+                    }
+                </MudPaper>
+            </div>
+
+            <!-- Studies + AI Row -->
+            <div class="d-flex gap-4 flex-wrap">
+                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                    <div class="d-flex align-center justify-content-between mb-3">
+                        <div class="d-flex align-center gap-3">
+                            <div Style="background: rgba(34,197,94,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Style="color: #22c55e;" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.subtitle2">Estudos</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Studies.Subjects ?? 0) matérias</MudText>
+                            </div>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/studies" Color="Color.Default" />
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div class="flex-1 text-center pa-3" Style="background: rgba(34,197,94,0.08); border-radius: 12px;">
+                            <MudText Typo="Typo.h5" Style="color: #22c55e;">@(_data?.Studies.WeekSessions ?? 0)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Sessões na semana</MudText>
+                        </div>
+                        <div class="flex-1 text-center pa-3" Style="background: rgba(6,182,212,0.08); border-radius: 12px;">
+                            <MudText Typo="Typo.h5" Style="color: #06b6d4;">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Horas na semana</MudText>
+                        </div>
+                    </div>
+                </MudPaper>
+
+                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1 d-flex align-center gap-3"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                    <div Style="background: linear-gradient(135deg, #eab308, #f59e0b); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Default" Style="color: white;" />
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Assistente IA</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Peça um resumo do seu dia ou sugestões</MudText>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/ai" Size="Size.Small"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Abrir chat
+                        </MudButton>
+                    </div>
+                </MudPaper>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="d-flex flex-column gap-4">
+            <!-- Clock Widget -->
+            <MudPaper Elevation="0" Class="dashboard-card pa-4 text-center"
+                      Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px;">
+                <MudText Typo="Typo.h2" Style="font-size: 2.5rem; font-weight: 300; letter-spacing: 2px; font-variant-numeric: tabular-nums;">
+                    @_currentTime.ToString("HH:mm")
+                </MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                    @_currentTime.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))
+                </MudText>
+            </MudPaper>
+
+            <!-- Gamification Panel -->
+            <MudPaper Elevation="0" Class="dashboard-card pa-4"
+                      Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px;">
+                <div class="d-flex align-center gap-3 mb-3">
+                    <div Style="background: linear-gradient(135deg, #eab308, #f59e0b); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Style="color: white;" />
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Nível @(_gamification?.Level ?? 0)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @(_gamification?.CurrentXp ?? 0) / @(_gamification?.NextLevelXp ?? 100) XP
+                        </MudText>
+                    </div>
+                </div>
+                <MudProgressLinear Value="@(_gamification?.Progress ?? 0)" Color="Color.Warning" Class="mb-3" Style="height: 8px; border-radius: 4px;" />
+
+                @if (_gamification?.UnlockedAchievements != null && _gamification.UnlockedAchievements.Length > 0)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Conquistas desbloqueadas:</MudText>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach (var a in _gamification.UnlockedAchievements.Take(6))
+                        {
+                            <MudTooltip Text="@($"{a.Title} — {a.Description}")">
+                                <span Style="font-size: 1.5rem; cursor: default;">@a.Icon</span>
+                            </MudTooltip>
+                        }
+                    </div>
+                    @if (_gamification.UnlockedAchievements.Length > 6)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">+@(_gamification.UnlockedAchievements.Length - 6) outras</MudText>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-2">
+                        Complete atividades para ganhar conquistas!
+                    </MudText>
+                }
+            </MudPaper>
+        </div>
+    </div>
+}
 
 @code {
+    private DashboardData? _data;
+    private GamificationStats? _gamification;
+    private bool _loading = true;
+    private string _greeting = "";
+    private string _dateStr = "";
+    private DateTime _currentTime = DateTime.Now;
+    private Timer? _clockTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hour = DateTime.Now.Hour;
+        _greeting = hour < 12 ? "Bom dia! ☀️" : hour < 18 ? "Boa tarde! 🌤️" : "Boa noite! 🌙";
+        _dateStr = DateTime.Now.ToString("dddd, dd 'de' MMMM", new System.Globalization.CultureInfo("pt-BR"));
+
+        // Start clock
+        _clockTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                _currentTime = DateTime.Now;
+                StateHasChanged();
+            });
+        }, null, 1000 - DateTime.Now.Millisecond, 1000);
+
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            _data = await Api.GetAsync<DashboardData>("/api/dashboard");
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao carregar dashboard", Severity.Error);
+        }
+
+        try
+        {
+            _gamification = await Api.GetAsync<GamificationStats>("/api/gamification/stats");
+        }
+        catch { /* optional */ }
+
+        _loading = false;
+    }
+
+    public void Dispose()
+    {
+        _clockTimer?.Dispose();
+    }
 }

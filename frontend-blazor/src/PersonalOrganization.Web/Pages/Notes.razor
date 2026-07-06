@@ -1,8 +1,291 @@
 @page "/notes"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Notas — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Minhas Notas</MudText>
+<div class="d-flex flex-column flex-sm-row justify-content-between align-start align-sm-center gap-4 mb-4">
+    <MudText Typo="Typo.h4">Minhas Notas</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="@(() => OpenCreateDialog())">
+        Nova Nota
+    </MudButton>
+</div>
 
-<MudAlert Severity="Severity.Info">Página de notas em construção!</MudAlert>
+<!-- Search -->
+<MudTextField @bind-Value="_searchQuery"
+              Placeholder="Buscar notas..."
+              Variant="Variant.Outlined"
+              Immediate="true"
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              Class="mb-4"
+              Style="max-width: 400px;"
+              OnKeyUp="@(e => ApplyFilter())" />
+
+<!-- Loading -->
+@if (_loading && _notes.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-16">
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando notas...</MudText>
+    </div>
+}
+else if (_filteredNotes.Count == 0)
+{
+    <!-- Empty state -->
+    <div class="d-flex flex-column align-center justify-center py-16">
+        <MudIcon Icon="@Icons.Material.Filled.NoteAlt" Size="Size.Large" Color="Color.Default" />
+        <MudText Class="mt-4" Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center">
+            @if (!string.IsNullOrEmpty(_searchQuery))
+            {
+                <span>Nenhuma nota encontrada para essa busca</span>
+            }
+            else
+            {
+                <span>Nenhuma nota ainda. Crie uma!</span>
+            }
+        </MudText>
+    </div>
+}
+else
+{
+    <!-- Notes grid -->
+    <div class="notes-grid">
+        @foreach (var note in _filteredNotes)
+        {
+            <MudPaper Elevation="0"
+                      Class="note-card d-flex flex-column"
+                      Style="@($"border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow: hidden; background-color: {(note.Color ?? "#ffffff")};")">
+                <div class="d-flex flex-column flex-grow-1 pa-4" Style="cursor: pointer;" @onclick="@(() => OpenEditDialog(note))">
+                    <MudText Typo="Typo.subtitle1" Class="font-weight-medium mb-2 text-truncate">@note.Title</MudText>
+                    <MudText Typo="Typo.body2" Class="flex-grow-1" Style="color: rgba(0,0,0,0.6); white-space: pre-wrap; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;">
+                        @if (!string.IsNullOrEmpty(note.Content))
+                        {
+                            @note.Content
+                        }
+                        else
+                        {
+                            <span style="opacity: 0.5;"><em>Sem conteúdo</em></span>
+                        }
+                    </MudText>
+                </div>
+                <div class="d-flex justify-content-end gap-1 pa-2" Style="border-top: 1px solid rgba(0,0,0,0.08);">
+                    <MudTooltip Text="Editar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default"
+                                       OnClick="@(() => OpenEditDialog(note))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Excluir">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                       OnClick="@(() => HandleDelete(note.Id))" />
+                    </MudTooltip>
+                </div>
+            </MudPaper>
+        }
+    </div>
+}
+
+<!-- Create/Edit Dialog -->
+<MudDialog @bind-Visible="_dialogVisible" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(_editingNote != null ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" Color="Color.Primary" />
+            @(_editingNote != null ? "Editar Nota" : "Nova Nota")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_formValid">
+            <MudTextField @bind-Value="_editTitle"
+                          Label="Título"
+                          Placeholder="Título da nota"
+                          Required="true"
+                          RequiredError="O título é obrigatório"
+                          Class="mb-4" />
+            <MudTextField @bind-Value="_editContent"
+                          Label="Conteúdo"
+                          Placeholder="Escreva sua nota aqui..."
+                          Lines="6"
+                          Variant="Variant.Text"
+                          Class="mb-4" />
+            <div class="d-flex align-center gap-3">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Cor:</MudText>
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach (var c in _noteColors)
+                    {
+                        <button type="button"
+                                @onclick="@(() => _editColor = c)"
+                                class="color-swatch @(_editColor == c ? "color-swatch-active" : "")"
+                                style="background-color: @c; width: 32px; height: 32px; border-radius: 50%; border: 2px solid @(_editColor == c ? "var(--mud-palette-primary)" : "transparent"); cursor: pointer;" />
+                    }
+                </div>
+            </div>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="@(() => _dialogVisible = false)">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="@HandleSaveNote"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-1" />
+            }
+            @(_editingNote != null ? "Salvar" : "Criar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<Note> _notes = new();
+    private List<Note> _filteredNotes = new();
+    private string _searchQuery = "";
+    private bool _loading;
+    private bool _saving;
+
+    // Dialog state
+    private bool _dialogVisible;
+    private Note? _editingNote;
+    private string _editTitle = "";
+    private string _editContent = "";
+    private string _editColor = "#ffffff";
+
+    // Form
+    private MudForm? _form;
+    private bool _formValid;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        FullWidth = true,
+        MaxWidth = MaxWidth.Medium,
+    };
+
+    private readonly string[] _noteColors = new[]
+    {
+        "#ffffff", "#fef3c7", "#fde68a", "#fecaca", "#fca5a5",
+        "#e9d5ff", "#c4b5fd", "#bfdbfe", "#93c5fd",
+        "#a7f3d0", "#6ee7b7", "#fce7f3", "#fbcfe8"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotes();
+    }
+
+    private async Task LoadNotes()
+    {
+        _loading = true;
+        try
+        {
+            _notes = await Api.GetAsync<List<Note>>("/api/notes");
+            ApplyFilter();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao carregar notas", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrEmpty(_searchQuery))
+        {
+            _filteredNotes = _notes;
+        }
+        else
+        {
+            var q = _searchQuery.ToLower();
+            _filteredNotes = _notes.Where(n =>
+                n.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (n.Content?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false)
+            ).ToList();
+        }
+    }
+
+    private void OpenCreateDialog()
+    {
+        _editingNote = null;
+        _editTitle = "";
+        _editContent = "";
+        _editColor = _noteColors[0];
+        _dialogVisible = true;
+    }
+
+    private void OpenEditDialog(Note note)
+    {
+        _editingNote = note;
+        _editTitle = note.Title;
+        _editContent = note.Content;
+        _editColor = note.Color;
+        _dialogVisible = true;
+    }
+
+    private async Task HandleSaveNote()
+    {
+        await _form!.Validate();
+        if (!_formValid) return;
+
+        _saving = true;
+        try
+        {
+            if (_editingNote != null)
+            {
+                await Api.PutAsync<Note>($"/api/notes/{_editingNote.Id}", new
+                {
+                    title = _editTitle,
+                    content = string.IsNullOrEmpty(_editContent) ? null : _editContent,
+                    color = _editColor
+                });
+                Snackbar.Add("Nota atualizada!", Severity.Success);
+            }
+            else
+            {
+                await Api.PostAsync<Note>("/api/notes", new
+                {
+                    title = _editTitle,
+                    content = string.IsNullOrEmpty(_editContent) ? null : _editContent,
+                    color = _editColor
+                });
+                Snackbar.Add("Nota criada!", Severity.Success);
+            }
+
+            _dialogVisible = false;
+            await LoadNotes();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao salvar nota", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task HandleDelete(string id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Tem certeza que deseja excluir esta nota?");
+        if (!confirmed) return;
+
+        try
+        {
+            await Api.DeleteAsync($"/api/notes/{id}");
+            Snackbar.Add("Nota removida!", Severity.Success);
+            await LoadNotes();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao remover nota", Severity.Error);
+        }
+    }
+}

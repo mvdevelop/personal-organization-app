@@ -1,8 +1,302 @@
 @page "/ai"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Assistente IA — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Assistente IA</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">Assistente IA</MudText>
 
-<MudAlert Severity="Severity.Info">Chat com IA em construção!</MudAlert>
+<div class="ai-chat-container">
+    <!-- Header -->
+    <div class="d-flex align-center justify-content-between pa-4"
+         Style="border-bottom: 1px solid var(--mud-palette-table-lines);">
+        <div class="d-flex align-center gap-2">
+            <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" />
+            <MudText Typo="Typo.subtitle1" Class="font-weight-medium">Assistente IA</MudText>
+            @if (_loading)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            }
+        </div>
+        <MudTooltip Text="Limpar conversa">
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                           OnClick="@HandleClearHistory" />
+        </MudTooltip>
+    </div>
+
+    <!-- Messages area -->
+    <div class="ai-messages" @ref="_messagesContainer">
+        <!-- Suggestions (when no messages) -->
+        @if (_messages.Count == 0 && !_loading)
+        {
+            <div class="d-flex flex-column align-center justify-center py-8 px-4">
+                <MudIcon Icon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Color="Color.Default" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="mt-4 mb-4">
+                    Pergunte algo sobre sua organização pessoal!
+                </MudText>
+                <div class="d-flex gap-2 flex-wrap justify-center">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.WbSunny"
+                               OnClick="@(() => HandleSuggestion("dailyBriefing"))">
+                        Resumo do dia
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Lightbulb"
+                               OnClick="@(() => HandleSuggestion("suggestTasks"))">
+                        Sugerir tarefas
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.AutoAwesome"
+                               OnClick="@(() => HandleSuggestion("tip"))">
+                        Dica de produtividade
+                    </MudButton>
+                </div>
+            </div>
+        }
+
+        <!-- Messages -->
+        @foreach (var msg in _messages)
+        {
+            <div class="d-flex gap-3 px-4 py-3 @(msg.Role == "user" ? "justify-content-end" : "")">
+                @if (msg.Role == "assistant")
+                {
+                    <div Style="width: 32px; height: 32px; border-radius: 50%; background: rgba(59,130,246,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Small" />
+                    </div>
+                }
+                <div Style="max-width: 80%;" class="@(msg.Role == "user" ? "order-1" : "")">
+                    <div class="pa-3 ai-msg @(msg.Role == "user" ? "user-msg" : "assistant-msg")">
+                        <MudText Typo="Typo.body2" Style="white-space: pre-wrap;">@msg.Content</MudText>
+                    </div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="@(msg.Role == "user" ? "mt-1 text-right" : "mt-1")">
+                        @FormatTime(msg.Timestamp)
+                    </MudText>
+                </div>
+                @if (msg.Role == "user")
+                {
+                    <div Style="width: 32px; height: 32px; border-radius: 50%; background: var(--mud-palette-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Default" Style="color: white;" Size="Size.Small" />
+                    </div>
+                }
+            </div>
+        }
+        <div @ref="_bottomRef"></div>
+
+        <!-- Typing indicator -->
+        @if (_loading && _messages.Count > 0)
+        {
+            <div class="d-flex gap-3 px-4 py-2">
+                <div Style="width: 32px; height: 32px; border-radius: 50%; background: rgba(59,130,246,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" Size="Size.Small" />
+                </div>
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Input area -->
+    <div class="pa-4" Style="border-top: 1px solid var(--mud-palette-table-lines);">
+        <div class="d-flex gap-2">
+            <MudTextField @bind-Value="_inputText"
+                          Placeholder="Digite sua mensagem..."
+                          Variant="Variant.Outlined"
+                          Class="flex-grow-1"
+                          Disabled="@_loading"
+                          OnKeyDown="@(async (e) => { if (e.Key == "Enter" && !e.ShiftKey) { await HandleSend(); } })" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="@HandleSend"
+                       Disabled="@(string.IsNullOrWhiteSpace(_inputText) || _loading)"
+                       Style="min-width: 48px; height: 48px; border-radius: 8px;">
+                @if (_loading)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Style="color: white;" />
+                }
+                else
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.Send" Style="color: white;" />
+                }
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ChatMessage> _messages = new();
+    private string _inputText = "";
+    private bool _loading;
+    private bool _sending;
+
+    // Refs for scrolling
+    private ElementReference _messagesContainer;
+    private ElementReference _bottomRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ScrollToBottom();
+        }
+    }
+
+    private async Task LoadHistory()
+    {
+        _loading = true;
+        try
+        {
+            var history = await Api.GetAsync<AiHistoryResponse>("/api/ai/history");
+            if (history?.Messages != null)
+            {
+                _messages = history.Messages.ToList();
+            }
+        }
+        catch
+        {
+            // No history yet — fine
+        }
+        finally
+        {
+            _loading = false;
+        }
+
+        await ScrollToBottom();
+    }
+
+    private async Task HandleSend()
+    {
+        if (string.IsNullOrWhiteSpace(_inputText) || _loading) return;
+
+        var userMessage = _inputText.Trim();
+        _inputText = "";
+
+        _messages.Add(new ChatMessage("user", userMessage, DateTime.UtcNow.ToString("o")));
+        _sending = true;
+        _loading = true;
+
+        try
+        {
+            var response = await Api.PostAsync<AiChatResponse>("/api/ai/chat", new
+            {
+                message = userMessage
+            });
+
+            _messages.Add(new ChatMessage("assistant", response.Response, DateTime.UtcNow.ToString("o")));
+        }
+        catch (ApiClientError e)
+        {
+            _messages.Add(new ChatMessage("assistant", $"❌ Erro: {e.Message}", DateTime.UtcNow.ToString("o")));
+        }
+        catch
+        {
+            _messages.Add(new ChatMessage("assistant", "❌ Erro de conexão com o servidor", DateTime.UtcNow.ToString("o")));
+        }
+        finally
+        {
+            _sending = false;
+            _loading = false;
+        }
+
+        await ScrollToBottom();
+    }
+
+    private async Task HandleSuggestion(string action)
+    {
+        if (_loading) return;
+
+        _loading = true;
+
+        switch (action)
+        {
+            case "dailyBriefing":
+                _messages.Add(new ChatMessage("user", "📋 Resumo do meu dia", DateTime.UtcNow.ToString("o")));
+                try
+                {
+                    var briefing = await Api.GetAsync<AiBriefingResponse>("/api/ai/daily-briefing");
+                    _messages.Add(new ChatMessage("assistant", briefing.Briefing, DateTime.UtcNow.ToString("o")));
+                }
+                catch (ApiClientError e)
+                {
+                    _messages.Add(new ChatMessage("assistant", $"❌ Erro: {e.Message}", DateTime.UtcNow.ToString("o")));
+                }
+                break;
+
+            case "suggestTasks":
+                _messages.Add(new ChatMessage("user", "💡 Sugira tarefas para hoje", DateTime.UtcNow.ToString("o")));
+                try
+                {
+                    var suggestions = await Api.GetAsync<AiSuggestionsResponse>("/api/ai/suggest-tasks");
+                    _messages.Add(new ChatMessage("assistant", suggestions.Suggestions, DateTime.UtcNow.ToString("o")));
+                }
+                catch (ApiClientError e)
+                {
+                    _messages.Add(new ChatMessage("assistant", $"❌ Erro: {e.Message}", DateTime.UtcNow.ToString("o")));
+                }
+                break;
+
+            case "tip":
+                var tipMsg = "Me dê uma dica rápida de produtividade para hoje";
+                _messages.Add(new ChatMessage("user", tipMsg, DateTime.UtcNow.ToString("o")));
+                try
+                {
+                    var tip = await Api.PostAsync<AiChatResponse>("/api/ai/chat", new { message = tipMsg });
+                    _messages.Add(new ChatMessage("assistant", tip.Response, DateTime.UtcNow.ToString("o")));
+                }
+                catch (ApiClientError e)
+                {
+                    _messages.Add(new ChatMessage("assistant", $"❌ Erro: {e.Message}", DateTime.UtcNow.ToString("o")));
+                }
+                break;
+        }
+
+        _loading = false;
+        await ScrollToBottom();
+    }
+
+    private async Task HandleClearHistory()
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Limpar histórico de conversas?");
+        if (!confirmed) return;
+
+        try
+        {
+            await Api.DeleteAsync("/api/ai/history");
+            _messages.Clear();
+            Snackbar.Add("Histórico limpo!", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao limpar histórico", Severity.Error);
+        }
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("eval", @"
+                (function() {
+                    var el = document.querySelector('.ai-messages');
+                    if (el) el.scrollTop = el.scrollHeight;
+                })();
+            ");
+        }
+        catch { /* ignore */ }
+    }
+
+    private string FormatTime(string timestamp)
+    {
+        if (DateTime.TryParse(timestamp, out var dt))
+        {
+            return dt.ToLocalTime().ToString("HH:mm");
+        }
+        return "";
+    }
+}

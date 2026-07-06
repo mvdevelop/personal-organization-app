@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor;
 using MudBlazor.Services;
 using PersonalOrganization.Web.Services;
 
@@ -9,9 +10,21 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // MudBlazor
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+    config.SnackbarConfiguration.PreventDuplicates = true;
+    config.SnackbarConfiguration.NewestOnTop = true;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 3000;
+    config.SnackbarConfiguration.HideTransitionDuration = 300;
+    config.SnackbarConfiguration.ShowTransitionDuration = 300;
+});
 
-// API client — aponta para o backend
+// Storage (JS interop for sessionStorage + localStorage)
+builder.Services.AddSingleton<StorageService>();
+
+// API client — aponta para o backend remoto
 builder.Services.AddScoped(sp =>
 {
     var httpClient = new HttpClient
@@ -32,4 +45,10 @@ builder.Services.AddAuthorizationCore();
 // Preferences
 builder.Services.AddSingleton<UserPreferencesService>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+// Initialize async services
+var prefs = host.Services.GetRequiredService<UserPreferencesService>();
+await prefs.InitializeAsync();
+
+await host.RunAsync();

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
-using System.Text.Json;
 using PersonalOrganization.Web.Models;
 
 namespace PersonalOrganization.Web.Services;
@@ -9,6 +8,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private readonly ApiClient _api;
     private UserDto? _currentUser;
+    private bool _initialized;
 
     public CustomAuthStateProvider(ApiClient api)
     {
@@ -17,28 +17,40 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (_currentUser != null)
+        // Restore token from sessionStorage on first call
+        if (!_initialized)
+        {
+            _initialized = true;
+            await _api.TryRestoreTokenAsync();
+
+            // If a token was restored, try to get the current user
+            if (_api.HasToken())
+            {
+                try
+                {
+                    var user = await _api.GetAsync<UserDto>("/api/auth/me");
+                    _currentUser = user;
+                    return CreateState(user);
+                }
+                catch
+                {
+                    // Token invalid/expired — clear it
+                    await _api.ClearTokenAsync();
+                }
+            }
+        }
+        else if (_currentUser != null)
         {
             return CreateState(_currentUser);
         }
 
-        // Try restoring session from server
-        try
-        {
-            var user = await _api.GetAsync<UserDto>("/api/auth/me");
-            _currentUser = user;
-            return CreateState(user);
-        }
-        catch
-        {
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        }
+        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
     }
 
     public async Task SignIn(string email, string password)
     {
         var response = await _api.PostAsync<AuthResponse>("/api/auth/login", new { email, password });
-        _api.SetToken(response.Token);
+        await _api.SaveTokenAsync(response.Token);
         _currentUser = response.User;
         NotifyAuthenticationStateChanged(Task.FromResult(CreateState(response.User)));
     }
@@ -46,7 +58,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     public async Task SignUp(string name, string email, string password)
     {
         var response = await _api.PostAsync<AuthResponse>("/api/auth/register", new { name, email, password });
-        _api.SetToken(response.Token);
+        await _api.SaveTokenAsync(response.Token);
         _currentUser = response.User;
         NotifyAuthenticationStateChanged(Task.FromResult(CreateState(response.User)));
     }
@@ -59,8 +71,9 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
         catch { /* ignore */ }
 
-        _api.SetToken(null);
+        await _api.ClearTokenAsync();
         _currentUser = null;
+
         NotifyAuthenticationStateChanged(
             Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())))
         );

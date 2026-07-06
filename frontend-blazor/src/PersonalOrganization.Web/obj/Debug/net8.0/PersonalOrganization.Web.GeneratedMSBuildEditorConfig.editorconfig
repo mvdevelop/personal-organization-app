@@ -1,0 +1,78 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.MudDebugAnalyzer = 
+build_property.MudAllowedAttributePattern = 
+build_property.MudIllegalParameters = 
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = PersonalOrganization.Web
+build_property.RootNamespace = PersonalOrganization.Web
+build_property.ProjectDir = /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web
+build_property._RazorSourceGeneratorDebug = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/RedirectIfAuthenticated.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9SZWRpcmVjdElmQXV0aGVudGljYXRlZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9SZWRpcmVjdFRvTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0L01haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/AiChat.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWlDaGF0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Auth/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXV0aC9Mb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRGFzaGJvYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Goals.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvR29hbHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Habits.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSGFiaXRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Notes.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTm90ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Studies.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU3R1ZGllcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Tasks.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvVGFza3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

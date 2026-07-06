@@ -1,9 +1,10 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthProvider
 @inject UserPreferencesService Prefs
 
-<MudThemeProvider />
+<MudThemeProvider Theme="_theme" IsDarkMode="Prefs.IsDarkMode" />
 <MudLayout>
     <MudDrawer @bind-Open="_drawerOpen"
                Variant="DrawerVariant.Responsive"
@@ -31,7 +32,7 @@
         <MudAppBar Elevation="0" Class="px-4 app-bar">
             <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Class="mr-2" />
             <MudText Typo="Typo.h6" Class="flex-grow-1">@GetPageTitle()</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.DarkMode" OnClick="@ToggleDarkMode" Title="Alternar tema" />
+            <MudIconButton Icon="@Icons.Material.Filled.DarkMode" OnClick="@HandleToggleDarkMode" Title="Alternar tema" />
             <MudChip Size="Size.Small" Class="ml-2 mr-2 user-chip" T="string">
                 <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
                 @_userName
@@ -47,21 +48,78 @@
 
 @code {
     private bool _drawerOpen = true;
-    private bool _isMobile;
     private string _userName = "";
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#3b82f6",
+            Secondary = "#6366f1",
+            Info = "#3b82f6",
+            Success = "#22c55e",
+            Warning = "#f59e0b",
+            Error = "#ef4444",
+            Surface = "#ffffff",
+            Background = "#f8fafc",
+            AppbarBackground = "#ffffff",
+            DrawerBackground = "#ffffff",
+            Divider = "#e2e8f0",
+            TextPrimary = "#1e293b",
+            TextSecondary = "#64748b",
+            ActionDefault = "#64748b",
+            ActionDisabled = "#cbd5e1",
+            Dark = "#1e293b",
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#60a5fa",
+            Secondary = "#818cf8",
+            Info = "#60a5fa",
+            Success = "#4ade80",
+            Warning = "#fbbf24",
+            Error = "#f87171",
+            Surface = "#1e293b",
+            Background = "#0f172a",
+            AppbarBackground = "#1e293b",
+            DrawerBackground = "#1e293b",
+            Divider = "#334155",
+            TextPrimary = "#f1f5f9",
+            TextSecondary = "#94a3b8",
+            ActionDefault = "#94a3b8",
+            ActionDisabled = "#475569",
+            Dark = "#0f172a",
+        },
+        Typography = new Typography()
+        {
+            Default = new Default()
+            {
+                FontFamily = new[] { "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif" },
+                FontSize = "0.875rem",
+                FontWeight = 400,
+                LineHeight = 1.5,
+                LetterSpacing = "normal",
+            },
+        },
+    };
 
     protected override void OnInitialized()
     {
+        Prefs.OnChange += OnPreferencesChanged;
         var user = AuthProvider.GetCurrentUser();
         _userName = user?.Name ?? "Usuário";
     }
 
+    private void OnPreferencesChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
-    private void ToggleDarkMode()
+    private async Task HandleToggleDarkMode()
     {
-        Prefs.ToggleTheme();
-        StateHasChanged();
+        await Prefs.ToggleThemeAsync();
     }
 
     private async Task HandleLogout()
@@ -84,5 +142,10 @@
             "ai" => "Assistente IA",
             _ => "Schedule"
         };
+    }
+
+    public void Dispose()
+    {
+        Prefs.OnChange -= OnPreferencesChanged;
     }
 }

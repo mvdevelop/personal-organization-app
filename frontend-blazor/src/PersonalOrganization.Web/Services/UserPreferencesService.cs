@@ -1,52 +1,63 @@
+using Microsoft.AspNetCore.Components;
+
 namespace PersonalOrganization.Web.Services;
 
+/// <summary>
+/// Manages user preferences (theme, sidebar) with localStorage persistence.
+/// </summary>
 public class UserPreferencesService
 {
     private const string ThemeKey = "orgapp_theme";
     private const string SidebarKey = "orgapp_sidebar";
+
+    private readonly StorageService _storage;
+    private bool _initialized;
 
     public bool IsDarkMode { get; private set; }
     public bool SidebarCollapsed { get; private set; }
 
     public event Action? OnChange;
 
-    public UserPreferencesService()
+    public UserPreferencesService(StorageService storage)
     {
-        IsDarkMode = LoadPreference(ThemeKey) == "dark";
-        SidebarCollapsed = LoadPreference(SidebarKey) == "true";
+        _storage = storage;
+        // Default values until initialized
+        IsDarkMode = false;
+        SidebarCollapsed = false;
     }
 
-    public void ToggleTheme()
+    public async Task InitializeAsync()
     {
-        IsDarkMode = !IsDarkMode;
-        SavePreference(ThemeKey, IsDarkMode ? "dark" : "light");
+        try
+        {
+            var theme = await _storage.GetLocalAsync(ThemeKey);
+            IsDarkMode = theme == "dark";
+
+            var sidebar = await _storage.GetLocalAsync(SidebarKey);
+            SidebarCollapsed = sidebar == "true";
+        }
+        catch
+        {
+            // Use defaults
+        }
+
+        _initialized = true;
         NotifyChanged();
     }
 
-    public void ToggleSidebar()
+    public async Task ToggleThemeAsync()
+    {
+        IsDarkMode = !IsDarkMode;
+        await _storage.SetLocalAsync(ThemeKey, IsDarkMode ? "dark" : "light");
+        NotifyChanged();
+    }
+
+    public async Task ToggleSidebarAsync()
     {
         SidebarCollapsed = !SidebarCollapsed;
-        SavePreference(SidebarKey, SidebarCollapsed ? "true" : "false");
+        await _storage.SetLocalAsync(SidebarKey, SidebarCollapsed ? "true" : "false");
         NotifyChanged();
     }
 
     private void NotifyChanged() => OnChange?.Invoke();
-
-    private static string? LoadPreference(string key)
-    {
-        try
-        {
-            // In Blazor WASM, we use localStorage via JS interop.
-            // For now, we use a simple in-memory fallback.
-            // We'll wire up JS interop later.
-            return null;
-        }
-        catch { return null; }
-    }
-
-    private static void SavePreference(string key, string value)
-    {
-        try { /* Will use JS interop later */ }
-        catch { /* ignore */ }
-    }
 }

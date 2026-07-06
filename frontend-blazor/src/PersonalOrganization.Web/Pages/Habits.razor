@@ -1,8 +1,385 @@
 @page "/habits"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Hábitos — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Hábitos</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">Hábitos</MudText>
 
-<MudAlert Severity="Severity.Info">Página de hábitos em construção!</MudAlert>
+<!-- Add habit form -->
+<MudPaper Elevation="0" Class="pa-4 mb-4" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+    <MudForm @ref="_addForm" @bind-IsValid="_addFormValid">
+        <div class="d-flex gap-3 flex-wrap align-center">
+            <MudTextField @bind-Value="_newTitle"
+                          Label="Novo hábito"
+                          Placeholder="Digite o nome do hábito..."
+                          Required="true"
+                          RequiredError="Nome é obrigatório"
+                          Class="flex-grow-1"
+                          Style="min-width: 200px;" />
+            <MudSelect @bind-Value="_newFrequency"
+                       Label="Frequência"
+                       Variant="Variant.Outlined"
+                       Class="flex-0"
+                       Style="min-width: 120px;">
+                <MudSelectItem Value="@("daily")">Diário</MudSelectItem>
+                <MudSelectItem Value="@("weekly")">Semanal</MudSelectItem>
+            </MudSelect>
+            <div class="d-flex align-center gap-2">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Cor:</MudText>
+                <input type="color" @bind="_newColor"
+                       style="width: 36px; height: 36px; border: 1px solid var(--mud-palette-table-lines); border-radius: 8px; cursor: pointer; padding: 2px;" />
+            </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@HandleAddHabit"
+                       Disabled="@(!_addFormValid || _savingAdd)">
+                @if (_savingAdd)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-1" />
+                }
+                Adicionar
+            </MudButton>
+        </div>
+    </MudForm>
+</MudPaper>
+
+<!-- Week/Month toggle -->
+<div class="d-flex align-center gap-2 mb-4">
+    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+        <MudButton OnClick="@(() => _viewMode = "week")"
+                   Variant="@(_viewMode == "week" ? Variant.Filled : Variant.Outlined)"
+                   Color="@(_viewMode == "week" ? Color.Primary : Color.Default)"
+                   Size="Size.Small">Semana</MudButton>
+        <MudButton OnClick="@(() => _viewMode = "month")"
+                   Variant="@(_viewMode == "month" ? Variant.Filled : Variant.Outlined)"
+                   Color="@(_viewMode == "month" ? Color.Primary : Color.Default)"
+                   Size="Size.Small">Mês</MudButton>
+    </MudButtonGroup>
+    @if (_viewMode == "month")
+    {
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="@(() => ChangeMonth(-1))" />
+        <MudText Typo="Typo.subtitle2" Class="mx-2">@_monthYearStr</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" OnClick="@(() => ChangeMonth(1))" />
+    }
+</div>
+
+<!-- Loading -->
+@if (_loading && _habits.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-12">
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando hábitos...</MudText>
+    </div>
+}
+else if (_habits.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-16">
+        <MudIcon Icon="@Icons.Material.Filled.TipsAndUpdates" Size="Size.Large" Color="Color.Default" />
+        <MudText Class="mt-4" Typo="Typo.body1" Color="Color.Secondary">Crie seu primeiro hábito acima!</MudText>
+    </div>
+}
+else if (_viewMode == "week")
+{
+    <!-- Weekly table -->
+    <MudPaper Elevation="0" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow-x: auto;">
+        <table class="habits-table">
+            <thead>
+                <tr>
+                    <th class="text-left px-4 py-3" Style="min-width: 160px;">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">Hábito</MudText>
+                    </th>
+                    @foreach (var day in _weekDays)
+                    {
+                        <th class="text-center px-2 py-3" Style="min-width: 48px;">
+                            <MudText Typo="Typo.caption"
+                                     Color="@(day.Date == DateTime.Today ? Color.Primary : Color.Secondary)"
+                                     Class="font-weight-bold">
+                                <div>@_weekdayNames[((int)day.DayOfWeek + 6) % 7]</div>
+                                <div Style="font-size: 1.1rem; font-weight: 700;">@day.Day</div>
+                            </MudText>
+                        </th>
+                    }
+                    <th class="text-center px-3 py-3" Style="min-width: 40px;">
+                        <MudText Typo="Typo.caption" Style="color: #f97316;" Class="font-weight-bold">🔥</MudText>
+                    </th>
+                    <th class="text-center px-2 py-3" Style="min-width: 40px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var habit in _habits)
+                {
+                    var streak = _streaks.FirstOrDefault(s => s.HabitId == habit.Id);
+                    <tr Style="border-top: 1px solid var(--mud-palette-table-lines);">
+                        <td class="px-4 py-3">
+                            <div class="d-flex align-center gap-3">
+                                <div Style="width: 10px; height: 10px; border-radius: 50%; background-color: @(habit.Color ?? "#3b82f6"); flex-shrink: 0;"></div>
+                                @if (_editingId == habit.Id)
+                                {
+                                    <div class="d-flex gap-2 align-center">
+                                        <MudTextField @bind-Value="_editTitle" Size="Size.Small"
+                                                      Variant="Variant.Outlined" Class="d-inline-block"
+                                                      Style="width: 120px;"
+                                                      OnKeyDown="@(e => { if (e.Key == "Enter") HandleEditSave(habit.Id); if (e.Key == "Escape") _editingId = null; })" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Check" Size="Size.Small" Color="Color.Primary"
+                                                       OnClick="@(() => HandleEditSave(habit.Id))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Default"
+                                                       OnClick="@(() => _editingId = null)" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Text" Color="Color.Inherit"
+                                               Size="Size.Small"
+                                               OnClick="@(() => { _editingId = habit.Id; _editTitle = habit.Title; })"
+                                               Class="pa-0 habit-title-btn">
+                                        <MudText Typo="Typo.body2" Class="text-truncate font-weight-medium" Style="max-width: 140px;">
+                                            @habit.Title
+                                        </MudText>
+                                    </MudButton>
+                                }
+                            </div>
+                        </td>
+                        @foreach (var day in _weekDays)
+                        {
+                            var dateStr = day.ToString("yyyy-MM-dd");
+                            var log = _logs.FirstOrDefault(l => l.HabitId == habit.Id && l.Date.StartsWith(dateStr));
+                            var isToday = day.Date == DateTime.Today;
+                            <td class="text-center px-2 py-2 @(isToday ? "today-cell" : "")">
+                                <button type="button"
+                                        @onclick="@(() => ToggleLog(habit.Id, day))"
+                                        class="habit-check-btn @(log?.Completed == true ? "checked" : "")"
+                                        style="@(log?.Completed == true ? $"background-color: {habit.Color}; border-color: {habit.Color};" : "")">
+                                    @if (log?.Completed == true)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" Style="color: white; font-size: 16px;" />
+                                    }
+                                </button>
+                            </td>
+                        }
+                        <td class="text-center px-3 py-3">
+                            <MudText Typo="Typo.body2" Style="color: #f97316; font-weight: 700;">🔥 @(streak?.Streak ?? 0)</MudText>
+                        </td>
+                        <td class="text-center px-2 py-3">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           OnClick="@(() => HandleDelete(habit.Id))" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </MudPaper>
+}
+else
+{
+    <!-- Monthly calendar -->
+    <MudPaper Elevation="0" Class="pa-4" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+        <div class="month-grid">
+            @foreach (var dayName in _weekdayNames)
+            {
+                <div class="text-center py-2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">@dayName</MudText>
+                </div>
+            }
+            @{
+                var firstDay = new DateTime(_calDate.Year, _calDate.Month, 1);
+                var daysInMonth = DateTime.DaysInMonth(_calDate.Year, _calDate.Month);
+                var startOffset = ((int)firstDay.DayOfWeek + 6) % 7; // Monday = 0
+            }
+            @for (int i = 0; i < startOffset; i++)
+            {
+                <div></div>
+            }
+            @for (int d = 1; d <= daysInMonth; d++)
+            {
+                var date = new DateTime(_calDate.Year, _calDate.Month, d);
+                var dateStr = date.ToString("yyyy-MM-dd");
+                var totalCompleted = _logs.Count(l => l.Date.StartsWith(dateStr) && l.Completed);
+                var isToday = date == DateTime.Today;
+                var intensity = _habits.Count > 0 ? (double)totalCompleted / _habits.Count : 0;
+
+                <div class="month-cell @(isToday ? "today" : "")"
+                     style="@(totalCompleted > 0 ? $"background-color: rgba(59, 130, 246, {0.1 + intensity * 0.4});" : "")">
+                    <MudText Typo="Typo.body2"
+                             Class="@(isToday ? "font-weight-bold" : "")"
+                             Color="@(isToday ? Color.Primary : Color.Default)">
+                        @d
+                    </MudText>
+                    @if (totalCompleted > 0)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Primary" Class="font-weight-medium">@totalCompleted ✓</MudText>
+                    }
+                </div>
+            }
+        </div>
+    </MudPaper>
+}
+
+@code {
+    private List<Habit> _habits = new();
+    private List<HabitLog> _logs = new();
+    private List<HabitStreak> _streaks = new();
+    private bool _loading;
+    private bool _savingAdd;
+
+    // Add form
+    private MudForm? _addForm;
+    private bool _addFormValid;
+    private string _newTitle = "";
+    private string _newColor = "#3b82f6";
+    private string _newFrequency = "daily";
+
+    // Edit
+    private string? _editingId;
+    private string _editTitle = "";
+
+    // View
+    private string _viewMode = "week";
+    private DateTime _calDate = DateTime.Today;
+    private readonly string[] _weekdayNames = { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
+    private string _monthYearStr => System.Globalization.CultureInfo.GetCultureInfo("pt-BR").DateTimeFormat.GetMonthName(_calDate.Month) + " " + _calDate.Year;
+
+    private List<DateTime> _weekDays = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CalcWeekDays();
+        await LoadData();
+    }
+
+    private void CalcWeekDays()
+    {
+        _weekDays.Clear();
+        // Start from Monday
+        var diff = ((int)_calDate.DayOfWeek + 6) % 7;
+        var monday = _calDate.AddDays(-diff);
+        for (int i = 0; i < 7; i++)
+            _weekDays.Add(monday.AddDays(i));
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            _habits = await Api.GetAsync<List<Habit>>("/api/habits");
+            _streaks = await Api.GetAsync<List<HabitStreak>>("/api/habits/streaks");
+        }
+        catch { Snackbar.Add("Erro ao carregar hábitos", Severity.Error); }
+
+        try
+        {
+            // Fetch logs for current week
+            var start = _weekDays[0].ToString("yyyy-MM-dd");
+            var end = _weekDays[6].ToString("yyyy-MM-dd");
+            _logs = await Api.GetAsync<List<HabitLog>>($"/api/habits/logs?start={start}&end={end}");
+        }
+        catch { /* logs optional */ }
+
+        _loading = false;
+    }
+
+    private async Task FetchLogsForMonth()
+    {
+        try
+        {
+            var start = new DateTime(_calDate.Year, _calDate.Month, 1).ToString("yyyy-MM-dd");
+            var end = new DateTime(_calDate.Year, _calDate.Month, DateTime.DaysInMonth(_calDate.Year, _calDate.Month)).ToString("yyyy-MM-dd");
+            _logs = await Api.GetAsync<List<HabitLog>>($"/api/habits/logs?start={start}&end={end}");
+        }
+        catch { /* ignore */ }
+    }
+
+    private async Task HandleAddHabit()
+    {
+        if (string.IsNullOrWhiteSpace(_newTitle)) return;
+
+        _savingAdd = true;
+        try
+        {
+            await Api.PostAsync<Habit>("/api/habits", new
+            {
+                title = _newTitle.Trim(),
+                color = _newColor,
+                frequency = _newFrequency
+            });
+            Snackbar.Add("Hábito criado!", Severity.Success);
+            _newTitle = "";
+            await LoadData();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao criar hábito", Severity.Error);
+        }
+        finally
+        {
+            _savingAdd = false;
+        }
+    }
+
+    private async Task HandleEditSave(string id)
+    {
+        if (string.IsNullOrWhiteSpace(_editTitle)) return;
+        try
+        {
+            await Api.PutAsync<Habit>($"/api/habits/{id}", new { title = _editTitle.Trim() });
+            Snackbar.Add("Hábito atualizado!", Severity.Success);
+            _editingId = null;
+            await LoadData();
+        }
+        catch { Snackbar.Add("Erro ao atualizar", Severity.Error); }
+    }
+
+    private async Task ToggleLog(string habitId, DateTime date)
+    {
+        var dateStr = date.ToString("yyyy-MM-dd");
+        var existing = _logs.FirstOrDefault(l => l.HabitId == habitId && l.Date.StartsWith(dateStr));
+
+        try
+        {
+            await Api.PostAsync<HabitLog>("/api/habits/logs", new
+            {
+                habitId,
+                date = dateStr,
+                completed = !(existing?.Completed ?? false)
+            });
+            // Refresh
+            await LoadData();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao registrar", Severity.Error);
+        }
+    }
+
+    private async Task HandleDelete(string id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Excluir este hábito?");
+        if (!confirmed) return;
+
+        try
+        {
+            await Api.DeleteAsync($"/api/habits/{id}");
+            Snackbar.Add("Hábito removido!", Severity.Success);
+            await LoadData();
+        }
+        catch { Snackbar.Add("Erro ao remover", Severity.Error); }
+    }
+
+    private async Task ChangeMonth(int delta)
+    {
+        _calDate = _calDate.AddMonths(delta);
+        CalcWeekDays();
+        await FetchLogsForMonth();
+    }
+}

@@ -2,6 +2,12 @@
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <Authorizing>
+                    <div class="d-flex flex-column align-center justify-center" style="min-height: 100vh;">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+                        <MudText Class="mt-4" Typo="Typo.body2">Verificando autenticação...</MudText>
+                    </div>
+                </Authorizing>
                 <NotAuthorized>
                     <RedirectToLogin />
                 </NotAuthorized>

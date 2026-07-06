@@ -1,8 +1,509 @@
 @page "/studies"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Estudos — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Estudos</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">Estudos</MudText>
 
-<MudAlert Severity="Severity.Info">Página de estudos em construção!</MudAlert>
+<!-- Top bar -->
+<div class="d-flex flex-wrap gap-2 align-center mb-4">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="@(() => _showSubjectForm = !_showSubjectForm)">
+        Matéria
+    </MudButton>
+    <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
+        <MudButton OnClick="@(() => SetViewMode("week"))"
+                   Variant="@(_viewMode == "week" ? Variant.Filled : Variant.Outlined)"
+                   Color="@(_viewMode == "week" ? Color.Primary : Color.Default)"
+                   Size="Size.Small">Semana</MudButton>
+        <MudButton OnClick="@(() => SetViewMode("month"))"
+                   Variant="@(_viewMode == "month" ? Variant.Filled : Variant.Outlined)"
+                   Color="@(_viewMode == "month" ? Color.Primary : Color.Default)"
+                   Size="Size.Small">Mês</MudButton>
+    </MudButtonGroup>
+    @if (_viewMode == "month")
+    {
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="@(() => { _calDate = _calDate.AddMonths(-1); _ = FetchSessions(); })" />
+        <MudText Typo="Typo.subtitle2" Class="mx-2">@_monthYearStr</MudText>
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" OnClick="@(() => { _calDate = _calDate.AddMonths(1); _ = FetchSessions(); })" />
+    }
+</div>
+
+<!-- Add subject form -->
+@if (_showSubjectForm)
+{
+    <MudPaper Elevation="0" Class="pa-4 mb-4"
+              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+        <MudForm @ref="_subjectForm" @bind-IsValid="_subjectFormValid">
+            <div class="d-flex gap-3 flex-wrap align-center">
+                <MudTextField @bind-Value="_newSubjectName"
+                              Label="Nome da matéria"
+                              Placeholder="Ex: Matemática"
+                              Required="true"
+                              RequiredError="O nome é obrigatório"
+                              Class="flex-grow-1"
+                              Style="min-width: 200px;" />
+                <MudSelect @bind-Value="_newSubjectCategory"
+                           Label="Categoria"
+                           Variant="Variant.Outlined"
+                           Style="min-width: 140px;">
+                    <MudSelectItem Value="@("faculdade")">🎓 Faculdade</MudSelectItem>
+                    <MudSelectItem Value="@("concurso")">📋 Concurso</MudSelectItem>
+                    <MudSelectItem Value="@("curso")">📖 Curso</MudSelectItem>
+                    <MudSelectItem Value="@("personal")">🧠 Pessoal</MudSelectItem>
+                </MudSelect>
+                <MudNumericField @bind-Value="_newSubjectWorkload"
+                                 Label="Carga (h)"
+                                 Variant="Variant.Outlined"
+                                 Class="flex-0"
+                                 Style="width: 100px;" />
+                <input type="color" @bind="_newSubjectColor"
+                       style="width: 36px; height: 36px; border: 1px solid var(--mud-palette-table-lines); border-radius: 8px; cursor: pointer; padding: 2px;" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="@HandleAddSubject"
+                           Disabled="@(!_subjectFormValid)">
+                    Adicionar
+                </MudButton>
+            </div>
+        </MudForm>
+    </MudPaper>
+}
+
+<!-- Loading -->
+@if (_loading && _subjects.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-12">
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando...</MudText>
+    </div>
+}
+else if (_subjects.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-16">
+        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" Color="Color.Default" />
+        <MudText Class="mt-4" Typo="Typo.body1" Color="Color.Secondary">Adicione matérias para começar</MudText>
+    </div>
+}
+else if (_viewMode == "week")
+{
+    <!-- Quick log form -->
+    <MudPaper Elevation="0" Class="pa-4 mb-4"
+              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+        <MudForm @ref="_logForm">
+            <div class="d-flex gap-3 flex-wrap align-end">
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1">Matéria</MudText>
+                    <MudSelect @bind-Value="_logSubjectId"
+                               Placeholder="Selecionar..."
+                               Variant="Variant.Outlined"
+                               Style="min-width: 160px;">
+                        @foreach (var s in _subjects)
+                        {
+                            <MudSelectItem Value="@s.Id">@s.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1">Minutos</MudText>
+                    <MudNumericField @bind-Value="_logDuration"
+                                     Placeholder="25"
+                                     Variant="Variant.Outlined"
+                                     Style="width: 80px;" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-1">Técnica</MudText>
+                    <MudSelect @bind-Value="_logTechnique"
+                               Variant="Variant.Outlined"
+                               Style="min-width: 130px;">
+                        <MudSelectItem Value="@("pomodoro")">Pomodoro</MudSelectItem>
+                        <MudSelectItem Value="@("revisao")">Revisão</MudSelectItem>
+                        <MudSelectItem Value="@("exercicio")">Exercício</MudSelectItem>
+                        <MudSelectItem Value="@("leitura")">Leitura</MudSelectItem>
+                        <MudSelectItem Value="@("outro")">Outro</MudSelectItem>
+                    </MudSelect>
+                </div>
+                <MudDatePicker @bind-Value="_logDate"
+                               Label="Data"
+                               Variant="Variant.Outlined"
+                               AutoClose="true"
+                               Style="min-width: 140px;" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="@HandleLogSession"
+                           Disabled="@_savingLog">
+                    @if (_savingLog)
+                    {
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-1" />
+                    }
+                    Registrar
+                </MudButton>
+            </div>
+        </MudForm>
+    </MudPaper>
+
+    <!-- Weekly table -->
+    <MudPaper Elevation="0" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow-x: auto;" Class="mb-4">
+        <table class="habits-table">
+            <thead>
+                <tr>
+                    <th class="text-left px-4 py-3" Style="min-width: 160px;">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">Matéria</MudText>
+                    </th>
+                    @foreach (var day in _weekDays)
+                    {
+                        <th class="text-center px-2 py-3" Style="min-width: 60px;">
+                            <MudText Typo="Typo.caption"
+                                     Color="@(day.Date == DateTime.Today ? Color.Primary : Color.Secondary)"
+                                     Class="font-weight-bold">
+                                <div>@_weekdayNames[((int)day.DayOfWeek + 6) % 7]</div>
+                                <div Style="font-size: 1.1rem; font-weight: 700;">@day.Day</div>
+                            </MudText>
+                        </th>
+                    }
+                    <th class="text-center px-3 py-3" Style="min-width: 50px;">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">Total</MudText>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var subject in _subjects)
+                {
+                    var weekTotalMin = _weekDays.Sum(d =>
+                    {
+                        var ds = d.ToString("yyyy-MM-dd");
+                        return _sessions.Where(s => s.SubjectId == subject.Id && s.Date.StartsWith(ds)).Sum(s => s.Duration);
+                    });
+                    <tr Style="border-top: 1px solid var(--mud-palette-table-lines);">
+                        <td class="px-4 py-3">
+                            <div class="d-flex align-center gap-3">
+                                <div Style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: @(subject.Color + "20"); color: @subject.Color;">
+                                    <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Small" />
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.body2" Class="font-weight-medium">@subject.Name</MudText>
+                                    @if (subject.Workload > 0)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@subject.Workload h</MudText>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        @foreach (var day in _weekDays)
+                        {
+                            var ds = day.ToString("yyyy-MM-dd");
+                            var mins = _sessions.Where(s => s.SubjectId == subject.Id && s.Date.StartsWith(ds)).Sum(s => s.Duration);
+                            var isToday = day.Date == DateTime.Today;
+                            <td class="text-center px-2 py-3 @(isToday ? "today-cell" : "")">
+                                @if (mins > 0)
+                                {
+                                    <span Style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; background-color: @(subject.Color + "20"); color: @subject.Color;">
+                                        @(mins)m
+                                    </span>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.caption" Color="Color.Default">—</MudText>
+                                }
+                            </td>
+                        }
+                        <td class="text-center px-3 py-3">
+                            <MudText Typo="Typo.body2" Color="Color.Primary" Class="font-weight-bold">
+                                @(Math.Round(weekTotalMin / 60.0, 1))h
+                            </MudText>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </MudPaper>
+
+    <!-- Recent sessions -->
+    @if (_sessions.Count > 0)
+    {
+        <MudPaper Elevation="0" Class="pa-4"
+                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+            <MudText Typo="Typo.subtitle2" Class="mb-3">Sessões desta semana</MudText>
+            <div class="d-flex flex-column gap-2">
+                @foreach (var s in _sessions.Take(10))
+                {
+                    var sub = _subjects.FirstOrDefault(x => x.Id == s.SubjectId);
+                    <div class="d-flex align-center gap-3">
+                        <div Style="width: 8px; height: 8px; border-radius: 50%; background-color: @(sub?.Color ?? "#3b82f6"); flex-shrink: 0;"></div>
+                        <MudText Typo="Typo.body2" Style="width: 130px;" Class="font-weight-medium text-truncate">@(sub?.Name ?? "?")</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@GetTechniqueLabel(s.Technique)</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@s.Duration m</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@(DateTime.Parse(s.Date).ToString("dd/MM"))</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                       OnClick="@(() => HandleDeleteSession(s.Id))" Class="ml-auto" />
+                    </div>
+                }
+            </div>
+        </MudPaper>
+    }
+}
+else
+{
+    <!-- Monthly calendar -->
+    <MudPaper Elevation="0" Class="pa-4"
+              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+        <div class="month-grid">
+            @foreach (var dayName in _weekdayNames)
+            {
+                <div class="text-center py-2">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="font-weight-bold">@dayName</MudText>
+                </div>
+            }
+            @{
+                var firstDay = new DateTime(_calDate.Year, _calDate.Month, 1);
+                var daysInMonth = DateTime.DaysInMonth(_calDate.Year, _calDate.Month);
+                var startOffset = ((int)firstDay.DayOfWeek + 6) % 7;
+            }
+            @for (int i = 0; i < startOffset; i++)
+            {
+                <div></div>
+            }
+            @for (int d = 1; d <= daysInMonth; d++)
+            {
+                var date = new DateTime(_calDate.Year, _calDate.Month, d);
+                var dateStr = date.ToString("yyyy-MM-dd");
+                var totalMin = _sessions.Where(s => s.Date.StartsWith(dateStr)).Sum(s => s.Duration);
+                var isToday = date == DateTime.Today;
+
+                <div class="month-cell @(isToday ? "today" : "")"
+                     style="@(totalMin > 0 ? $"background-color: rgba(16, 185, 129, {Math.Min(0.4, 0.08 + totalMin / 500.0)});" : "")">
+                    <MudText Typo="Typo.body2"
+                             Class="@(isToday ? "font-weight-bold" : "")"
+                             Color="@(isToday ? Color.Primary : Color.Default)">
+                        @d
+                    </MudText>
+                    @if (totalMin > 0)
+                    {
+                        <MudText Typo="Typo.caption" Style="color: #059669;" Class="font-weight-medium">
+                            @(Math.Round(totalMin / 60.0, 1))h
+                        </MudText>
+                    }
+                </div>
+            }
+        </div>
+    </MudPaper>
+}
+
+<!-- Subjects list -->
+@if (_subjects.Count > 0)
+{
+    <MudPaper Elevation="0" Class="pa-4 mt-4"
+              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+        <MudText Typo="Typo.subtitle2" Class="mb-3">Matérias</MudText>
+        <div class="d-flex gap-3 flex-wrap">
+            @foreach (var s in _subjects)
+            {
+                <MudPaper Elevation="0" Class="d-flex align-center gap-3 pa-3"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 10px;">
+                    <div Style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: @(s.Color + "20"); color: @s.Color; flex-shrink: 0;">
+                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Small" />
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.body2" Class="font-weight-medium">@s.Name</MudText>
+                        @if (s.Workload > 0)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@s.Workload h</MudText>
+                        }
+                    </div>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                   OnClick="@(() => HandleDeleteSubject(s.Id))" />
+                </MudPaper>
+            }
+        </div>
+    </MudPaper>
+}
+
+@code {
+    private List<Subject> _subjects = new();
+    private List<StudySession> _sessions = new();
+    private bool _loading;
+    private bool _savingLog;
+    private bool _showSubjectForm;
+
+    // Subject form
+    private MudForm? _subjectForm;
+    private bool _subjectFormValid;
+    private string _newSubjectName = "";
+    private string _newSubjectCategory = "personal";
+    private double? _newSubjectWorkload;
+    private string _newSubjectColor = "#3b82f6";
+
+    // Log form
+    private MudForm? _logForm;
+    private string _logSubjectId = "";
+    private double? _logDuration;
+    private string _logTechnique = "pomodoro";
+    private DateTime? _logDate = DateTime.Today;
+
+    // View
+    private string _viewMode = "week";
+    private DateTime _calDate = DateTime.Today;
+    private readonly string[] _weekdayNames = { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
+    private string _monthYearStr => System.Globalization.CultureInfo.GetCultureInfo("pt-BR").DateTimeFormat.GetMonthName(_calDate.Month) + " " + _calDate.Year;
+    private List<DateTime> _weekDays = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CalcWeekDays();
+        await LoadAllData();
+    }
+
+    private void CalcWeekDays()
+    {
+        _weekDays.Clear();
+        var diff = ((int)_calDate.DayOfWeek + 6) % 7;
+        var monday = _calDate.AddDays(-diff);
+        for (int i = 0; i < 7; i++)
+            _weekDays.Add(monday.AddDays(i));
+    }
+
+    private async Task LoadAllData()
+    {
+        _loading = true;
+        try
+        {
+            _subjects = await Api.GetAsync<List<Subject>>("/api/subjects");
+            await FetchSessions();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao carregar dados", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SetViewMode(string mode)
+    {
+        _viewMode = mode;
+        if (mode == "month")
+        {
+            await FetchSessions();
+        }
+        else
+        {
+            CalcWeekDays();
+            await FetchSessions();
+        }
+    }
+
+    private async Task FetchSessions()
+    {
+        try
+        {
+            string start, end;
+            if (_viewMode == "month")
+            {
+                start = new DateTime(_calDate.Year, _calDate.Month, 1).ToString("yyyy-MM-dd");
+                end = new DateTime(_calDate.Year, _calDate.Month, DateTime.DaysInMonth(_calDate.Year, _calDate.Month)).ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                start = _weekDays[0].ToString("yyyy-MM-dd");
+                end = _weekDays[6].ToString("yyyy-MM-dd");
+            }
+            _sessions = await Api.GetAsync<List<StudySession>>($"/api/study-sessions?start={start}&end={end}");
+        }
+        catch { /* optional */ }
+    }
+
+    private async Task HandleAddSubject()
+    {
+        if (string.IsNullOrWhiteSpace(_newSubjectName)) return;
+        try
+        {
+            await Api.PostAsync<Subject>("/api/subjects", new
+            {
+                name = _newSubjectName.Trim(),
+                category = _newSubjectCategory,
+                color = _newSubjectColor,
+                workload = _newSubjectWorkload.HasValue ? (int)_newSubjectWorkload.Value : 0
+            });
+            Snackbar.Add("Matéria adicionada!", Severity.Success);
+            _newSubjectName = "";
+            _showSubjectForm = false;
+            await LoadAllData();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao adicionar matéria", Severity.Error);
+        }
+    }
+
+    private async Task HandleLogSession()
+    {
+        if (string.IsNullOrEmpty(_logSubjectId) || !_logDuration.HasValue || _logDuration <= 0) return;
+        _savingLog = true;
+        try
+        {
+            await Api.PostAsync<StudySession>("/api/study-sessions", new
+            {
+                subjectId = _logSubjectId,
+                duration = (int)_logDuration.Value,
+                technique = _logTechnique,
+                date = _logDate?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            });
+            Snackbar.Add("Sessão registrada!", Severity.Success);
+            _logDuration = null;
+            await FetchSessions();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao registrar", Severity.Error);
+        }
+        finally
+        {
+            _savingLog = false;
+        }
+    }
+
+    private async Task HandleDeleteSession(string id)
+    {
+        try
+        {
+            await Api.DeleteAsync($"/api/study-sessions/{id}");
+            await FetchSessions();
+        }
+        catch { Snackbar.Add("Erro ao remover", Severity.Error); }
+    }
+
+    private async Task HandleDeleteSubject(string id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Remover esta matéria?");
+        if (!confirmed) return;
+
+        try
+        {
+            await Api.DeleteAsync($"/api/subjects/{id}");
+            Snackbar.Add("Matéria removida!", Severity.Success);
+            await LoadAllData();
+        }
+        catch { Snackbar.Add("Erro ao remover", Severity.Error); }
+    }
+
+    private string GetTechniqueLabel(string technique) => technique switch
+    {
+        "pomodoro" => "Pomodoro",
+        "revisao" => "Revisão",
+        "exercicio" => "Exercício",
+        "leitura" => "Leitura",
+        _ => "Outro"
+    };
+}

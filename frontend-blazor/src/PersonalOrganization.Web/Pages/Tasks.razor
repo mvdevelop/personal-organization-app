@@ -1,8 +1,424 @@
 @page "/tasks"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+@inject NavigationManager Navigation
 
 <PageTitle>Tarefas — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Minhas Tarefas</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">Minhas Tarefas</MudText>
 
-<MudAlert Severity="Severity.Info">Página de tarefas em construção!</MudAlert>
+<!-- Loading state -->
+@if (_loading && _tasks.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-12">
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando tarefas...</MudText>
+    </div>
+}
+else
+{
+    <!-- Top bar: search + filter + new button -->
+    <div class="d-flex flex-wrap gap-4 mb-4 align-center">
+        <MudTextField @bind-Value="_searchQuery"
+                      Placeholder="Buscar tarefas..."
+                      Variant="Variant.Outlined"
+                      Immediate="true"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Class="flex-grow-1"
+                      Style="min-width: 200px; max-width: 400px;"
+                      OnKeyUp="@(e => HandleSearch())" />
+        <div class="d-flex gap-2 align-center flex-wrap">
+            <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small" Class="filter-group">
+                <MudButton OnClick="@(() => SetFilter("all"))"
+                           Variant="@(_filter == "all" ? Variant.Filled : Variant.Outlined)"
+                           Color="@(_filter == "all" ? Color.Primary : Color.Default)"
+                           Size="Size.Small">Todas</MudButton>
+                <MudButton OnClick="@(() => SetFilter("active"))"
+                           Variant="@(_filter == "active" ? Variant.Filled : Variant.Outlined)"
+                           Color="@(_filter == "active" ? Color.Primary : Color.Default)"
+                           Size="Size.Small">Ativas</MudButton>
+                <MudButton OnClick="@(() => SetFilter("completed"))"
+                           Variant="@(_filter == "completed" ? Variant.Filled : Variant.Outlined)"
+                           Color="@(_filter == "completed" ? Color.Primary : Color.Default)"
+                           Size="Size.Small">Concluídas</MudButton>
+            </MudButtonGroup>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => OpenCreateDialog())">
+                Nova Tarefa
+            </MudButton>
+        </div>
+    </div>
+
+    <!-- Error alert -->
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" Dismissible="true" OnDismiss="@(() => _errorMessage = "")">
+            @_errorMessage
+        </MudAlert>
+    }
+
+    <!-- Empty state -->
+    @if (_filteredTasks.Count == 0)
+    {
+        <div class="d-flex flex-column align-center justify-center py-12">
+            <MudIcon Icon="@Icons.Material.Filled.TaskAlt" Size="Size.Large" Color="Color.Default" />
+            <MudText Class="mt-4" Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center">
+                @if (!string.IsNullOrEmpty(_searchQuery))
+                {
+                    <span>Nenhuma tarefa encontrada para essa busca</span>
+                }
+                else if (_filter != "all")
+                {
+                    <span>Nenhuma tarefa @(_filter == "active" ? "ativa" : "concluída")</span>
+                }
+                else
+                {
+                    <span>Nenhuma tarefa ainda. Crie uma!</span>
+                }
+            </MudText>
+        </div>
+    }
+    else
+    {
+        <!-- Task list -->
+        <MudPaper Class="pa-0" Elevation="0" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow: hidden;">
+            @foreach (var task in _filteredTasks)
+            {
+                <MudPaper Class="d-flex align-center px-4 py-3"
+                          Elevation="0"
+                          Style="border-bottom: 1px solid var(--mud-palette-table-lines);">
+                    <MudCheckBox T="bool" Checked="@task.Completed"
+                                 CheckedChanged="@((bool v) => HandleToggle(task.Id))"
+                                 Color="Color.Primary"
+                                 Class="mr-3 task-checkbox" />
+
+                    <div class="flex-grow-1 d-flex flex-column" Style="min-width: 0;">
+                        <div class="d-flex align-center gap-2">
+                            <MudText Typo="Typo.body1"
+                                     Class="@(task.Completed ? "text-decoration-line-through mud-text-secondary" : "mud-text-primary")">
+                                @task.Title
+                            </MudText>
+                            <MudChip T="string" Size="Size.Small"
+                                     Color="@GetPriorityColor(task.Priority)"
+                                     Class="priority-chip">
+                                @GetPriorityLabel(task.Priority)
+                            </MudChip>
+                        </div>
+                        @if (!string.IsNullOrEmpty(task.Description))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1 text-truncate">
+                                @task.Description
+                            </MudText>
+                        }
+                        @if (!string.IsNullOrEmpty(task.DueDate))
+                        {
+                            var dueDate = DateTime.Parse(task.DueDate);
+                            var isOverdue = !task.Completed && dueDate.Date < DateTime.Today;
+                            <MudText Typo="Typo.caption"
+                                     Color="@(isOverdue ? Color.Error : Color.Secondary)"
+                                     Class="mt-1 d-flex align-center gap-1">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" />
+                                @dueDate.ToString("dd/MM/yyyy")
+                                @if (isOverdue)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Class="ml-1">Atrasada</MudChip>
+                                }
+                            </MudText>
+                        }
+                    </div>
+
+                    <div class="d-flex gap-1 align-center">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       Color="Color.Default"
+                                       OnClick="@(() => OpenEditDialog(task))"
+                                       Title="Editar" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       OnClick="@(() => HandleDelete(task.Id))"
+                                       Disabled="@(_deletingId == task.Id)"
+                                       Title="Excluir" />
+                    </div>
+                </MudPaper>
+            }
+        </MudPaper>
+    }
+}
+
+<!-- Create/Edit Dialog -->
+<MudDialog @bind-Visible="_dialogVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(_editingTask != null ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" Color="Color.Primary" />
+            @(_editingTask != null ? "Editar Tarefa" : "Nova Tarefa")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_formValid" @bind-Errors="_formErrors">
+            <MudTextField @bind-Value="_editTitle"
+                          Label="Título"
+                          Placeholder="O que precisa ser feito?"
+                          Required="true"
+                          RequiredError="O título é obrigatório"
+                          For="@(() => _editTitle)"
+                          Class="mb-4" />
+            <MudTextField @bind-Value="_editDescription"
+                          Label="Descrição"
+                          Placeholder="Detalhes da tarefa (opcional)"
+                          Lines="3"
+                          Variant="Variant.Text"
+                          Class="mb-4" />
+            <div class="d-flex gap-4 flex-wrap">
+                <MudSelect @bind-Value="_editPriority"
+                           Label="Prioridade"
+                           Variant="Variant.Outlined"
+                           Class="flex-1"
+                           Style="min-width: 140px;"
+                           For="@(() => _editPriority)">
+                    <MudSelectItem Value="@("low")">Baixa</MudSelectItem>
+                    <MudSelectItem Value="@("medium")">Média</MudSelectItem>
+                    <MudSelectItem Value="@("high")">Alta</MudSelectItem>
+                </MudSelect>
+                <MudDatePicker @bind-Value="_editDueDate"
+                               Label="Data de vencimento"
+                               Variant="Variant.Outlined"
+                               Class="flex-1"
+                               Style="min-width: 180px;"
+                               For="@(() => _editDueDate)"
+                               AutoClose="true" />
+            </div>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="@(() => _dialogVisible = false)">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="@HandleSaveTask"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-1" />
+            }
+            @(_editingTask != null ? "Salvar" : "Criar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<TaskItem> _tasks = new();
+    private List<TaskItem> _filteredTasks = new();
+    private string _filter = "all";
+    private string _searchQuery = "";
+    private string? _errorMessage;
+    private bool _loading;
+    private bool _saving;
+    private string? _deletingId;
+
+    // Dialog state
+    private bool _dialogVisible;
+    private TaskItem? _editingTask;
+    private string _editTitle = "";
+    private string _editDescription = "";
+    private string _editPriority = "medium";
+    private DateTime? _editDueDate;
+
+    // Form
+    private MudForm? _form;
+    private bool _formValid;
+    private string[]? _formErrors;
+
+    private Timer? _searchTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        _loading = true;
+        _errorMessage = null;
+        try
+        {
+            var queryParams = new List<string>();
+            if (_filter != "all")
+                queryParams.Add($"filter={_filter}");
+            if (!string.IsNullOrEmpty(_searchQuery))
+                queryParams.Add($"search={Uri.EscapeDataString(_searchQuery)}");
+
+            var endpoint = "/api/tasks";
+            if (queryParams.Count > 0)
+                endpoint += "?" + string.Join("&", queryParams);
+
+            _tasks = await Api.GetAsync<List<TaskItem>>(endpoint);
+            ApplyLocalFilter();
+        }
+        catch (ApiClientError e)
+        {
+            _errorMessage = e.Message;
+        }
+        catch
+        {
+            _errorMessage = "Erro de conexão com o servidor";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ApplyLocalFilter()
+    {
+        var query = _tasks.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(_searchQuery))
+        {
+            var q = _searchQuery.ToLower();
+            query = query.Where(t =>
+                t.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (t.Description?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+
+        _filteredTasks = query.ToList();
+    }
+
+    private void HandleSearch()
+    {
+        _searchTimer?.Dispose();
+        _searchTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadTasks();
+            });
+        }, null, 400, Timeout.Infinite);
+    }
+
+    private async Task SetFilter(string filter)
+    {
+        _filter = filter;
+        await LoadTasks();
+    }
+
+    private void OpenCreateDialog()
+    {
+        _editingTask = null;
+        _editTitle = "";
+        _editDescription = "";
+        _editPriority = "medium";
+        _editDueDate = null;
+        _dialogVisible = true;
+    }
+
+    private void OpenEditDialog(TaskItem task)
+    {
+        _editingTask = task;
+        _editTitle = task.Title;
+        _editDescription = task.Description;
+        _editPriority = task.Priority;
+        _editDueDate = !string.IsNullOrEmpty(task.DueDate) ? DateTime.Parse(task.DueDate) : null;
+        _dialogVisible = true;
+    }
+
+    private async Task HandleSaveTask()
+    {
+        await _form!.Validate();
+        if (!_formValid) return;
+
+        _saving = true;
+        try
+        {
+            if (_editingTask != null)
+            {
+                await Api.PutAsync<TaskItem>($"/api/tasks/{_editingTask.Id}", new
+                {
+                    title = _editTitle,
+                    description = string.IsNullOrEmpty(_editDescription) ? null : _editDescription,
+                    priority = _editPriority,
+                    dueDate = _editDueDate?.ToString("yyyy-MM-dd")
+                });
+                Snackbar.Add("Tarefa atualizada!", Severity.Success);
+            }
+            else
+            {
+                await Api.PostAsync<TaskItem>("/api/tasks", new
+                {
+                    title = _editTitle,
+                    description = string.IsNullOrEmpty(_editDescription) ? null : _editDescription,
+                    priority = _editPriority,
+                    dueDate = _editDueDate?.ToString("yyyy-MM-dd")
+                });
+                Snackbar.Add("Tarefa criada!", Severity.Success);
+            }
+
+            _dialogVisible = false;
+            await LoadTasks();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao salvar tarefa", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task HandleToggle(string id)
+    {
+        try
+        {
+            await Api.PatchAsync<TaskItem>($"/api/tasks/{id}/toggle");
+            await LoadTasks();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao atualizar tarefa", Severity.Error);
+        }
+    }
+
+    private async Task HandleDelete(string id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Tem certeza que deseja excluir esta tarefa?");
+        if (!confirmed) return;
+
+        _deletingId = id;
+        try
+        {
+            await Api.DeleteAsync($"/api/tasks/{id}");
+            Snackbar.Add("Tarefa removida!", Severity.Success);
+            await LoadTasks();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao remover tarefa", Severity.Error);
+        }
+        finally
+        {
+            _deletingId = null;
+        }
+    }
+
+    private Color GetPriorityColor(string priority) => priority switch
+    {
+        "high" => Color.Error,
+        "medium" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private string GetPriorityLabel(string priority) => priority switch
+    {
+        "high" => "Alta",
+        "medium" => "Média",
+        "low" => "Baixa",
+        _ => priority
+    };
+}

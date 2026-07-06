@@ -1,8 +1,315 @@
 @page "/goals"
 @attribute [Authorize]
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Metas — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-6">Metas</MudText>
+<MudText Typo="Typo.h4" Class="mb-4">Metas</MudText>
 
-<MudAlert Severity="Severity.Info">Página de metas em construção!</MudAlert>
+<!-- Add button -->
+<MudButton Variant="Variant.Filled" Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           OnClick="@(() => OpenCreateDialog())"
+           Class="mb-4">
+    Nova Meta
+</MudButton>
+
+<!-- Loading -->
+@if (_loading && _goals.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-12">
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando metas...</MudText>
+    </div>
+}
+else if (_activeGoals.Count == 0 && _completedGoals.Count == 0)
+{
+    <div class="d-flex flex-column align-center justify-center py-16">
+        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Large" Color="Color.Default" />
+        <MudText Class="mt-4" Typo="Typo.body1" Color="Color.Secondary">Nenhuma meta ainda. Crie uma!</MudText>
+    </div>
+}
+else
+{
+    <!-- Active Goals -->
+    @if (_activeGoals.Count > 0)
+    {
+        <div class="d-flex flex-column gap-3 mb-4">
+            @foreach (var goal in _activeGoals)
+            {
+                <MudPaper Elevation="0" Class="pa-4"
+                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;"
+                          Hover="true">
+                    <div class="d-flex align-start justify-content-between gap-4">
+                        <div class="flex-grow-1" Style="min-width: 0;">
+                            <div class="d-flex align-center gap-2 mb-1">
+                                <MudText Typo="Typo.h6">@GetTypeEmoji(goal.Type)</MudText>
+                                <MudText Typo="Typo.subtitle1" Class="font-weight-medium">@goal.Title</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-1">@GetTypeLabel(goal.Type)</MudChip>
+                            </div>
+                            @if (goal.TargetValue.HasValue && goal.TargetValue > 0)
+                            {
+                                var pct = Math.Min(100.0, goal.CurrentValue / goal.TargetValue.Value * 100.0);
+                                <div class="mt-2">
+                                    <div class="d-flex justify-content-between align-center mb-1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Progresso</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @goal.CurrentValue / @goal.TargetValue
+                                        </MudText>
+                                    </div>
+                                    <MudProgressLinear Value="@pct" Color="Color.Primary"
+                                                       Style="height: 8px; border-radius: 4px;" />
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(goal.Deadline))
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2 d-flex align-center gap-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" />
+                                    @(DateTime.Parse(goal.Deadline).ToString("dd/MM/yyyy"))
+                                </MudText>
+                            }
+                        </div>
+                        <div class="d-flex gap-1">
+                            <MudTooltip Text="Concluir">
+                                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Color="Color.Primary"
+                                               OnClick="@(() => HandleToggleStatus(goal))" />
+                            </MudTooltip>
+                            <MudTooltip Text="Excluir">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                               OnClick="@(() => HandleDelete(goal.Id))" />
+                            </MudTooltip>
+                        </div>
+                    </div>
+                </MudPaper>
+            }
+        </div>
+    }
+
+    <!-- Completed Goals -->
+    @if (_completedGoals.Count > 0)
+    {
+        <MudText Typo="Typo.subtitle1" Class="mb-2 mt-4">✅ Concluídas</MudText>
+        <div class="d-flex flex-column gap-2">
+            @foreach (var goal in _completedGoals)
+            {
+                <MudPaper Elevation="0" Class="pa-3 d-flex align-center gap-2"
+                          Style="border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; opacity: 0.75;">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Medium" />
+                    <MudText Typo="Typo.body1" Class="text-decoration-line-through mud-text-secondary">@goal.Title</MudText>
+                </MudPaper>
+            }
+        </div>
+    }
+}
+
+<!-- Create/Edit Dialog -->
+<MudDialog @bind-Visible="_dialogVisible" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(_editingGoal != null ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" Color="Color.Primary" />
+            @(_editingGoal != null ? "Editar Meta" : "Nova Meta")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_formValid" @bind-Errors="_formErrors">
+            <MudTextField @bind-Value="_editTitle"
+                          Label="Título"
+                          Placeholder="Qual sua meta?"
+                          Required="true"
+                          RequiredError="O título é obrigatório"
+                          Class="mb-4" />
+            <div class="d-flex gap-4 flex-wrap mb-4">
+                <MudSelect @bind-Value="_editType"
+                           Label="Tipo"
+                           Variant="Variant.Outlined"
+                           Class="flex-1"
+                           Style="min-width: 160px;">
+                    <MudSelectItem Value="@("purchase")">🛒 Compra</MudSelectItem>
+                    <MudSelectItem Value="@("travel")">✈️ Viagem</MudSelectItem>
+                    <MudSelectItem Value="@("learning")">📚 Aprendizado</MudSelectItem>
+                    <MudSelectItem Value="@("health")">💪 Saúde</MudSelectItem>
+                    <MudSelectItem Value="@("career")">💼 Carreira</MudSelectItem>
+                    <MudSelectItem Value="@("custom")">🎯 Personalizado</MudSelectItem>
+                </MudSelect>
+                <MudNumericField @bind-Value="_editTargetValue"
+                                 Label="Valor alvo (opcional)"
+                                 Variant="Variant.Outlined"
+                                 Class="flex-1"
+                                 Style="min-width: 140px;" />
+            </div>
+            <MudDatePicker @bind-Value="_editDeadline"
+                           Label="Data limite"
+                           Variant="Variant.Outlined"
+                           Class="mb-4"
+                           AutoClose="true" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="@(() => _dialogVisible = false)">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="@HandleSaveGoal"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="mr-1" />
+            }
+            @(_editingGoal != null ? "Salvar" : "Criar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<Goal> _goals = new();
+    private List<Goal> _activeGoals = new();
+    private List<Goal> _completedGoals = new();
+    private bool _loading;
+    private bool _saving;
+
+    // Dialog state
+    private bool _dialogVisible;
+    private Goal? _editingGoal;
+    private string _editTitle = "";
+    private string _editType = "custom";
+    private double? _editTargetValue;
+    private DateTime? _editDeadline;
+
+    // Form
+    private MudForm? _form;
+    private bool _formValid;
+    private string[]? _formErrors;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        FullWidth = true,
+        MaxWidth = MaxWidth.Small,
+    };
+
+    private static readonly Dictionary<string, (string Label, string Emoji)> GoalTypes = new()
+    {
+        ["purchase"] = ("Compra", "🛒"),
+        ["travel"] = ("Viagem", "✈️"),
+        ["learning"] = ("Aprendizado", "📚"),
+        ["health"] = ("Saúde", "💪"),
+        ["career"] = ("Carreira", "💼"),
+        ["custom"] = ("Personalizado", "🎯"),
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGoals();
+    }
+
+    private async Task LoadGoals()
+    {
+        _loading = true;
+        try
+        {
+            _goals = await Api.GetAsync<List<Goal>>("/api/goals");
+            _activeGoals = _goals.Where(g => g.Status == "active").ToList();
+            _completedGoals = _goals.Where(g => g.Status == "completed").ToList();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao carregar metas", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OpenCreateDialog()
+    {
+        _editingGoal = null;
+        _editTitle = "";
+        _editType = "custom";
+        _editTargetValue = null;
+        _editDeadline = null;
+        _dialogVisible = true;
+    }
+
+    private async Task HandleSaveGoal()
+    {
+        await _form!.Validate();
+        if (!_formValid) return;
+
+        _saving = true;
+        try
+        {
+            if (_editingGoal != null)
+            {
+                await Api.PutAsync<Goal>($"/api/goals/{_editingGoal.Id}", new
+                {
+                    title = _editTitle,
+                    type = _editType,
+                    targetValue = _editTargetValue,
+                    deadline = _editDeadline?.ToString("yyyy-MM-dd")
+                });
+                Snackbar.Add("Meta atualizada!", Severity.Success);
+            }
+            else
+            {
+                await Api.PostAsync<Goal>("/api/goals", new
+                {
+                    title = _editTitle,
+                    type = _editType,
+                    targetValue = _editTargetValue,
+                    deadline = _editDeadline?.ToString("yyyy-MM-dd")
+                });
+                Snackbar.Add("Meta criada!", Severity.Success);
+            }
+
+            _dialogVisible = false;
+            await LoadGoals();
+        }
+        catch (ApiClientError e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao salvar meta", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task HandleToggleStatus(Goal goal)
+    {
+        var newStatus = goal.Status == "active" ? "completed" : "active";
+        try
+        {
+            await Api.PutAsync<Goal>($"/api/goals/{goal.Id}", new { status = newStatus });
+            Snackbar.Add("Meta atualizada!", Severity.Success);
+            await LoadGoals();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao atualizar meta", Severity.Error);
+        }
+    }
+
+    private async Task HandleDelete(string id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Excluir esta meta?");
+        if (!confirmed) return;
+
+        try
+        {
+            await Api.DeleteAsync($"/api/goals/{id}");
+            Snackbar.Add("Meta removida!", Severity.Success);
+            await LoadGoals();
+        }
+        catch
+        {
+            Snackbar.Add("Erro ao remover meta", Severity.Error);
+        }
+    }
+
+    private string GetTypeEmoji(string type) => GoalTypes.TryGetValue(type, out var t) ? t.Emoji : "🎯";
+    private string GetTypeLabel(string type) => GoalTypes.TryGetValue(type, out var t) ? t.Label : type;
+}
