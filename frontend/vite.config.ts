@@ -1,17 +1,13 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
 import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(),
-    tailwindcss()
-  ],
+  plugins: [react(), tailwindcss()],
   server: {
     watch: {
-      usePolling: true, // Importante para alguns sistemas
+      usePolling: true,
       interval: 100,
     },
     hmr: {
@@ -19,6 +15,13 @@ export default defineConfig({
     },
     port: 5173,
     strictPort: false,
+    proxy: {
+      '/api': {
+        target: 'https://personal-organization-backend.vercel.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit'],
