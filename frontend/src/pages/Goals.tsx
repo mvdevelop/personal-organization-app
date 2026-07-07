@@ -66,7 +66,7 @@ const Goals: React.FC = () => {
           Metas
         </h1>
         <button onClick={() => { setShowForm(!showForm); setEditingId(null); setTitle(''); setTargetValue(''); setDeadline('') }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+          className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         ><Plus className="w-4 h-4" /> Nova Meta</button>
       </div>
 
@@ -84,7 +84,7 @@ const Goals: React.FC = () => {
             <input value={deadline} onChange={e => setDeadline(e.target.value)} type="date"
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
             <button type="submit"
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm col-span-full sm:col-span-1">
+              className="cursor-pointer px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm col-span-full sm:col-span-1">
               {editingId ? 'Atualizar' : 'Criar'}
             </button>
           </div>
@@ -126,10 +126,10 @@ const Goals: React.FC = () => {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleToggleStatus(goal)} className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg text-green-500" title="Concluir">
+                      <button onClick={() => handleToggleStatus(goal)} className="cursor-pointer p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg text-green-500" title="Concluir">
                         <CheckCircle className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(goal.id)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-400">
+                      <button onClick={() => handleDelete(goal.id)} className="cursor-pointer p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-400">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

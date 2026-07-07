@@ -82,7 +82,7 @@ const ClockWidget: React.FC<ClockWidgetProps> = ({ compact }) => {
         </div>
         <button
           onClick={toggleMode}
-          className="flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors"
+          className="cursor-pointer flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors"
           title="Alternar visual"
         >
           <RefreshCw className="w-3 h-3" />

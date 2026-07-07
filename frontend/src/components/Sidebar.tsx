@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       <div className="border-t border-gray-100 dark:border-gray-700/50 py-2 px-3">
         <button
           onClick={() => dispatch(toggleSidebar())}
-          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg transition-colors text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="cursor-pointer flex items-center gap-3 w-full px-4 py-2.5 rounded-lg transition-colors text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
           title={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
         >
           {collapsed ? (

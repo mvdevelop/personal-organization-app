@@ -72,7 +72,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, onSave, editingN
               <button
                 type="button"
                 onClick={onClose}
-                className={`p-1.5 rounded-lg transition-colors ${
+                className={`cursor-pointer p-1.5 rounded-lg transition-colors ${
                   isLightColor(color) ? 'hover:bg-black/10 text-gray-500' : 'hover:bg-white/20 text-gray-300'
                 }`}
               >
@@ -102,7 +102,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, onSave, editingN
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
-                    className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    className={`cursor-pointer w-7 h-7 rounded-full border-2 transition-all ${
                       color === c
                         ? 'border-blue-500 scale-110'
                         : 'border-gray-300/50 hover:scale-110'
@@ -120,7 +120,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, onSave, editingN
             <button
               type="button"
               onClick={onClose}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+              className={`cursor-pointer px-4 py-2 text-sm rounded-lg transition-colors ${
                 isLightColor(color)
                   ? 'text-gray-600 hover:bg-black/10'
                   : 'text-gray-300 hover:bg-white/10'
@@ -130,7 +130,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, onSave, editingN
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm rounded-lg btn-primary font-medium"
+              className="cursor-pointer px-4 py-2 text-sm rounded-lg btn-primary font-medium"
             >
               {editingNote ? 'Atualizar' : 'Criar'}
             </button>

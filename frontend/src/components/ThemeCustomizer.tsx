@@ -32,7 +32,7 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ onClose }) => {
             <Palette className="w-5 h-5" />
             Personalizar Tema
           </h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400">
+          <button onClick={onClose} className="cursor-pointer p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -48,7 +48,7 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ onClose }) => {
                 <button
                   key={t.name}
                   onClick={() => handleColorChange(t.name)}
-                  className={`relative p-3 rounded-xl border-2 transition-all text-center ${
+                  className={`cursor-pointer relative p-3 rounded-xl border-2 transition-all text-center ${
                     previewColor === t.name
                       ? 'border-blue-500 shadow-md'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
@@ -97,7 +97,7 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ onClose }) => {
                 <button
                   key={f.name}
                   onClick={() => handleFontChange(f.name)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${
+                  className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${
                     activeFont === f.name
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'

@@ -90,11 +90,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onClose, minimal }) => {
           {loading && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={handleClear} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400" title="Limpar conversa">
+          <button onClick={handleClear} className="cursor-pointer p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400" title="Limpar conversa">
             <Trash2 className="w-4 h-4" />
           </button>
           {onClose && (
-            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400">
+            <button onClick={onClose} className="cursor-pointer p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -110,7 +110,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ onClose, minimal }) => {
               <button
                 key={s.action}
                 onClick={() => handleSuggestion(s.action)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 <s.icon className="w-3.5 h-3.5" />
                 {s.label}

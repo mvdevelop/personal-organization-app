@@ -319,7 +319,7 @@ const WeatherWidget: React.FC = () => {
             {/* Clock toggle button */}
             <button
               onClick={toggleClock}
-              className="text-xs text-gray-400 hover:text-primary transition-colors px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
+              className="cursor-pointer text-xs text-gray-400 hover:text-primary transition-colors px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
               title={clockMode === 'digital' ? 'Ver relógio analógico' : 'Ver relógio digital'}
             >
               {clockMode === 'digital' ? '🕰' : '⏱'}

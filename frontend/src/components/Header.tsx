@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
           {/* Mobile hamburger — always visible on small screens */}
           <button
             onClick={onMenuToggle}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
+            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
             title="Menu"
           >
             <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
         <div className="flex items-center gap-1 sm:gap-3 ml-auto">
           <button
             onClick={onThemeSettings}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             title="Personalizar tema"
           >
             <Palette className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
 
           <button
             onClick={() => dispatch(toggleTheme())}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             title="Alternar modo"
           >
             {theme === 'light' ? (
@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
 
           <button
             onClick={signOut}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
             title="Sair"
           >
             <LogOut className="w-5 h-5" />

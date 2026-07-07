@@ -43,7 +43,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onDelete, onEdit }) => {
       }`}>
         <button
           onClick={() => onEdit(note)}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`cursor-pointer p-1.5 rounded-lg transition-colors ${
             isLightColor(note.color)
               ? 'hover:bg-gray-200/70 text-gray-500 hover:text-gray-700'
               : 'hover:bg-white/20 text-gray-300 hover:text-white'
@@ -54,7 +54,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onDelete, onEdit }) => {
         </button>
         <button
           onClick={() => onDelete(note.id)}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`cursor-pointer p-1.5 rounded-lg transition-colors ${
             isLightColor(note.color)
               ? 'hover:bg-red-100 text-red-400 hover:text-red-600'
               : 'hover:bg-red-500/20 text-red-300 hover:text-red-200'

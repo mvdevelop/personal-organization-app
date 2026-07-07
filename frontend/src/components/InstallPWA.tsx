@@ -64,7 +64,7 @@ const InstallPWA: React.FC = () => {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 sm:left-auto sm:right-4 sm:max-w-sm animate-slide-up">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 relative overflow-hidden">
-        <button onClick={handleDismiss} className="absolute top-2 right-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400">
+        <button onClick={handleDismiss} className="cursor-pointer absolute top-2 right-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400">
           <X className="w-4 h-4" />
         </button>
 
@@ -85,11 +85,11 @@ const InstallPWA: React.FC = () => {
             </p>
             <div className="flex gap-2">
               <button onClick={handleInstall}
-                className="px-4 py-1.5 text-xs font-medium text-white rounded-lg btn-primary">
+                className="cursor-pointer px-4 py-1.5 text-xs font-medium text-white rounded-lg btn-primary">
                 {deferredPrompt ? 'Instalar' : 'Como instalar'}
               </button>
               <button onClick={handleDismiss}
-                className="px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                className="cursor-pointer px-4 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 Agora não
               </button>
             </div>

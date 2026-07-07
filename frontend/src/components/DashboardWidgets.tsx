@@ -52,7 +52,7 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
           {chartTypes.map(({ key, icon: Icon, label }) => (
             <button key={key} onClick={() => setChartType(key)}
-              className={`p-1.5 rounded-md transition-colors ${chartType === key ? 'bg-white dark:bg-gray-600 shadow-sm' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              className={`cursor-pointer p-1.5 rounded-md transition-colors ${chartType === key ? 'bg-white dark:bg-gray-600 shadow-sm' : 'hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               title={label}>
               <Icon className={`w-4 h-4 ${chartType === key ? 'text-primary' : 'text-gray-500'}`} />
             </button>
@@ -132,16 +132,16 @@ const MiniCalendar: React.FC<CalWidgetProps> = ({ tasks }) => {
         <h3 className="font-semibold text-gray-900 dark:text-white">Calendário</h3>
         <div className="flex items-center gap-1">
           <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400">&lt;</button>
+            className="cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400">&lt;</button>
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
           <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400">&gt;</button>
+            className="cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400">&gt;</button>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-0 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-        {WEEKDAYS.map(d => <div key={d} className="py-1">{d}</div>)}
+      <div className="cursor-pointer grid grid-cols-7 gap-0 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+        {WEEKDAYS.map(d => <div key={d} className="cursor-pointer py-1">{d}</div>)}
       </div>
-      <div className="grid grid-cols-7 gap-0">
+      <div className="cursor-pointer grid grid-cols-7 gap-0">
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
         {days.map(d => (
           <div key={d.day} className={`text-center py-1.5 text-sm rounded-full w-8 h-8 mx-auto flex items-center justify-center ${d.isToday ? 'bg-primary text-white font-bold' : d.hasTasks ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 dark:text-gray-300'}`}>

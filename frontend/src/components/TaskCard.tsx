@@ -33,7 +33,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit, d
       <div className="flex items-start gap-3">
         <button
           onClick={() => onToggle(task.id)}
-          className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+          className={`cursor-pointer mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
             task.completed
               ? 'bg-primary border-primary'
               : 'border-gray-300 dark:border-gray-600'
@@ -68,14 +68,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit, d
         <div className="flex gap-2">
           <button
             onClick={() => onEdit(task)}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            className="cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
             <Edit2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           </button>
           <button
             onClick={() => onDelete(task.id)}
             disabled={deleting}
-            className={`p-1 rounded ${deleting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            className={`cursor-pointer p-1 rounded ${deleting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             <Trash2 className="w-4 h-4 text-red-500" />
           </button>
