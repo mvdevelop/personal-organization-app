@@ -1,88 +1,33 @@
 @import "tailwindcss";
-@custom-variant dark (&:is(.dark *));
+@import "./styles/base.css";
+@import "./styles/components.css";
+@import "./styles/animations.css";
 @import "./theme/theme.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ===== Base Layout ===== */
+
 html {
-  transition: color 0.3s, background-color 0.3s;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 body {
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== Dark Mode — Preto e Cinza Escuro ===== */
-.dark,
-.dark body,
-.dark #root {
-  background-color: #000000;
+#root {
+  min-height: 100vh;
 }
 
-.dark .bg-gray-50 { background-color: #0a0a0a; }
-.dark .bg-gray-100 { background-color: #111111; }
-.dark .bg-gray-200 { background-color: #1a1a1a; }
-.dark .bg-gray-300 { background-color: #222222; }
-.dark .bg-gray-50\/70 { background-color: rgba(0, 0, 0, 0.85); }
-.dark .bg-white { background-color: #111111; }
-.dark .bg-gray-800 { background-color: #1a1a1a; }
-.dark .bg-gray-700 { background-color: #222222; }
-.dark .bg-gray-600 { background-color: #2a2a2a; }
-.dark .bg-gray-900 { background-color: #000000; }
+/* ===== Background Pattern ===== */
 
-/* Cards, sidebar, header — fundo preto/cinza escuro */
-.dark .bg-white.dark\:bg-gray-800,
-.dark .dark\:bg-gray-800 { background-color: #111111; }
-
-.dark .dark\:bg-gray-700 { background-color: #1a1a1a; }
-.dark .dark\:bg-gray-900 { background-color: #000000; }
-.dark .dark\:bg-gray-900\/70 { background-color: rgba(0, 0, 0, 0.85); }
-
-/* Texto */
-.dark .text-gray-900 { color: #f0f0f0; }
-.dark .text-gray-800 { color: #e0e0e0; }
-.dark .text-gray-700 { color: #cccccc; }
-.dark .text-gray-600 { color: #aaaaaa; }
-.dark .text-gray-500 { color: #888888; }
-.dark .text-gray-400 { color: #666666; }
-.dark .text-gray-300 { color: #cccccc; }
-.dark .text-white { color: #f0f0f0; }
-
-/* Bordas */
-.dark .border-gray-200 { border-color: #222222; }
-.dark .border-gray-100 { border-color: #1a1a1a; }
-.dark .border-gray-300 { border-color: #2a2a2a; }
-.dark .border-gray-700 { border-color: #2a2a2a; }
-.dark .border-gray-200\/50 { border-color: rgba(255, 255, 255, 0.06); }
-.dark .border-gray-100\/50 { border-color: rgba(255, 255, 255, 0.04); }
-.dark .border-white\/20 { border-color: rgba(255, 255, 255, 0.08); }
-.dark .border-white\/10 { border-color: rgba(255, 255, 255, 0.06); }
-.dark .border-gray-600 { border-color: #333333; }
-.dark .border-gray-700\/50 { border-color: rgba(255, 255, 255, 0.06); }
-.dark .ring-offset-gray-800 { --tw-ring-offset-color: #111111; }
-
-/* Overlay */
-.dark .bg-black\/40 { background-color: rgba(0, 0, 0, 0.7); }
-.dark .bg-black\/5 { background-color: rgba(255, 255, 255, 0.05); }
-.dark .bg-black\/10 { background-color: rgba(255, 255, 255, 0.08); }
-
-/* Hover states */
-.dark .hover\:bg-gray-100:hover { background-color: #1a1a1a; }
-.dark .hover\:bg-gray-700:hover { background-color: #2a2a2a; }
-.dark .hover\:bg-gray-50\/50:hover { background-color: rgba(255, 255, 255, 0.03); }
-.dark .hover\:bg-gray-200\/70:hover { background-color: #222222; }
-
-/* Dividers / separators */
-.dark .border-gray-100.dark\:border-gray-700\/50,
-.dark .border-gray-100.dark\:border-gray-700 { border-color: #1a1a1a; }
-.dark .border-b-gray-100 { border-bottom-color: #1a1a1a; }
-.dark .border-t-gray-100 { border-top-color: #1a1a1a; }
-
-/* Gray-50 backgrounds for cards */
-.dark .bg-gray-50 { background-color: #0a0a0a; }
-.dark .bg-gray-50\/70 { background-color: rgba(0, 0, 0, 0.85); }
-
-/* ===== Resto ===== */
-
-/* Fundo quadriculado sutil - tema claro */
+/* Light: fine horizontal lines — aristocratic paper */
 body::before {
   content: '';
   position: fixed;
@@ -90,16 +35,28 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(rgba(192, 192, 192, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(192, 192, 192, 0.2) 1px, transparent 1px);
-  background-size: 32px 32px;
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      rgba(201, 168, 76, 0.06) 31px,
+      rgba(201, 168, 76, 0.06) 32px
+    );
 }
 
-html.dark body::before {
+/* Dark: constellation dots */
+.dark body::before {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+    radial-gradient(1px 1px at 10% 20%, rgba(201, 168, 76, 0.08), transparent),
+    radial-gradient(1px 1px at 30% 65%, rgba(201, 168, 76, 0.06), transparent),
+    radial-gradient(1.5px 1.5px at 50% 10%, rgba(201, 168, 76, 0.1), transparent),
+    radial-gradient(1px 1px at 70% 40%, rgba(201, 168, 76, 0.07), transparent),
+    radial-gradient(1.5px 1.5px at 85% 75%, rgba(201, 168, 76, 0.08), transparent),
+    radial-gradient(1px 1px at 15% 85%, rgba(201, 168, 76, 0.05), transparent),
+    radial-gradient(1px 1px at 60% 90%, rgba(201, 168, 76, 0.06), transparent),
+    radial-gradient(1.2px 1.2px at 90% 15%, rgba(201, 168, 76, 0.07), transparent),
+    radial-gradient(1px 1px at 40% 45%, rgba(201, 168, 76, 0.04), transparent),
+    radial-gradient(1px 1px at 75% 55%, rgba(201, 168, 76, 0.05), transparent);
 }
 
 #root {
@@ -107,28 +64,12 @@ html.dark body::before {
   z-index: 1;
 }
 
-/* ===== Animations ===== */
+/* ===== Animations kept for backward compat ===== */
+
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
-}
-
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-.animate-pulse-slow {
-  animation: pulse-slow 2s ease-in-out infinite;
-}
-
-/* Colon blink for digital clock */
-@keyframes colon-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.15; }
-}
-.animate-colon {
-  animation: colon-blink 1s step-end infinite;
 }

@@ -54,7 +54,17 @@ function applyColorTheme(themeName: string) {
   const theme = COLOR_THEMES.find(t => t.name === themeName) || COLOR_THEMES[0]
   const root = document.documentElement
   for (const [key, value] of Object.entries(theme.colors)) {
+    // Set --color-{key} for backward compat with existing theme.css classes
     root.style.setProperty(`--color-${key}`, value)
+    // Also set the bare token name for the new retro design system
+    // (e.g. --gold, --bg-base, --border)
+    const bareKey = key.replace(/-/g, '-') // already kebab-case
+    root.style.setProperty(`--${bareKey}`, value)
+    // Handle mapped tokens
+    if (key === 'gold') root.style.setProperty('--border-gold', value)
+    if (key === 'bg-base') root.style.setProperty('--bg-base', value)
+    if (key === 'bg-surface') root.style.setProperty('--bg-surface', value)
+    if (key === 'bg-elevated') root.style.setProperty('--bg-elevated', value)
   }
 }
 

@@ -1,0 +1,186 @@
+/* ===== Design System — "Retrô Futurista" Schedule ===== */
+
+:root {
+  /* --- Backgrounds --- */
+  --bg-base: #faf6f0;
+  --bg-surface: #f5ede0;
+  --bg-elevated: #fefcf8;
+
+  /* --- Surfaces --- */
+  --surface-card: var(--bg-surface);
+  --surface-modal: var(--bg-elevated);
+
+  /* --- Text --- */
+  --text-primary: #2d2416;
+  --text-secondary: #7a6b5a;
+  --text-tertiary: #b0a090;
+
+  /* --- Borders --- */
+  --border: #e0d5c5;
+  --border-strong: #c9b89a;
+  --border-gold: #c9a84c;
+
+  /* --- Gold --- */
+  --gold: #c9a84c;
+  --gold-light: #e8d8a0;
+  --gold-dark: #a68a2e;
+
+  /* --- Accent --- */
+  --accent: #8b4513;
+  --accent-hover: #6b3410;
+
+  /* --- Status --- */
+  --success: #5a8f5a;
+  --danger: #a83232;
+  --warning: #c47a1a;
+
+  /* --- Fonts --- */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-ui: 'Space Grotesk', 'Inter', sans-serif;
+  --font-serif-alt: 'DM Serif Display', Georgia, serif;
+
+  /* --- Shadows (warm-toned) --- */
+  --shadow-sm: 0 1px 3px rgba(201, 168, 76, 0.08), 0 1px 2px rgba(45, 36, 22, 0.06);
+  --shadow-md: 0 4px 12px rgba(201, 168, 76, 0.12), 0 2px 4px rgba(45, 36, 22, 0.08);
+  --shadow-lg: 0 8px 30px rgba(201, 168, 76, 0.15), 0 4px 8px rgba(45, 36, 22, 0.1);
+  --shadow-xl: 0 12px 40px rgba(201, 168, 76, 0.18), 0 6px 12px rgba(45, 36, 22, 0.12);
+
+  /* --- Border radius (retro = sharp corners) --- */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-full: 9999px;
+
+  /* --- Transitions --- */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ===== Dark Mode ===== */
+.dark {
+  --bg-base: #0f0d1a;
+  --bg-surface: #1a1630;
+  --bg-elevated: #252040;
+
+  --text-primary: #e8dcc8;
+  --text-secondary: #b0a090;
+  --text-tertiary: #7a6b5a;
+
+  --border: #2a2550;
+  --border-strong: #3a3570;
+  --border-gold: #d4a743;
+
+  --gold: #d4a743;
+  --gold-light: #c9b04c;
+  --gold-dark: #a68a2e;
+
+  --accent: #d4733b;
+  --accent-hover: #e0854a;
+
+  --success: #6ea86e;
+  --danger: #cf4a4a;
+  --warning: #d4942a;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Utility Classes ===== */
+
+/* Backgrounds */
+.bg-base { background-color: var(--bg-base); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-elevated { background-color: var(--bg-elevated); }
+
+/* Text */
+.text-gold { color: var(--gold); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-accent-color { color: var(--accent); }
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+
+/* Borders */
+.border-gold { border-color: var(--border-gold); }
+.border-strong { border-color: var(--border-strong); }
+
+/* Font families */
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
+.font-mono { font-family: var(--font-mono); }
+.font-ui { font-family: var(--font-ui); }
+
+/* Shadows */
+.shadow-warm { box-shadow: var(--shadow-sm); }
+.shadow-warm-md { box-shadow: var(--shadow-md); }
+.shadow-warm-lg { box-shadow: var(--shadow-lg); }
+
+/* Decorator ◆ — a retro-inspired divider */
+.divider-diamond {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gold);
+  font-size: 0.5rem;
+  user-select: none;
+}
+.divider-diamond::before,
+.divider-diamond::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-gold);
+  opacity: 0.4;
+}
+
+/* Gold medal ring — for icons, avatars, badges */
+.medal-ring {
+  border: 2px solid var(--border-gold);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  flex-shrink: 0;
+}
+
+/* Decorative arch SVG (applied via mask or background) */
+.arch-decoration {
+  position: relative;
+}
+.arch-decoration::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--gold-light), var(--gold), var(--gold-light), transparent);
+  opacity: 0.6;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--border);
+}

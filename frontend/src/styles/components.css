@@ -1,0 +1,231 @@
+/* ===== Componentes Customizados — Schedule ===== */
+
+/* --- Page Layout Headers --- */
+.page-header {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* --- Section Decorative Top Bar --- */
+.section-arch {
+  position: relative;
+}
+.section-arch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -1px;
+  right: -1px;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--border-gold) 15%,
+    var(--gold) 50%,
+    var(--border-gold) 85%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+/* --- Card base with gold accent border --- */
+.card-retro {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+.card-retro:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* --- Double border (keyline effect) --- */
+.border-keyline {
+  border: 1px solid var(--border);
+  outline: 1px solid var(--gold-light);
+  outline-offset: 2px;
+}
+
+/* --- Badge retro --- */
+.badge-retro {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  background: transparent;
+}
+
+/* --- Gold Button (primary) --- */
+.btn-gold {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  background-color: var(--gold);
+  color: #2d2416;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+.btn-gold:hover {
+  background-color: var(--gold-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.btn-gold:active {
+  transform: translateY(0) scale(0.98);
+}
+.btn-gold:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --- Ghost/Outline Button --- */
+.btn-outline {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 0.875rem;
+  background: transparent;
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-outline:hover {
+  background-color: var(--gold);
+  color: #2d2416;
+}
+
+/* --- Danger Button --- */
+.btn-danger {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-danger:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* --- Input retro --- */
+.input-retro {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.input-retro:focus {
+  border-color: var(--border-gold);
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+}
+.input-retro::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* --- Select retro --- */
+.select-retro {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.select-retro:focus {
+  border-color: var(--border-gold);
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+}
+
+/* --- Label retro (Space Grotesk uppercase) --- */
+.label-retro {
+  font-family: var(--font-ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+/* --- Empty state box --- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-tertiary);
+}
+.empty-state svg {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+.empty-state p {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  max-width: 20rem;
+}
+
+/* --- Medal/shield icon container --- */
+.icon-medal {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: var(--bg-surface);
+}
+.icon-medal svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--gold);
+}
+
+/* --- Tooltip retro --- */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  font-family: var(--font-serif-alt);
+  font-size: 0.75rem;
+  color: var(--gold);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-gold);
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-fast);
+  z-index: 100;
+}
+[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}

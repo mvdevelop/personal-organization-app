@@ -1,5 +1,6 @@
 /* ===== Theme Utility Classes ===== */
 /* CSS variables are set dynamically by preferenceMiddleware from themes.ts */
+
 :root {
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
@@ -10,6 +11,8 @@
   --color-sidebar: #3b82f6;
   --color-sidebar-hover: #2563eb;
 }
+
+/* Primary */
 .bg-primary { background-color: var(--color-primary); }
 .bg-primary-hover:hover { background-color: var(--color-primary-hover); }
 .bg-primary-light { background-color: var(--color-primary-light); }
@@ -17,6 +20,7 @@
 .text-primary-hover:hover { color: var(--color-primary-hover); }
 .border-primary { border-color: var(--color-primary); }
 .hover\:bg-primary-hover:hover { background-color: var(--color-primary-hover); }
+.ring-primary { --tw-ring-color: var(--color-primary); }
 
 .dark .bg-primary-light { background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); }
 
@@ -27,6 +31,7 @@
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   transition: background-color 0.2s;
+  cursor: pointer;
 }
 .btn-primary:hover {
   background-color: var(--color-primary-hover);
@@ -40,3 +45,19 @@
 .bg-accent { background-color: var(--color-accent); }
 .text-accent { color: var(--color-accent); }
 .border-accent { border-color: var(--color-accent); }
+
+/* ===== Nova camada de tokens do sistema retro ===== */
+
+/* Gold */
+.bg-gold { background-color: var(--gold); }
+.bg-gold-dark { background-color: var(--gold-dark); }
+
+/* Surfaces (map from theme colors) */
+.bg-base { background-color: var(--color-bg-base, var(--bg-base)); }
+.bg-surface { background-color: var(--color-bg-surface, var(--bg-surface)); }
+.bg-elevated { background-color: var(--color-bg-elevated, var(--bg-elevated)); }
+
+/* Texts from retro system */
+[class*="text-"] {
+  --text-color-inherit: inherit;
+}
