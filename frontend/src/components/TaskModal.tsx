@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { Task } from '../store/slices/tasksSlice';
+import Modal from './ui/Modal';
+import Button from './ui/Button';
 
 interface TaskModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (task: { title: string; description?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string | null; completed?: boolean }) => void
+  onSave: (task: { title: string; description?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string | null }) => void
   editingTask?: Task | null
   saving?: boolean
 }
@@ -29,7 +30,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, editingT
       setPriority('medium')
       setDueDate('')
     }
-  }, [editingTask])
+  }, [editingTask, isOpen])
 
   if (!isOpen) return null
 
@@ -40,96 +41,69 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, editingT
       description,
       priority,
       dueDate: dueDate || null,
-      completed: editingTask?.completed || false,
     })
-    onClose()
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {editingTask ? 'Editar Tarefa' : 'Nova Tarefa'}
-          </h2>
-          <button onClick={onClose} className="cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+    <Modal isOpen={isOpen} onClose={onClose} title={editingTask ? 'Editar Tarefa' : 'Nova Tarefa'}>
+      <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <div>
+          <label className="label-retro mb-1.5 block">Título *</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className="input-retro w-full px-3 py-2"
+            placeholder="O que precisa ser feito?"
+          />
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <div>
+          <label className="label-retro mb-1.5 block">Descrição</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="input-retro w-full px-3 py-2 resize-none"
+            placeholder="Detalhes opcionais..."
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Título *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Descrição
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Prioridade
-            </label>
+            <label className="label-retro mb-1.5 block">Prioridade</label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="select-retro w-full px-3 py-2"
             >
               <option value="low">Baixa</option>
               <option value="medium">Média</option>
               <option value="high">Alta</option>
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Data de Vencimento
-            </label>
+            <label className="label-retro mb-1.5 block">Data de Vencimento</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="input-retro w-full px-3 py-2"
             />
           </div>
-          
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="cursor-pointer flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="cursor-pointer flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Salvando...' : editingTask ? 'Atualizar' : 'Criar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <Button variant="ghost" onClick={onClose} className="flex-1">Cancelar</Button>
+          <Button variant="gold" type="submit" disabled={saving} className="flex-1">
+            {saving ? 'Salvando...' : editingTask ? 'Atualizar' : 'Criar'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 
-export default TaskModal;
+export default TaskModal

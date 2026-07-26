@@ -16,7 +16,13 @@ import {
 } from '../store/slices/tasksSlice';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
-import { Plus, Search, AlertCircle, Loader2, ClipboardList } from 'lucide-react';
+import PageHeader from '../components/ui/PageHeader';
+import SearchInput from '../components/ui/SearchInput';
+import Button from '../components/ui/Button';
+import EmptyState from '../components/ui/EmptyState';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { Plus, ClipboardList, ListTodo } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Tasks: React.FC = () => {
@@ -26,6 +32,7 @@ const Tasks: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; taskId: string | null }>({ isOpen: false, taskId: null })
 
   useEffect(() => {
     dispatch(fetchTasks({ filter, search: searchQuery || undefined }))
@@ -73,7 +80,6 @@ const Tasks: React.FC = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja deletar esta tarefa?')) return
     setDeletingId(id)
     try {
       await dispatch(deleteTask(id)).unwrap()
@@ -82,48 +88,41 @@ const Tasks: React.FC = () => {
       toast.error('Erro ao remover tarefa')
     } finally {
       setDeletingId(null)
+      setDeleteConfirm({ isOpen: false, taskId: null })
     }
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-          <ClipboardList className="w-7 h-7 text-primary" />
-          Minhas Tarefas
-        </h1>
-        <button
+      <PageHeader icon={ClipboardList} title="Minhas Tarefas">
+        <Button
+          variant="gold"
+          icon={<Plus className="w-4 h-4" />}
           onClick={() => {
             setEditingTask(null)
             setIsModalOpen(true)
           }}
-          className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
-          <Plus className="w-4 h-4" />
           Nova Tarefa
-        </button>
-      </div>
+        </Button>
+      </PageHeader>
 
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar tarefas..."
-            value={searchQuery}
-            onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          />
-        </div>
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <SearchInput
+          value={searchQuery}
+          onChange={(v) => dispatch(setSearchQuery(v))}
+          placeholder="Buscar tarefas..."
+          className="flex-1"
+        />
         <div className="flex gap-2">
           {(['all', 'active', 'completed'] as const).map((f) => (
             <button
               key={f}
               onClick={() => dispatch(setFilter(f))}
-              className={`cursor-pointer px-4 py-2 rounded-lg transition-colors ${
+              className={`cursor-pointer px-4 py-2 rounded font-ui text-sm font-medium transition-colors ${
                 filter === f
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  ? 'btn-gold'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               {f === 'all' ? 'Todas' : f === 'active' ? 'Ativas' : 'Concluídas'}
@@ -133,37 +132,36 @@ const Tasks: React.FC = () => {
       </div>
 
       {loading && tasks.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-          <span className="ml-2 text-gray-500 dark:text-gray-400">Carregando tarefas...</span>
-        </div>
+        <LoadingSpinner text="Carregando tarefas..." />
       ) : filteredTasks.length === 0 ? (
-        <div className="text-center py-12">
-          <AlertCircle className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">
-            {searchQuery
-              ? 'Nenhuma tarefa encontrada para essa busca'
-              : filter !== 'all'
-                ? `Nenhuma tarefa ${filter === 'active' ? 'ativa' : 'concluída'}`
-                : 'Nenhuma tarefa ainda. Crie uma!'}
-          </p>
-        </div>
+        <EmptyState
+          icon={ListTodo}
+          title={searchQuery ? 'Nenhuma tarefa encontrada' : 'Nenhuma tarefa ainda'}
+          description={searchQuery ? 'Tente buscar por outro termo' : filter !== 'all' ? `Nenhuma tarefa ${filter === 'active' ? 'ativa' : 'concluída'}` : 'Crie sua primeira tarefa!'}
+          action={
+            !searchQuery && filter === 'all' ? (
+              <Button variant="gold" icon={<Plus className="w-4 h-4" />} onClick={() => setIsModalOpen(true)}>
+                Criar Tarefa
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
-          {filteredTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onToggle={handleToggle}
-              onDelete={handleDelete}
-              onEdit={(task) => {
-                setEditingTask(task)
-                setIsModalOpen(true)
-              }}
-              deleting={deletingId === task.id}
-            />
-          ))}
+            {filteredTasks.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onToggle={handleToggle}
+                onDelete={(id) => setDeleteConfirm({ isOpen: true, taskId: id })}
+                onEdit={(task) => {
+                  setEditingTask(task)
+                  setIsModalOpen(true)
+                }}
+                deleting={deletingId === task.id}
+              />
+            ))}
           </AnimatePresence>
         </div>
       )}
@@ -177,6 +175,16 @@ const Tasks: React.FC = () => {
         onSave={handleSaveTask}
         editingTask={editingTask}
         saving={saving}
+      />
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, taskId: null })}
+        onConfirm={() => deleteConfirm.taskId && handleDelete(deleteConfirm.taskId)}
+        title="Remover Tarefa"
+        message="Tem certeza que deseja deletar esta tarefa? Esta ação não pode ser desfeita."
+        confirmText="Deletar"
+        variant="danger"
       />
     </div>
   )

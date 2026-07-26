@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LogIn, UserPlus, AlertCircle } from 'lucide-react';
 import { ApiClientError } from '../services/api';
+import LogoIcon from '../components/LogoIcon';
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
@@ -44,37 +45,53 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50/70 dark:bg-gray-900/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md">
-        <div className="flex items-center justify-center mb-6">
-          {isSignUp ? (
-            <UserPlus className="w-8 h-8 text-blue-500" />
-          ) : (
-            <LogIn className="w-8 h-8 text-blue-500" />
-          )}
-        </div>
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
-          {isSignUp ? 'Criar Conta' : 'Entrar'}
-        </h1>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      {/* Decorative arch background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.03] dark:opacity-[0.05]">
+        <svg className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]" viewBox="0 0 800 400" fill="none">
+          <path d="M0 400 Q200 0 400 0 Q600 0 800 400" stroke="currentColor" strokeWidth="2" className="text-primary" />
+          <path d="M50 400 Q200 50 400 50 Q600 50 750 400" stroke="currentColor" strokeWidth="1" className="text-primary" opacity="0.5" />
+          <path d="M150 400 Q250 120 400 120 Q550 120 650 400" stroke="currentColor" strokeWidth="0.5" className="text-primary" opacity="0.3" />
+        </svg>
+      </div>
 
+      <div className="relative w-full max-w-md animate-fade-in bg-white dark:bg-gray-800 shadow-warm-lg arch-decoration"
+        style={{
+          border: '1px solid var(--color-primary-light)',
+        }}
+      >
+        {/* Logo + Title */}
+        <div className="pt-8 pb-4 text-center">
+          <div className="medal-ring !w-16 !h-16 !border-primary mx-auto mb-3 bg-primary-light">
+            <LogoIcon size={32} />
+          </div>
+          <h1 className="font-display text-2xl font-bold text-primary">
+            Schedule
+          </h1>
+          <p className="font-body text-sm mt-1 text-gray-500 dark:text-gray-400">
+            {isSignUp ? 'Crie sua conta' : 'Entre na sua conta'}
+          </p>
+        </div>
+
+        <div className="divider-diamond px-8 mb-6" />
+
+        {/* Error */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
+          <div className="mx-8 mb-4 p-3 flex items-center gap-2 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-4">
           {isSignUp && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Nome
-              </label>
+              <label className="label-retro mb-1.5 block">Nome</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400"
+                className="input-retro w-full px-4 py-2.5"
                 placeholder="Seu nome"
                 required
                 minLength={2}
@@ -83,28 +100,24 @@ const Login: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email
-            </label>
+            <label className="label-retro mb-1.5 block">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400"
+              className="input-retro w-full px-4 py-2.5"
               placeholder="seu@email.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Senha
-            </label>
+            <label className="label-retro mb-1.5 block">Senha</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400"
+              className="input-retro w-full px-4 py-2.5"
               placeholder="Mínimo 6 caracteres"
               required
               minLength={6}
@@ -114,22 +127,25 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="cursor-pointer w-full py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-gold w-full py-2.5 mt-2"
           >
             {loading ? 'Aguarde...' : isSignUp ? 'Criar Conta' : 'Entrar'}
           </button>
         </form>
 
-        <div className="text-center mt-6">
+        <div className="text-center pb-8">
           <button
             onClick={switchMode}
-            className="cursor-pointer text-sm text-primary hover:text-primary-hover transition-colors"
+            className="font-ui text-sm text-primary hover:text-primary-hover transition-colors cursor-pointer"
           >
             {isSignUp
               ? 'Já tem conta? Faça login'
               : 'Não tem conta? Cadastre-se'}
           </button>
         </div>
+
+        {/* Bottom accent line */}
+        <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30" />
       </div>
     </div>
   )

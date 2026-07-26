@@ -5,11 +5,12 @@ import {
   fetchLogs, createLog, fetchStreaks,
   type HabitLog,
 } from '../store/slices/habitsSlice';
+import PageHeader from '../components/ui/PageHeader';
+import EmptyState from '../components/ui/EmptyState';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Plus, Check, Trash2, ChevronLeft, ChevronRight, Palette, Zap } from 'lucide-react';
+import { WEEKDAYS_SHORT, MONTHS } from '../shared/constants';
 import toast from 'react-hot-toast';
-
-const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 
 const Habits: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -26,7 +27,6 @@ const Habits: React.FC = () => {
     dispatch(fetchStreaks())
   }, [dispatch])
 
-  // Fetch logs for visible range (derived from calDate to avoid stale week)
   const weekStart = useMemo(() => {
     const d = new Date(calDate)
     const day = d.getDay()
@@ -50,7 +50,6 @@ const Habits: React.FC = () => {
     dispatch(fetchLogs({ start: start.toISOString(), end: end.toISOString() }))
   }, [dispatch, viewMode, weekStart, weekEnd, monthStart, monthEnd])
 
-  // Build week days
   const weekDays = useMemo(() => {
     const days: Date[] = []
     for (let i = 0; i < 7; i++) {
@@ -108,7 +107,6 @@ const Habits: React.FC = () => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Calendar heatmap data
   const calDays = useMemo(() => {
     const days: { date: Date; count: number }[] = []
     const first = new Date(calDate.getFullYear(), calDate.getMonth(), 1)
@@ -123,56 +121,48 @@ const Habits: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-          <Zap className="w-7 h-7 text-primary" />
-          Hábitos
-        </h1>
-      </div>
+      <PageHeader icon={Zap} title="Hábitos" />
 
       {/* Add habit form */}
-      <form onSubmit={handleAddHabit} className="flex gap-3 flex-wrap">
+      <form onSubmit={handleAddHabit} className="flex gap-3 flex-wrap items-end">
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)}
           placeholder="Novo hábito..." required
-          className="flex-1 min-w-[200px] px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
-        <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)}
-          className="w-10 h-10 rounded-xl cursor-pointer border border-gray-300 dark:border-gray-600" />
-        <button type="submit"
-          className="cursor-pointer flex items-center gap-2 px-5 py-2.5 btn-primary font-medium rounded-xl text-sm">
-          <Plus className="w-4 h-4" /> Adicionar
+          className="input-retro flex-1 min-w-[200px] px-4 py-2.5" />
+        <div className="medal-ring !w-10 !h-10 !border-gray-300 dark:!border-gray-600 p-0.5">
+          <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)}
+            className="w-full h-full rounded-full cursor-pointer border-none" />
+        </div>
+        <button type="submit" className="btn-gold px-5 py-2.5">
+          <Plus className="w-4 h-4 inline-block mr-1" /> Adicionar
         </button>
       </form>
 
-      {/* Week/Month toggle */}
+      {/* View toggle */}
       <div className="flex items-center gap-2">
         <button onClick={() => setViewMode('week')}
-          className={`cursor-pointer px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'week' ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>Semana</button>
+          className={`cursor-pointer px-4 py-1.5 rounded font-ui text-sm font-medium transition-colors ${viewMode === 'week' ? 'btn-gold' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>Semana</button>
         <button onClick={() => setViewMode('month')}
-          className={`cursor-pointer px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'month' ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>Mês</button>
+          className={`cursor-pointer px-4 py-1.5 rounded font-ui text-sm font-medium transition-colors ${viewMode === 'month' ? 'btn-gold' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>Mês</button>
       </div>
 
       {loading && habits.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">Carregando...</div>
+        <LoadingSpinner text="Carregando hábitos..." />
       ) : habits.length === 0 ? (
-        <div className="text-center py-16">
-          <Palette className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">Crie seu primeiro hábito acima!</p>
-        </div>
+        <EmptyState icon={Palette} title="Crie seu primeiro hábito" description="Adicione hábitos acima para começar a tracking." />
       ) : viewMode === 'week' ? (
-        /* === WEEKLY TABLE === */
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 overflow-x-auto arch-decoration">
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-100 dark:border-gray-700">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/4">Hábito</th>
+                <th className="text-left px-4 py-3 font-ui text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/4">Hábito</th>
                 {weekDays.map((d, i) => (
-                  <th key={i} className={`text-center px-2 py-3 text-xs font-semibold ${d.getTime() === today.getTime() ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}>
-                    <div>{WEEKDAYS[d.getDay()]}</div>
-                    <div className="text-lg font-bold">{d.getDate()}</div>
+                  <th key={i} className={`text-center px-2 py-3 font-ui text-xs font-semibold ${d.getTime() === today.getTime() ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}>
+                    <div>{WEEKDAYS_SHORT[d.getDay()]}</div>
+                    <div className="font-display text-lg font-bold">{d.getDate()}</div>
                   </th>
                 ))}
-                <th className="text-center px-3 py-3 text-xs font-semibold text-orange-500 uppercase">🔥</th>
-                <th className="text-center px-2 py-3 text-xs font-semibold text-gray-400 uppercase">Ação</th>
+                <th className="text-center px-3 py-3 font-ui text-xs font-semibold text-orange-500 uppercase">🔥</th>
+                <th className="text-center px-2 py-3 font-ui text-xs font-semibold text-gray-400 uppercase">Ação</th>
               </tr>
             </thead>
             <tbody>
@@ -184,14 +174,14 @@ const Habits: React.FC = () => {
                       {editingId === habit.id ? (
                         <div className="flex gap-2">
                           <input value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white w-32" autoFocus
+                            className="input-retro px-2 py-1 text-sm w-32" autoFocus
                             onKeyDown={e => { if (e.key === 'Enter') handleEditSave(habit.id); if (e.key === 'Escape') setEditingId(null) }} />
-                          <button onClick={() => handleEditSave(habit.id)} className="cursor-pointer text-xs text-primary">OK</button>
-                          <button onClick={() => setEditingId(null)} className="cursor-pointer text-xs text-gray-400">Cancelar</button>
+                          <button onClick={() => handleEditSave(habit.id)} className="font-ui text-xs text-primary cursor-pointer">OK</button>
+                          <button onClick={() => setEditingId(null)} className="font-ui text-xs text-gray-400 cursor-pointer">Cancelar</button>
                         </div>
                       ) : (
                         <button onClick={() => { setEditingId(habit.id); setEditTitle(habit.title) }}
-                          className="cursor-pointer text-sm font-medium text-gray-900 dark:text-white hover:text-primary truncate max-w-[150px]">
+                          className="cursor-pointer font-body text-sm font-medium text-gray-900 dark:text-white hover:text-primary truncate max-w-[150px]">
                           {habit.title}
                         </button>
                       )}
@@ -206,18 +196,18 @@ const Habits: React.FC = () => {
                           onClick={() => handleToggle(habit.id, d)}
                           className={`cursor-pointer w-8 h-8 rounded-full mx-auto flex items-center justify-center transition-all hover:scale-110 ${
                             log?.completed
-                              ? 'text-white shadow-sm'
+                              ? 'shadow-sm'
                               : 'border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary'
                           }`}
                           style={log?.completed ? { backgroundColor: habit.color } : {}}
                         >
-                          {log?.completed ? <Check className="w-4 h-4" /> : null}
+                          {log?.completed ? <Check className="w-4 h-4 text-white" /> : null}
                         </button>
                       </td>
                     )
                   })}
                   <td className="text-center px-3 py-3">
-                    <span className="text-sm font-bold text-orange-500">🔥 {getStreak(habit.id)}</span>
+                    <span className="font-mono text-sm font-bold text-orange-500">🔥 {getStreak(habit.id)}</span>
                   </td>
                   <td className="text-center px-2 py-3">
                     <button onClick={() => handleDelete(habit.id)} className="cursor-pointer p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-400 transition-colors">
@@ -230,19 +220,18 @@ const Habits: React.FC = () => {
           </table>
         </div>
       ) : (
-        /* === MONTHLY CALENDAR === */
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() - 1, 1))}
-              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ChevronLeft className="w-5 h-5" /></button>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ChevronLeft className="w-5 h-5" /></button>
+            <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">
               {MONTHS[calDate.getMonth()]} {calDate.getFullYear()}
             </h2>
             <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() + 1, 1))}
-              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ChevronRight className="w-5 h-5" /></button>
+              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ChevronRight className="w-5 h-5" /></button>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-            {WEEKDAYS.map(d => <div key={d} className="py-2">{d}</div>)}
+          <div className="grid grid-cols-7 gap-1 text-center font-ui text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+            {WEEKDAYS_SHORT.map(d => <div key={d} className="py-2">{d}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: calDays[0]?.date.getDay() || 0 }).map((_, i) => (
@@ -252,11 +241,13 @@ const Habits: React.FC = () => {
               const isToday = d.date.getTime() === today.getTime()
               const maxCount = habits.length || 1
               const intensity = d.count / maxCount
+              const hue = 210 - intensity * 50 // blue-ish shift
               return (
-                <div key={i} className={`relative p-2 rounded-lg text-center min-h-[44px] ${isToday ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800' : ''}`}
-                  style={{ backgroundColor: d.count > 0 ? `rgba(59, 130, 246, ${0.1 + intensity * 0.3})` : undefined }}>
-                  <div className={`text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700 dark:text-gray-300'}`}>{d.date.getDate()}</div>
-                  {d.count > 0 && <div className="text-xs text-primary font-medium mt-0.5">{d.count}✓</div>}
+                <div key={i}
+                  className={`relative p-2 rounded-lg text-center min-h-[44px] transition-all ${isToday ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800' : ''}`}
+                  style={{ backgroundColor: d.count > 0 ? `hsla(${hue}, 60%, 50%, ${0.1 + intensity * 0.3})` : undefined }}>
+                  <div className={`font-body text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700 dark:text-gray-300'}`}>{d.date.getDate()}</div>
+                  {d.count > 0 && <div className="font-mono text-xs text-primary font-medium mt-0.5">{d.count}✓</div>}
                 </div>
               )
             })}

@@ -46,9 +46,9 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
   ]
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+    <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white">Analytics</h3>
+        <h3 className="font-display font-semibold text-gray-900 dark:text-white">Analytics</h3>
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
           {chartTypes.map(({ key, icon: Icon, label }) => (
             <button key={key} onClick={() => setChartType(key)}
@@ -62,7 +62,7 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
 
       <div className="h-64">
         {pieData.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-400 text-sm">Sem dados suficientes</div>
+          <div className="flex items-center justify-center h-full text-gray-400 font-body text-sm">Sem dados suficientes</div>
         ) : chartType === 'pie' ? (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -127,24 +127,26 @@ const MiniCalendar: React.FC<CalWidgetProps> = ({ tasks }) => {
   })
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+    <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900 dark:text-white">Calendário</h3>
+        <h3 className="font-display font-semibold text-gray-900 dark:text-white">Calendário</h3>
         <div className="flex items-center gap-1">
           <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))}
-            className="cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400">&lt;</button>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400 cursor-pointer">&lt;</button>
+          <span className="font-body text-sm font-medium text-gray-700 dark:text-gray-300">{MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
           <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))}
-            className="cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400">&gt;</button>
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-400 cursor-pointer">&gt;</button>
         </div>
       </div>
-      <div className="cursor-pointer grid grid-cols-7 gap-0 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-        {WEEKDAYS.map(d => <div key={d} className="cursor-pointer py-1">{d}</div>)}
+      <div className="grid grid-cols-7 gap-0 text-center font-ui text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+        {WEEKDAYS.map(d => <div key={d} className="py-1">{d}</div>)}
       </div>
-      <div className="cursor-pointer grid grid-cols-7 gap-0">
+      <div className="grid grid-cols-7 gap-0">
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
         {days.map(d => (
-          <div key={d.day} className={`text-center py-1.5 text-sm rounded-full w-8 h-8 mx-auto flex items-center justify-center ${d.isToday ? 'bg-primary text-white font-bold' : d.hasTasks ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+          <div key={d.day}
+            className={`text-center py-1.5 font-body text-sm rounded-full w-8 h-8 mx-auto flex items-center justify-center
+              ${d.isToday ? 'bg-primary text-white font-bold' : d.hasTasks ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
             {d.day}
           </div>
         ))}

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchSubjects, createSubject, deleteSubject, fetchSessions, createSession, deleteSession, type Subject, type StudySession } from '../store/slices/studiesSlice';
+import PageHeader from '../components/ui/PageHeader';
+import Button from '../components/ui/Button';
+import EmptyState from '../components/ui/EmptyState';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Plus, GraduationCap, BookOpen, Trash2, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { WEEKDAYS_SHORT, MONTHS, TECHNIQUE_LABELS, SUBJECT_CATEGORIES } from '../shared/constants';
 import toast from 'react-hot-toast';
-
-const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
-const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-const TECHNIQUES = ['pomodoro', 'revisao', 'exercicio', 'leitura', 'outro'] as const
-const TECHNIQUE_LABELS: Record<string, string> = { pomodoro: 'Pomodoro', revisao: 'Revisão', exercicio: 'Exercício', leitura: 'Leitura', outro: 'Outro' }
 
 const Studies: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -23,6 +23,7 @@ const Studies: React.FC = () => {
   const [logDuration, setLogDuration] = useState('')
   const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0])
   const [logTechnique, setLogTechnique] = useState('pomodoro')
+
   useEffect(() => { dispatch(fetchSubjects()) }, [dispatch])
 
   const weekStart = useMemo(() => {
@@ -63,7 +64,7 @@ const Studies: React.FC = () => {
       await dispatch(createSession({
         subjectId: logSubject,
         duration: Number(logDuration),
-        technique: logTechnique as typeof TECHNIQUES[number],
+        technique: logTechnique as 'pomodoro' | 'revisao' | 'exercicio' | 'leitura' | 'outro',
         date: new Date(logDate).toISOString(),
       })).unwrap()
       setLogDuration('')
@@ -92,7 +93,6 @@ const Studies: React.FC = () => {
       const ds = toDateStr(date)
       return sessions.filter(s => s.date.startsWith(ds)).reduce((acc, s) => acc + s.duration, 0)
     }
-
     const days: { date: Date; minutes: number }[] = []
     const first = new Date(calDate.getFullYear(), calDate.getMonth(), 1)
     const last = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 0)
@@ -104,98 +104,88 @@ const Studies: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-          <GraduationCap className="w-7 h-7 text-primary" />
-          Estudos
-        </h1>
-        <button onClick={() => setShowForm(!showForm)}
-          className="cursor-pointer flex items-center gap-2 px-4 py-2.5 btn-primary rounded-xl text-sm font-medium">
-          <Plus className="w-4 h-4" /> Matéria
-        </button>
-      </div>
+      <PageHeader icon={GraduationCap} title="Estudos">
+        <Button variant="gold" icon={<Plus className="w-4 h-4" />} onClick={() => setShowForm(!showForm)}>
+          Matéria
+        </Button>
+      </PageHeader>
 
       {/* Add subject form */}
       {showForm && (
-        <form onSubmit={handleAddSubject} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+        <form onSubmit={handleAddSubject} className="arch-decoration bg-white dark:bg-gray-800 rounded-xl p-4 shadow-warm border border-gray-200 dark:border-gray-700">
           <div className="flex gap-3 flex-wrap">
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Nome da matéria" required
-              className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+              className="input-retro flex-1 min-w-[200px] px-3 py-2" />
             <select value={category} onChange={e => setCategory(e.target.value as Subject['category'])}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
-              <option value="faculdade">🎓 Faculdade</option>
-              <option value="concurso">📋 Concurso</option>
-              <option value="curso">📖 Curso</option>
-              <option value="personal">🧠 Pessoal</option>
+              className="select-retro px-3 py-2">
+              {SUBJECT_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
             <input value={workload} onChange={e => setWorkload(e.target.value)} type="number" placeholder="Carga h"
-              className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
-            <input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-9 h-9 rounded cursor-pointer" />
-            <button type="submit" className="cursor-pointer px-4 py-2 btn-primary rounded-lg text-sm">Adicionar</button>
+              className="input-retro w-20 px-3 py-2" />
+            <div className="medal-ring !w-9 !h-9 !border-gray-300 dark:!border-gray-600 p-0.5">
+              <input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-full h-full rounded-full cursor-pointer border-none" />
+            </div>
+            <Button variant="gold" type="submit">Adicionar</Button>
           </div>
         </form>
       )}
 
-      {/* View toggle + Log form */}
-      <div className="flex flex-wrap items-center gap-3">
+      {/* View toggle */}
+      <div className="flex items-center gap-3">
         <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
           <button onClick={() => setViewMode('week')}
-            className={`cursor-pointer px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'week' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>Semana</button>
+            className={`cursor-pointer px-4 py-1.5 rounded-md font-ui text-sm font-medium transition-colors ${viewMode === 'week' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>Semana</button>
           <button onClick={() => setViewMode('month')}
-            className={`cursor-pointer px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'month' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>Mês</button>
+            className={`cursor-pointer px-4 py-1.5 rounded-md font-ui text-sm font-medium transition-colors ${viewMode === 'month' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>Mês</button>
         </div>
       </div>
 
       {loading && subjects.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">Carregando...</div>
+        <LoadingSpinner text="Carregando matérias..." />
       ) : subjects.length === 0 ? (
-        <div className="text-center py-16">
-          <BookOpen className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">Adicione matérias para começar</p>
-        </div>
+        <EmptyState icon={BookOpen} title="Adicione matérias para começar" />
       ) : viewMode === 'week' ? (
-        /* === WEEKLY TABLE === */
         <>
           {/* Quick log form */}
-          <form onSubmit={handleLogSession} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 flex gap-3 flex-wrap items-end">
+          <form onSubmit={handleLogSession} className="arch-decoration bg-white dark:bg-gray-800 rounded-xl p-4 shadow-warm border border-gray-200 dark:border-gray-700 flex gap-3 flex-wrap items-end">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Matéria</label>
+              <label className="label-retro mb-1 block">Matéria</label>
               <select value={logSubject} onChange={e => setLogSubject(e.target.value)} required
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm min-w-[160px]">
+                className="select-retro px-3 py-2 min-w-[160px]">
                 <option value="">Selecionar...</option>
                 {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Minutos</label>
+              <label className="label-retro mb-1 block">Minutos</label>
               <input value={logDuration} onChange={e => setLogDuration(e.target.value)} type="number" placeholder="25" required min={1}
-                className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                className="input-retro w-20 px-3 py-2" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Técnica</label>
+              <label className="label-retro mb-1 block">Técnica</label>
               <select value={logTechnique} onChange={e => setLogTechnique(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
-                {TECHNIQUES.map(t => <option key={t} value={t}>{TECHNIQUE_LABELS[t]}</option>)}
+                className="select-retro px-3 py-2">
+                {Object.entries(TECHNIQUE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <input type="date" value={logDate} onChange={e => setLogDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
-            <button type="submit" className="cursor-pointer px-4 py-2 btn-primary rounded-lg text-sm">Registrar</button>
+              className="input-retro px-3 py-2" />
+            <Button variant="gold" type="submit">Registrar</Button>
           </form>
 
           {/* Weekly table */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 overflow-x-auto arch-decoration">
             <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-700">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase w-1/4">Matéria</th>
+                  <th className="text-left px-4 py-3 font-ui text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase w-1/4">Matéria</th>
                   {weekDays.map((d, i) => (
-                    <th key={i} className={`text-center px-2 py-3 text-xs font-semibold ${d.getTime() === today.getTime() ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}>
-                      <div>{WEEKDAYS[d.getDay()]}</div>
-                      <div className="text-lg font-bold">{d.getDate()}</div>
+                    <th key={i} className={`text-center px-2 py-3 font-ui text-xs font-semibold ${d.getTime() === today.getTime() ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <div>{WEEKDAYS_SHORT[d.getDay()]}</div>
+                      <div className="font-display text-lg font-bold">{d.getDate()}</div>
                     </th>
                   ))}
-                  <th className="text-center px-3 py-3 text-xs font-semibold text-gray-400 uppercase">Total</th>
+                  <th className="text-center px-3 py-3 font-ui text-xs font-semibold text-gray-400 uppercase">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -209,30 +199,34 @@ const Studies: React.FC = () => {
                             <BookOpen className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">{subject.name}</span>
-                            {subject.workload > 0 && <span className="text-xs text-gray-400 ml-2">{subject.workload}h</span>}
+                            <span className="font-body text-sm font-medium text-gray-900 dark:text-white">{subject.name}</span>
+                            {subject.workload > 0 && <span className="font-mono text-xs text-gray-400 ml-2">{subject.workload}h</span>}
                           </div>
                         </div>
                       </td>
                       {weekDays.map((d, i) => {
                         const mins = getSubjectDayMinutes(subject.id, d)
                         const isToday = d.getTime() === today.getTime()
+                        const intensity = Math.min(1, mins / 120)
                         return (
                           <td key={i} className={`text-center px-2 py-3 ${isToday ? 'bg-primary/5' : ''}`}>
                             {mins > 0 ? (
-                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
-                                style={{ backgroundColor: subject.color + '20', color: subject.color }}>
+                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-mono text-xs font-medium"
+                                style={{
+                                  backgroundColor: `color-mix(in srgb, var(--color-primary) ${intensity * 30 + 10}%, transparent)`,
+                                  color: 'var(--color-primary)',
+                                }}>
                                 <Clock className="w-3 h-3" />
                                 {mins}m
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+                              <span className="font-mono text-xs text-gray-300 dark:text-gray-600">—</span>
                             )}
                           </td>
                         )
                       })}
                       <td className="text-center px-3 py-3">
-                        <span className="text-sm font-bold text-primary">{Math.round(weekTotal / 60 * 10) / 10}h</span>
+                        <span className="font-mono text-sm font-bold text-primary">{Math.round(weekTotal / 60 * 10) / 10}h</span>
                       </td>
                     </tr>
                   )
@@ -241,21 +235,21 @@ const Studies: React.FC = () => {
             </table>
           </div>
 
-          {/* Recent sessions list */}
+          {/* Recent sessions */}
           {sessions.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Sessões desta semana</h3>
+            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl p-4 shadow-warm border border-gray-200 dark:border-gray-700">
+              <h3 className="font-display text-sm font-semibold text-gray-900 dark:text-white mb-3">Sessões desta semana</h3>
               <div className="space-y-2">
                 {sessions.slice(0, 10).map(s => {
                   const sub = subjects.find(x => x.id === s.subjectId)
                   return (
-                    <div key={s.id} className="flex items-center gap-3 text-sm">
+                    <div key={s.id} className="flex items-center gap-3 font-body text-sm">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: sub?.color || '#3b82f6' }} />
                       <span className="font-medium text-gray-700 dark:text-gray-300 w-32 truncate">{sub?.name || '?'}</span>
                       <span className="text-gray-500">{TECHNIQUE_LABELS[s.technique] || s.technique}</span>
-                      <span className="text-gray-400">{s.duration}m</span>
-                      <span className="text-gray-400 text-xs">{new Date(s.date).toLocaleDateString('pt-BR')}</span>
-                      <button onClick={() => handleDeleteSession(s.id)} className="cursor-pointer ml-auto p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-red-400"><Trash2 className="w-3 h-3" /></button>
+                      <span className="font-mono text-gray-400">{s.duration}m</span>
+                      <span className="font-mono text-gray-400 text-xs">{new Date(s.date).toLocaleDateString('pt-BR')}</span>
+                      <button onClick={() => handleDeleteSession(s.id)} className="ml-auto p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-red-400 cursor-pointer"><Trash2 className="w-3 h-3" /></button>
                     </div>
                   )
                 })}
@@ -264,30 +258,29 @@ const Studies: React.FC = () => {
           )}
         </>
       ) : (
-        /* === MONTHLY CALENDAR === */
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() - 1, 1))}
-              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ChevronLeft className="w-5 h-5" /></button>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{MONTHS[calDate.getMonth()]} {calDate.getFullYear()}</h2>
+              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ChevronLeft className="w-5 h-5" /></button>
+            <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">{MONTHS[calDate.getMonth()]} {calDate.getFullYear()}</h2>
             <button onClick={() => setCalDate(new Date(calDate.getFullYear(), calDate.getMonth() + 1, 1))}
-              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><ChevronRight className="w-5 h-5" /></button>
+              className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ChevronRight className="w-5 h-5" /></button>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-            {WEEKDAYS.map(d => <div key={d} className="py-2">{d}</div>)}
+          <div className="grid grid-cols-7 gap-1 text-center font-ui text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+            {WEEKDAYS_SHORT.map(d => <div key={d} className="py-2">{d}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: calDays[0]?.date.getDay() || 0 }).map((_, i) => (
-              <div key={`empty-${i}`} />
-            ))}
+            {Array.from({ length: calDays[0]?.date.getDay() || 0 }).map((_, i) => <div key={`empty-${i}`} />)}
             {calDays.map((d, i) => {
               const isToday = d.date.getTime() === today.getTime()
               const hours = Math.round(d.minutes / 6) / 10
+              const intensity = Math.min(1, d.minutes / 200)
               return (
-                <div key={i} className={`relative p-2 rounded-lg text-center min-h-[50px] ${isToday ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800' : ''}`}
-                  style={{ backgroundColor: d.minutes > 0 ? `rgba(16, 185, 129, ${Math.min(0.4, 0.08 + d.minutes / 500)})` : undefined }}>
-                  <div className={`text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700 dark:text-gray-300'}`}>{d.date.getDate()}</div>
-                  {d.minutes > 0 && <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">{hours}h</div>}
+                <div key={i}
+                  className={`relative p-2 rounded-lg text-center min-h-[50px] transition-all ${isToday ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-800' : ''}`}
+                  style={{ backgroundColor: d.minutes > 0 ? `hsla(152, 60%, 35%, ${0.08 + intensity * 0.35})` : undefined }}>
+                  <div className={`font-body text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700 dark:text-gray-300'}`}>{d.date.getDate()}</div>
+                  {d.minutes > 0 && <div className="font-mono text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">{hours}h</div>}
                 </div>
               )
             })}
@@ -297,8 +290,8 @@ const Studies: React.FC = () => {
 
       {/* Subjects list */}
       {subjects.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Matérias</h3>
+        <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl p-5 shadow-warm border border-gray-200 dark:border-gray-700">
+          <h3 className="font-display text-sm font-semibold text-gray-900 dark:text-white mb-3">Matérias</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {subjects.map(s => (
               <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
@@ -306,8 +299,8 @@ const Studies: React.FC = () => {
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{s.name}</div>
-                  {s.workload > 0 && <div className="text-xs text-gray-400">{s.workload}h</div>}
+                  <div className="font-body text-sm font-medium text-gray-900 dark:text-white truncate">{s.name}</div>
+                  {s.workload > 0 && <div className="font-mono text-xs text-gray-400">{s.workload}h</div>}
                 </div>
                 <button onClick={() => { if (window.confirm('Remover?')) dispatch(deleteSubject(s.id)).then(() => toast.success('Removida!')) }}
                   className="cursor-pointer p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>

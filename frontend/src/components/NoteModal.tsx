@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 import { isLightColor } from '../utils/color';
 import type { Note } from '../store/slices/notesSlice';
+import Modal from './ui/Modal';
+import Button from './ui/Button';
 
 const NOTE_COLORS = [
   '#ffffff',
@@ -48,96 +49,58 @@ const NoteModal: React.FC<NoteModalProps> = ({ isOpen, onClose, onSave, editingN
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div
-        className="rounded-xl w-full max-w-lg shadow-2xl overflow-hidden"
-        style={{ backgroundColor: color }}
-      >
-        <form onSubmit={handleSubmit}>
-          <div className="p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Título da nota"
-                required
-                className={`text-xl font-bold bg-transparent border-none outline-none w-full placeholder:text-gray-400 ${
-                  isLightColor(color) ? 'text-gray-900' : 'text-white placeholder:text-gray-300'
-                }`}
-              />
-              <button
-                type="button"
-                onClick={onClose}
-                className={`cursor-pointer p-1.5 rounded-lg transition-colors ${
-                  isLightColor(color) ? 'hover:bg-black/10 text-gray-500' : 'hover:bg-white/20 text-gray-300'
-                }`}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={editingNote ? 'Editar Nota' : 'Nova Nota'}>
+      <form onSubmit={handleSubmit}>
+        <div className="p-5 space-y-4" style={{ backgroundColor: color }}>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Título da nota"
+            required
+            className={`font-display text-xl font-bold bg-transparent border-none outline-none w-full placeholder:text-gray-400 ${
+              isLightColor(color) ? 'text-gray-900' : 'text-white'
+            }`}
+          />
 
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Escreva sua nota aqui..."
-              rows={8}
-              className={`w-full bg-transparent border-none outline-none resize-none text-sm placeholder:text-gray-400 ${
-                isLightColor(color) ? 'text-gray-700' : 'text-gray-200 placeholder:text-gray-300'
-              }`}
-            />
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Escreva sua nota aqui..."
+            rows={8}
+            className={`w-full bg-transparent border-none outline-none resize-none font-body text-sm placeholder:text-gray-400 ${
+              isLightColor(color) ? 'text-gray-700' : 'text-gray-200'
+            }`}
+          />
 
-            <div>
-              <label className={`text-xs font-medium mb-2 block ${
-                isLightColor(color) ? 'text-gray-500' : 'text-gray-300'
-              }`}>
-                Cor da nota
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                {NOTE_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className={`cursor-pointer w-7 h-7 rounded-full border-2 transition-all ${
-                      color === c
-                        ? 'border-blue-500 scale-110'
-                        : 'border-gray-300/50 hover:scale-110'
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
+          <div>
+            <label className={`label-retro block mb-2 ${isLightColor(color) ? 'text-gray-500' : 'text-gray-300'}`}>
+              Cor da nota
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {NOTE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={`cursor-pointer w-7 h-7 rounded-full border-2 transition-all ${
+                    color === c
+                      ? 'border-primary scale-110 shadow-warm-sm'
+                      : 'border-gray-300/50 hover:scale-110'
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
             </div>
           </div>
+        </div>
 
-          <div className={`flex justify-end gap-3 px-5 py-3 ${
-            isLightColor(color) ? 'bg-black/5' : 'bg-white/10'
-          }`}>
-            <button
-              type="button"
-              onClick={onClose}
-              className={`cursor-pointer px-4 py-2 text-sm rounded-lg transition-colors ${
-                isLightColor(color)
-                  ? 'text-gray-600 hover:bg-black/10'
-                  : 'text-gray-300 hover:bg-white/10'
-              }`}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="cursor-pointer px-4 py-2 text-sm rounded-lg btn-primary font-medium"
-            >
-              {editingNote ? 'Atualizar' : 'Criar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className={`flex justify-end gap-3 px-5 py-3 ${isLightColor(color) ? 'bg-black/5' : 'bg-white/10'}`}>
+          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button variant="gold" type="submit">{editingNote ? 'Atualizar' : 'Criar'}</Button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 
