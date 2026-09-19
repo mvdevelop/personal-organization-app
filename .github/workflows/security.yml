@@ -1,0 +1,106 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly security scan
+    - cron: '0 3 * * 1'
+
+jobs:
+  # === SAST: Static Analysis ===
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-adapter@v1
+        with:
+          config: p/ci
+          publishDefects: true
+          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  # === Dependency Scanning ===
+  dependency-graph:
+    name: Dependency Graph
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci
+          cd ../frontend && npm ci
+
+      - name: Run npm audit
+        run: |
+          cd backend && npm audit --audit-level=moderate || true
+          cd ../frontend && npm audit --audit-level=moderate || true
+
+  # === DAST: Dynamic Analysis (OWASP ZAP) ===
+  dast:
+    name: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Start backend
+        run: |
+          cd backend
+          npm ci
+          npm run build
+          MONGODB_URI=mongodb://localhost:27017/test \
+          JWT_SECRET=test-secret-for-dast-scan \
+          NODE_ENV=production \
+          npx tsx src/server.ts &
+          sleep 5
+        env:
+          MONGODB_URI: mongodb://localhost:27017/test
+          JWT_SECRET: test-secret-for-dast-scan
+          NODE_ENV: production
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zscaler/owasp-zap-action@v1
+        with:
+          target: http://localhost:3001/api
+          rules_file_name: .zap/rules.tsv
+          cmd_line_options: '-a'
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-report
+          path: .zap/*.xml

@@ -10,6 +10,8 @@ jobs:
   quality:
     name: Quality Check
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max_old_space_size=4096
 
     services:
       mongodb:
@@ -19,9 +21,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Exclude node_modules from checkout (shouldn't be in repo)
+          filter: blob:none
 
       # === Backend ===
-      - name: Setup Node.js (Backend)
+      - name: Setup Node.js 22 (Backend)
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -35,15 +40,21 @@ jobs:
         run: cd backend && npx tsc --noEmit
         env:
           MONGODB_URI: mongodb://localhost:27017/test
-          JWT_SECRET: test-secret
+          JWT_SECRET: test-secret-key-for-ci-min-32-characters
           NODE_ENV: test
 
       - name: Lint backend
         run: cd backend && npx tsc --noEmit
-        continue-on-error: true
+
+      - name: Test backend
+        run: cd backend && npm run test:ci
+        env:
+          MONGODB_URI: mongodb://localhost:27017/test
+          JWT_SECRET: test-secret-key-for-ci-min-32-characters
+          NODE_ENV: test
 
       # === Frontend ===
-      - name: Setup Node.js (Frontend)
+      - name: Setup Node.js 22 (Frontend)
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -63,10 +74,25 @@ jobs:
         run: cd frontend && npm run build
 
       # === Security Audit ===
+      # Fail the build if high-severity vulnerabilities are found
       - name: Audit backend dependencies
         run: cd backend && npm audit --audit-level=high
-        continue-on-error: true
 
       - name: Audit frontend dependencies
         run: cd frontend && npm audit --audit-level=high
-        continue-on-error: true
+
+      # === CodeQL Security Scan ===
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          # Upload results to Security tab even if there are alerts
+          upload: true
+          category: "code-scanning-threat"

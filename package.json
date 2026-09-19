@@ -1,9 +1,19 @@
 {
-  "dependencies": {
-    "csrf": "^3.1.0"
+  "name": "personal-organization-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
+    "test": "npm run test --workspace=backend",
+    "lint": "npm run lint --workspace=backend && npm run lint --workspace=frontend",
+    "lint:fix": "npm run lint:fix --workspace=backend && npm run lint:fix --workspace=frontend"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/supertest": "^7.2.1",
-    "jest": "^30.5.2",
-    "mongodb-memory-server": "^11.2.0"
+    "concurrently": "^8.2.3"
+  }
+}
