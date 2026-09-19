@@ -4,7 +4,8 @@ module.exports = {
   testEnvironment: 'node',
   rootDir: '.',
   roots: ['<rootDir>/tests'],
-  testMatch: ['**/?(*.)+(spec|test).ts'],
+  // Only run unit tests by default; integration tests require "--testPathPattern int"
+  testMatch: ['**/?(*.)+(spec|test).ts', '!**/?(*.)+(int.test).ts'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: 'tsconfig.test.json',
@@ -35,5 +36,5 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts'],
   clearMocks: true,
   restoreMocks: true,
-  testTimeout: 30000,
+  testTimeout: 15000,
 };

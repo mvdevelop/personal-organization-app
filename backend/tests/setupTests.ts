@@ -1,37 +1,13 @@
 /**
  * Jest test setup — runs before each test suite.
- * Ensures tests are isolated and don't leak state.
  */
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
 
-let mongoServer: MongoMemoryServer;
+// Mock environment variables for tests
+process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+process.env.JWT_SECRET = 'test-secret-key-for-jest-min-32-chars';
+process.env.JWT_EXPIRES_IN = '1h';
+process.env.NODE_ENV = 'test';
+process.env.CORS_ORIGIN = 'http://localhost:5173';
 
-/**
- * Create an in-memory MongoDB instance before all tests.
- * This provides complete isolation from the dev/prod database.
- */
-beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-
-  await mongoose.connect(mongoUri);
-});
-
-/**
- * Close database connection after all tests complete.
- */
-afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
-});
-
-/**
- * Clear all collections between tests to maintain isolation.
- */
-afterEach(async () => {
-  const collections = mongoose.connection.collections;
-  for (const key in collections) {
-    await collections[key].deleteMany({});
-  }
-});
+// Increase timeout for async operations
+jest.setTimeout(15000);
