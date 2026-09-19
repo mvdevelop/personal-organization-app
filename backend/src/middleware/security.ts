@@ -8,7 +8,14 @@ import { env } from '../config/env.js';
  */
 
 /**
- * Rate limiter avançado de IP com backoff exponencial e blacklist
+ * Rate limiter avançado de IP com backoff exponencial e blacklist.
+ *
+ * Security note: The `skip` function previously bypassed rate limiting
+ * for private IPs (192.168.*, 10.*, 127.*). This was a CWE-693
+ * (Protection Mechanism Failure) — an attacker could spoof a private
+ * IP via X-Forwarded-For to bypass rate limits.
+ *
+ * Private IP bypass should ONLY be in development (NODE_ENV !== 'production').
  */
 const advancedRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
@@ -16,28 +23,15 @@ const advancedRateLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Muitas requisições de um único IP. Tente novamente mais tarde.' },
-  // Custom skip function para IPs suspeitos
-  skip: (req) => {
-    const ip = req.ip || req.connection.remoteAddress;
-
-    // Pular rate limiting para IPs internos conhecidos (desenvolvimento local)
-    if (ip && (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('127.'))) {
-      return true;
-    }
-
-    // Pular para origens de confiance em produção
-    if (env.nodeEnv === 'production' && req.get('Origin') && env.corsOrigin?.split(',').includes(req.get('Origin'))) {
-      return true;
-    }
-
-    return false;
-  },
   // Custom handlers para diferentes estágios
   handler: (req, res) => {
     const ip = req.ip || req.connection.remoteAddress;
 
-    // Logar tentativa de rate limit
-    console.warn(`Rate limit excedido para IP: ${ip}, URL: ${req.originalUrl}, User-Agent: ${req.get('User-Agent')}`);
+    // Logar tentativa de rate limit WITHOUT exposing PII (IP is hashed)
+    console.warn(`[SECURITY][WARN] Rate limit excedido - req:${req.get('X-Request-ID') || 'unknown'}`, {
+      url: req.originalUrl,
+      ip_hash: crypto.createHash('sha256').update(ip || '').digest('hex').substring(0, 16),
+    });
 
     // Adicionar header para retry delay sugerido
     const retryAfter = Math.ceil(15 * 60 / 60); // 15 minutos convertido para horas
@@ -46,9 +40,8 @@ const advancedRateLimit = rateLimit({
     res.status(429).json({
       error: 'Muitas requisições',
       message: 'Limite de taxa excedido. Tente novamente em 15 minutos.',
-      retryAfter: `${retryAfter} minutos`,
-      requestId: req.get('X-Request-ID'),
-      ipBlocked: isSuspiciousIP(ip),
+      retryAfter: '15 minutos',
+      requestId: req.get('X-Request-ID') || 'unknown',
     });
   },
   // Implementar backoff exponencial para exceeds
@@ -84,12 +77,12 @@ export const authRateLimiter = rateLimit({
   },
   handler: (req, res) => {
     const body = req.body as any;
-    const identifier = body?.email ? `email: ${body.email}` : 'IP';
-
-    console.warn(`Rate limit de autenticação excedido para ${identifier}, IP: ${req.ip}`);
-
-    // Implementar chave de rate limit baseada em JWT para sucessos
-    // (implementação mais avançada seria necessária para detecção de bots)
+    // Log WITHOUT email PII — only log that auth rate limit triggered
+    console.warn(`[SECURITY][WARN] Auth rate limit excedido - req:${req.get('X-Request-ID') || 'unknown'}`, {
+      url: req.originalUrl,
+      ip_hash: crypto.createHash('sha256').update(req.ip || '').digest('hex').substring(0, 16),
+      // Email is intentionally NOT logged (PII concern)
+    });
 
     res.status(429).json({
       error: 'Muitas tentativas de login',
@@ -249,42 +242,58 @@ export const dnsValidation = (req: Request, res: Response, next: NextFunction): 
 };
 
 /**
- * Middleware de logging de segurança
+ * Middleware de logging de segurança.
+ *
+ * Security: Logs are written WITHOUT PII (userId, full IP addresses are hashed).
+ * This prevents accidental exposure of user data in log aggregators.
+ *
+ * @see https://owasp.org/www-community/controls/Logging_and_Error_Handling
+ * @see CWE-532: Insertion of Sensitive Information into Log File
  */
-export const securityLogger = (req: Request, res: Response, next: NextFunction): void => {
+
+/**
+ * Hash an IP address using a one-way hash (SHA-256 + truncation)
+ * to preserve correlation while preventing IP enumeration from logs.
+ */
+function hashIp(ip: string | undefined): string {
+  if (!ip) return 'unknown';
+  return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16);
+}
+
+import crypto from 'crypto';
+
+const securityLogger = (req: Request, res: Response, next: NextFunction): void => {
   const startTime = Date.now();
 
   // Gerar ID de requisição único para rastreamento
-  const requestId = (req as any).requestId || require('crypto').randomUUID();
+  const requestId = (req as any).requestId || crypto.randomUUID();
   (req as any).requestId = requestId;
   res.setHeader('X-Request-ID', requestId);
-
-  // Logar evento de entrada
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} - IP: ${req.ip} - ID: ${requestId}`);
 
   // Interceptar respostas de erro
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const statusCode = res.statusCode;
 
+    // Log WITHOUT userId (PII) or full IP (hashed for correlation only)
     const logData = {
       requestId,
       method: req.method,
       url: req.originalUrl,
       statusCode,
-      duration,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      contentLength: res.get('Content-Length'),
+      duration_ms: duration,
+      ip_hash: hashIp(req.ip),
+      user_agent: req.get('User-Agent'),
+      // Note: user-agent may contain PII in some cases, consider stripping
       referrer: req.get('Referrer'),
     };
 
     if (statusCode >= 500) {
-      console.error(`[${new Date().toISOString()}] ERRO ${statusCode} - ${req.method} ${req.originalUrl} - ${duration}ms - ID: ${requestId}`, logData);
+      console.error(`[SECURITY][ERROR] ${statusCode} - ${req.method} ${req.originalUrl} - ${duration}ms - req:${requestId}`, logData);
     } else if (statusCode >= 400) {
-      console.warn(`[${new Date().toISOString()}] AVISO ${statusCode} - ${req.method} ${req.originalUrl} - ${duration}ms - ID: ${requestId}`, logData);
+      console.warn(`[SECURITY][WARN] ${statusCode} - ${req.method} ${req.originalUrl} - ${duration}ms - req:${requestId}`, logData);
     } else {
-      console.log(`[${new Date().toISOString()}] SUCESSO ${statusCode} - ${req.method} ${req.originalUrl} - ${duration}ms - ID: ${requestId}`, logData);
+      console.log(`[SECURITY][INFO] ${statusCode} - ${req.method} ${req.originalUrl} - ${duration}ms - req:${requestId}`, logData);
     }
   });
 

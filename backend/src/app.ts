@@ -8,11 +8,32 @@ import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
+import { csrfProtection } from './middleware/csrfProtection.js';
 
 const app = express();
 
-// Security
-app.use(helmet({ contentSecurityPolicy: false }));
+// Security headers — Helmet with full protection (CSP enabled)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline needed for Swagger UI
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://api.openrouter.ai"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: true,
+  crossOriginResourcePolicy: { policy: 'same-origin' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (curl, mobile apps, server-to-server)
@@ -23,7 +44,7 @@ app.use(cors({
       if (env.nodeEnv !== 'production') {
         callback(null, true);
       } else {
-        console.warn(`CORS blocked origin: ${origin}`);
+        console.warn(`[SECURITY] CORS blocked origin: ${origin}`);
         callback(null, false);
       }
     }
@@ -31,11 +52,23 @@ app.use(cors({
   credentials: true,
 }));
 
+// HSTS — enforce HTTPS in production (only over TLS)
+if (env.nodeEnv === 'production') {
+  app.use((req, res, next) => {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    next();
+  });
+}
+
 // Body parsing
 app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Cookie parser (for httpOnly JWT cookie)
 app.use(cookieParser());
+
+// CSRF Protection — for state-changing requests using cookies
+app.use('/api/', csrfProtection);
 
 // Rate limiting
 app.use('/api/', apiLimiter);
@@ -61,10 +94,13 @@ const swaggerSpec = swaggerJsdoc({
   apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Personal Org API Docs',
-}));
+// Swagger — only in development (prevents info disclosure in production)
+if (env.nodeEnv !== 'production') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Personal Org API Docs',
+  }));
+}
 
 // Root — status do backend (mounted at /api by Vercel)
 app.get('/', (_req, res) => {

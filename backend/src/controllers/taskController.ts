@@ -109,7 +109,18 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
     if (filter === 'completed') query.completed = true;
 
     if (search) {
-      const searchRegex = { $regex: search as string, $options: 'i' };
+      /**
+       * Security: Escape regex special characters in user input to prevent
+       * NoSQL injection via regex operators (CWE-1333 / CWE-94).
+       *
+       * Even though Mongoose parameterizes queries, unsanitized $regex
+       * can still cause ReDoS (Regular Expression Denial of Service)
+       * or match unintended patterns.
+       *
+       * @see https://www.mongodb.com/docs/manual/reference/operator/query/regex/
+       */
+      const escapedSearch = (search as string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const searchRegex = { $regex: escapedSearch, $options: 'i' };
       query.$or = [
         { title: searchRegex },
         { description: searchRegex },

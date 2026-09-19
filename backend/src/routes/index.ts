@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
+import { csrfTokenHandler } from '../middleware/csrfProtection.js';
 import * as authController from '../controllers/authController.js';
 import * as taskController from '../controllers/taskController.js';
 import * as noteController from '../controllers/noteController.js';
@@ -23,6 +24,10 @@ const router = Router();
  *       scheme: bearer
  *       bearerFormat: JWT
  */
+
+// ===== CSRF Token =====
+// Public endpoint to obtain a CSRF token (needed before any state-changing request)
+router.get('/csrf-token', csrfTokenHandler);
 
 // ===== Auth =====
 router.post('/auth/register', authLimiter, authController.register);
