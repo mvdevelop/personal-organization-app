@@ -81,68 +81,31 @@ const Dashboard: React.FC = () => {
           {/* Tasks + Habits */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Tasks Card */}
-            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="medal-ring !w-10 !h-10 !border-primary bg-primary-light dark:bg-primary/20">
-                    <ClipboardList className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-semibold text-sm text-gray-900 dark:text-white">Tarefas</h2>
-                    <p className="font-body text-xs text-gray-500 dark:text-gray-400">{t?.completed}/{t?.total} concluídas</p>
-                  </div>
-                </div>
-                <Link to="/tasks" className="text-gray-400 hover:text-primary transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+            <DashboardCard title="Tarefas" description={t?.total ? `${t.completed}/${t.total} concluídas` : 'Organize seu próximo passo'} icon={<ClipboardList className="w-5 h-5" />} href="/tasks" actionLabel="Abrir tarefas">
+              <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-4 overflow-hidden" role="progressbar" aria-label="Progresso das tarefas" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionRate}>
+                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${completionRate}%` }} />
               </div>
-
-              <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-4 overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ width: t?.total ? `${Math.round((t.completed / t.total) * 100)}%` : '0%' }} />
-              </div>
-
               {t?.overdue ? (
                 <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-xs text-red-600 dark:text-red-400">
-                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                   <span>{t.overdue} tarefa{t.overdue > 1 ? 's' : ''} atrasada{t.overdue > 1 ? 's' : ''}</span>
                 </div>
               ) : t?.total === 0 ? (
                 <p className="font-body text-xs text-center py-6 text-gray-400">Nenhuma tarefa ainda</p>
               ) : null}
-
               <div className="space-y-2">
                 {t?.recent?.slice(0, 3).map((task) => (
                   <div key={task.id} className="flex items-center gap-3 font-body text-sm">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : task.priority === 'high' ? 'bg-red-400' : task.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : task.priority === 'high' ? 'bg-red-400' : task.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600'}`} aria-hidden="true" />
                     <span className={`flex-1 truncate ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{task.title}</span>
-                    {task.dueDate && (
-                      <span className="font-mono text-[11px] text-gray-400 dark:text-gray-500">
-                        {new Date(task.dueDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-                      </span>
-                    )}
+                    {task.dueDate && <span className="font-mono text-[11px] text-gray-400 dark:text-gray-500">{new Date(task.dueDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</span>}
                   </div>
                 ))}
               </div>
-            </div>
+            </DashboardCard>
 
             {/* Habits Card */}
-            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="medal-ring !w-10 !h-10 !border-orange-400 bg-orange-50 dark:bg-orange-900/20">
-                    <Flame className="w-5 h-5 text-orange-500" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-semibold text-sm text-gray-900 dark:text-white">Hábitos</h2>
-                    <p className="font-body text-xs text-gray-500 dark:text-gray-400">{h?.todayCheckIns ?? 0} check-ins hoje</p>
-                  </div>
-                </div>
-                <Link to="/habits" className="text-gray-400 hover:text-primary transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
+            <DashboardCard title="Hábitos" description={`${h?.todayCheckIns ?? 0} check-ins hoje`} icon={<Flame className="w-5 h-5" />} href="/habits" actionLabel="Abrir hábitos">
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-1.5 font-body text-sm">
                   <span className="font-display text-2xl font-bold text-orange-500">{h?.bestStreak ?? 0}</span>
@@ -153,17 +116,16 @@ const Dashboard: React.FC = () => {
                   <span className="text-xs text-gray-500">hábitos</span>
                 </div>
               </div>
-
               <div className="space-y-1.5">
                 {h?.streaks?.length ? h.streaks.slice(0, 4).map((s) => (
                   <div key={s.title} className="flex items-center gap-2 font-body text-sm py-0.5">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: s.color || 'var(--color-primary)' }} />
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: s.color || 'var(--color-primary)' }} aria-hidden="true" />
                     <span className="flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{s.title}</span>
                     <span className="font-mono text-xs text-orange-500">{s.streak}d</span>
                   </div>
                 )) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhum hábito ainda</p>}
               </div>
-            </div>
+            </DashboardCard>
           </div>
 
           <ChartsWidget tasks={t} habits={h} goals={g} studies={st} />

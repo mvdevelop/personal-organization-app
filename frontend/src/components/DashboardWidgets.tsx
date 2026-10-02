@@ -8,6 +8,9 @@ type DashboardHabits = { total: number; todayCheckIns: number }
 type DashboardGoals = { active: number; completed: number }
 type DashboardStudies = { weekSessions: number; weekStudyHours: number }
 
+const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
 interface ChartsWidgetProps {
   tasks: DashboardTasks | undefined
   habits: DashboardHabits | undefined
@@ -91,13 +94,31 @@ interface CalWidgetProps { tasks?: { recent?: { id: string; title: string; dueDa
 const MiniCalendar: React.FC<CalWidgetProps> = ({ tasks }) => {
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const [viewDate, setViewDate] = useState(new Date(today))
-  const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-  const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-  const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate()
-  const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay()
-  const days = Array.from({ length: daysInMonth }, (_, i) => { const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), i + 1); return { day: i + 1, isToday: d.getTime() === today.getTime(), hasTasks: !!tasks?.recent?.some((t) => t.dueDate && new Date(t.dueDate).toDateString() === d.toDateString()) } })
+  const dueDateKeys = useMemo(() => new Set(
+    (tasks?.recent ?? []).flatMap((task) => {
+      if (!task.dueDate) return []
+      const dueDate = new Date(task.dueDate)
+      return Number.isNaN(dueDate.getTime()) ? [] : [dueDate.toDateString()]
+    }),
+  ), [tasks?.recent])
+  const days = useMemo(() => {
+    const year = viewDate.getFullYear()
+    const month = viewDate.getMonth()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const firstDay = new Date(year, month, 1).getDay()
+    return {
+      firstDay,
+      items: Array.from({ length: daysInMonth }, (_, i) => {
+        const day = i + 1
+        const dateKey = new Date(year, month, day).toDateString()
+        return { day, isToday: dateKey === today.toDateString(), hasTasks: dueDateKeys.has(dateKey) }
+      }),
+    }
+  }, [viewDate, today, dueDateKeys])
 
-  return <section className="dashboard-card" aria-labelledby="dashboard-calendar-title"><div className="flex items-center justify-between mb-3"><h2 id="dashboard-calendar-title" className="dashboard-card__title">Calendário</h2><div className="flex items-center gap-1"><button type="button" aria-label="Mês anterior" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))} className="p-1 hover:bg-[var(--bg-elevated)] rounded text-[var(--text-tertiary)]">&lt;</button><span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}</span><button type="button" aria-label="Próximo mês" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))} className="p-1 hover:bg-[var(--bg-elevated)] rounded text-[var(--text-tertiary)]">&gt;</button></div></div><div className="grid grid-cols-7 gap-0 text-center font-ui text-xs font-semibold text-[var(--text-tertiary)] mb-1">{WEEKDAYS.map((day) => <div key={day} className="py-1">{day}</div>)}</div><div className="grid grid-cols-7 gap-0">{Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}{days.map((day) => <div key={day.day} className={`text-center py-1.5 text-sm rounded-full w-8 h-8 mx-auto flex items-center justify-center ${day.isToday ? 'bg-primary text-white font-bold' : day.hasTasks ? 'bg-primary/10 text-primary font-medium' : 'text-[var(--text-secondary)]'}`}>{day.day}</div>)}</div></section>
+  const focusClass = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]'
+
+  return <section className="dashboard-card" aria-labelledby="dashboard-calendar-title"><div className="flex items-center justify-between mb-3"><h2 id="dashboard-calendar-title" className="dashboard-card__title">Calendário</h2><div className="flex items-center gap-1"><button type="button" aria-label="Mês anterior" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))} className={`p-1 hover:bg-[var(--bg-elevated)] rounded text-[var(--text-tertiary)] ${focusClass}`}>&lt;</button><span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}</span><button type="button" aria-label="Próximo mês" onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))} className={`p-1 hover:bg-[var(--bg-elevated)] rounded text-[var(--text-tertiary)] ${focusClass}`}>&gt;</button></div></div><div className="grid grid-cols-7 gap-0 text-center font-ui text-xs font-semibold text-[var(--text-tertiary)] mb-1">{WEEKDAYS.map((day) => <div key={day} className="py-1">{day}</div>)}</div><div className="grid grid-cols-7 gap-0">{Array.from({ length: days.firstDay }).map((_, i) => <div key={`empty-${i}`} />)}{days.items.map((day) => <div key={day.day} className={`text-center py-1.5 text-sm rounded-full w-8 h-8 mx-auto flex items-center justify-center ${day.isToday ? 'bg-primary text-white font-bold' : day.hasTasks ? 'bg-primary/10 text-primary font-medium' : 'text-[var(--text-secondary)]'}`}>{day.day}</div>)}</div></section>
 }
 
 export { ChartsWidget, MiniCalendar }
