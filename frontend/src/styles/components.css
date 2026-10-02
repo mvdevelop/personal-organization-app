@@ -1,5 +1,107 @@
 /* ===== Componentes Customizados — Schedule ===== */
 
+/* Decision-first dashboard surfaces */
+.dashboard-card,
+.dashboard-kpi {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md, 0.75rem);
+}
+.dashboard-card {
+  position: relative;
+  padding: 1.25rem;
+  overflow: hidden;
+}
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.55;
+}
+.dashboard-card__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border-gold);
+  border-radius: 999px;
+  color: var(--gold);
+  background: var(--bg-elevated);
+}
+.dashboard-card__eyebrow,
+.dashboard-card__description,
+.dashboard-kpi__subtitle {
+  color: var(--text-tertiary);
+}
+.dashboard-card__eyebrow {
+  margin-bottom: 0.2rem;
+  font: 600 0.68rem/1 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dashboard-card__title {
+  color: var(--text-primary);
+  font: 700 1rem/1.25 var(--font-display);
+}
+.dashboard-card__description {
+  margin-top: 0.25rem;
+  font: 0.78rem/1.4 var(--font-body);
+}
+.dashboard-card__action {
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast);
+}
+.dashboard-card__action:hover,
+.dashboard-card__action:focus-visible { color: var(--gold); }
+.dashboard-card__action:focus-visible,
+.dashboard-kpi:focus-within {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.dashboard-kpi {
+  padding: 1rem;
+  border-left: 3px solid var(--border);
+}
+.dashboard-kpi--positive { border-left-color: var(--success, #10b981); }
+.dashboard-kpi--attention { border-left-color: var(--warning, #f59e0b); }
+.dashboard-kpi__action {
+  margin-top: 0.35rem;
+  color: var(--gold);
+  font: 600 0.68rem/1 var(--font-ui);
+}
+.dashboard-kpi__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+  color: var(--text-secondary);
+  font: 600 0.65rem/1 var(--font-ui);
+}
+.dashboard-kpi__status::before {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--text-tertiary);
+}
+.dashboard-kpi--positive .dashboard-kpi__status { color: var(--success, #10b981); }
+.dashboard-kpi--positive .dashboard-kpi__status::before { background: var(--success, #10b981); }
+.dashboard-kpi--attention .dashboard-kpi__status { color: var(--warning, #f59e0b); }
+.dashboard-kpi--attention .dashboard-kpi__status::before { background: var(--warning, #f59e0b); }
+.dashboard-kpi__subtitle { font-family: var(--font-body); }
+
+
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card__action { transition: none; }
+}
+
+/* ===== Componentes Customizados — Schedule ===== */
+
 /* --- Page Layout Headers --- */
 .page-header {
   font-family: var(--font-display);

@@ -6,12 +6,19 @@ import GamificationPanel from '../components/GamificationPanel';
 import WeatherWidget from '../components/WeatherWidget';
 import { ChartsWidget, MiniCalendar } from '../components/DashboardWidgets';
 import StatCard from '../components/ui/StatCard';
+import DashboardCard from '../components/ui/DashboardCard';
+import { motion } from 'framer-motion';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import {
   ClipboardList, Flame, Trophy, GraduationCap,
   StickyNote, AlertCircle, Sparkles,
   ArrowRight, ListTodo, BrainCircuit,
 } from 'lucide-react';
+
+const getAttentionSignals = (tasks: { overdue?: number } | undefined, habits: { total?: number; todayCheckIns?: number } | undefined) => ({
+  overdueTasks: tasks?.overdue ?? 0,
+  uncheckedHabits: Math.max(0, (habits?.total ?? 0) - (habits?.todayCheckIns ?? 0)),
+})
 
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -32,18 +39,41 @@ const Dashboard: React.FC = () => {
   const g = data?.goals;
   const st = data?.studies;
   const n = data?.notes;
+  const completionRate = t?.total ? Math.round((t.completed / t.total) * 100) : 0;
+  const attentionSignals = getAttentionSignals(t, h)
+  const attentionCount = attentionSignals.overdueTasks + attentionSignals.uncheckedHabits
+  const hasDashboardData = Boolean(data)
+  const nextTask = t?.recent?.find((task) => !task.completed);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <WeatherWidget />
 
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <p className="dashboard-card__eyebrow">Painel de decisão</p>
+          <h1 className="page-header text-2xl sm:text-3xl">Seu foco para hoje</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Veja o que pede atenção e escolha o próximo passo.</p>
+        </div>
+        <span className="badge-retro self-start sm:self-auto">{!hasDashboardData ? 'Aguardando dados' : attentionCount ? `${attentionCount} sinais de atenção` : 'Tudo em dia'}</span>
+      </div>
+
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard icon={ListTodo} label="Tarefas pendentes" value={t?.pending ?? 0} subtitle={t?.total ? `${t.completed}/${t.total} concluídas` : undefined} />
-        <StatCard icon={Flame} label="Melhor streak" value={`${h?.bestStreak ?? 0}`} subtitle="dias seguidos" />
-        <StatCard icon={Trophy} label="Metas ativas" value={`${g?.active ?? 0}`} subtitle={`${g?.completed ?? 0} concluídas`} />
-        <StatCard icon={BrainCircuit} label="Horas de estudo" value={`${st?.weekStudyHours ?? 0}h`} subtitle={`${st?.weekSessions ?? 0} sessões`} />
+        <StatCard icon={ListTodo} label="Tarefas pendentes" value={t?.pending ?? 0} subtitle={t?.total ? `${completionRate}% concluídas` : 'Comece adicionando uma'} status={t?.overdue ? 'attention' : 'neutral'} actionLabel={t?.overdue ? `${t.overdue} atrasadas` : undefined} />
+        <StatCard icon={Flame} label="Melhor streak" value={`${h?.bestStreak ?? 0}`} subtitle="dias seguidos" status={h?.todayCheckIns ? 'positive' : 'attention'} actionLabel={!h?.todayCheckIns && h?.total ? 'Faça um check-in' : undefined} />
+        <StatCard icon={Trophy} label="Metas ativas" value={`${g?.active ?? 0}`} subtitle={`${g?.completed ?? 0} concluídas`} status="positive" />
+        <StatCard icon={BrainCircuit} label="Horas de estudo" value={`${st?.weekStudyHours ?? 0}h`} subtitle={`${st?.weekSessions ?? 0} sessões na semana`} />
       </div>
+
+      <DashboardCard title="Próxima ação" eyebrow="Recomendação" description={nextTask ? 'Retome o trabalho com maior impacto agora.' : 'Seu próximo passo aparece aqui quando houver uma tarefa.'} icon={<Sparkles className="w-5 h-5" />} href="/tasks" actionLabel="Abrir tarefas">
+        {nextTask ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg p-3" style={{ background: 'var(--bg-elevated)' }}>
+            <div className="min-w-0"><p className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{nextTask.title}</p><p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Prioridade {nextTask.priority}</p></div>
+            <Link to="/tasks" className="btn-outline rounded-md px-3 py-2 text-xs text-center">Continuar</Link>
+          </motion.div>
+        ) : <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Nenhuma tarefa pendente. Aproveite para revisar suas metas.</p>}
+      </DashboardCard>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
