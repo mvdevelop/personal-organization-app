@@ -9,7 +9,7 @@ on:
 jobs:
   quality:
     name: Quality Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       NODE_OPTIONS: --max_old_space_size=4096
 
@@ -20,14 +20,14 @@ jobs:
           - 27017:27017
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # Exclude node_modules from checkout (shouldn't be in repo)
           filter: blob:none
 
       # === Backend ===
       - name: Setup Node.js 22 (Backend)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: 'npm'
@@ -55,7 +55,7 @@ jobs:
 
       # === Frontend ===
       - name: Setup Node.js 22 (Frontend)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: 'npm'
