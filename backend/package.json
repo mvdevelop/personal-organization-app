@@ -2,6 +2,10 @@
   "name": "personal-org-backend",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "22.x",
+    "npm": ">=10"
+  },
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",

@@ -1,0 +1,923 @@
+ORGAPP — CONTEXTO COMPLETO DO PROJETO
+======================================
+
+Objetivo deste arquivo
+----------------------
+Este arquivo foi criado para ser lido por outra ferramenta de assistência de desenvolvimento. Ele descreve o propósito, a arquitetura, os módulos, as tecnologias, os fluxos, as decisões de UI/UX, os comandos, os pontos de atenção e o roadmap do projeto.
+
+O conteúdo deve ser mantido atualizado quando houver mudanças estruturais importantes.
+
+
+1. VISÃO GERAL
+==============
+
+Nome atual do produto: OrgApp / Schedule
+Tipo: organizador pessoal inteligente, com arquitetura full-stack.
+
+O OrgApp propõe unificar em uma única aplicação as principais áreas da vida do usuário:
+
+- tarefas;
+- notas;
+- hábitos;
+- metas;
+- estudos;
+- domínios/categorias;
+- gamificação;
+- analytics/dashboard;
+- assistente de inteligência artificial.
+
+O produto deve ajudar o usuário a transformar intenção em ação. O dashboard não deve apenas mostrar números: deve responder o que precisa de atenção, o que está evoluindo e qual deve ser o próximo passo.
+
+Públicos previstos:
+
+- estudantes;
+- profissionais;
+- concurseiros;
+- pessoas que desejam organizar rotina e projetos pessoais;
+- pessoas acompanhando saúde, hábitos e metas;
+- leitores e usuários com objetivos de longo prazo.
+
+O produto é pensado como uma aplicação SaaS de uso recorrente, com autenticação, persistência, experiência responsiva e possibilidade de deploy independente do frontend e backend.
+
+
+2. PRINCÍPIOS DO PRODUTO
+========================
+
+- Organização pessoal em um único lugar.
+- Ação antes de excesso de informação.
+- Dashboard orientado a decisões.
+- Analytics com propósito, não gráficos decorativos.
+- Experiência rápida, clara e responsiva.
+- Acessibilidade e contraste como requisitos, não como etapa opcional.
+- Componentes reutilizáveis e tokens semânticos.
+- Alterações graduais, pequenas e verificáveis.
+- Preservação dos contratos existentes de API e do estado Redux.
+- Não copiar assets, layouts ou código de terceiros.
+
+O projeto usa como referência conceitual o repositório irmão Power-BI-Design-Files, principalmente estes princípios:
+
+- começar pela decisão que o usuário precisa tomar;
+- tornar a análise visível;
+- usar interação com propósito;
+- tratar hierarquia visual como parte da análise;
+- construir soluções reutilizáveis;
+- usar espaçamento, tipografia, cor e layout de forma intencional.
+
+A referência é inspiração metodológica. O OrgApp deve continuar sendo uma aplicação React própria, sem importar arquivos PBIX, arquivos Figma ou visuais de terceiros.
+
+
+3. TECNOLOGIAS
+==============
+
+Frontend
+--------
+- React 19.
+- TypeScript 6.
+- Vite 8.
+- Tailwind CSS 4.
+- Redux Toolkit 2.
+- React Redux.
+- React Router 7.
+- Framer Motion.
+- Recharts.
+- Lucide React.
+- React Hot Toast.
+- date-fns.
+- Swiper.
+
+Backend
+-------
+- Node.js 22+.
+- TypeScript.
+- Express 4.
+- MongoDB.
+- Mongoose 8.
+- JWT.
+- bcryptjs.
+- Zod.
+- Helmet.
+- CORS.
+- Express Rate Limit.
+- Swagger / Swagger UI.
+- Cookie Parser.
+
+Qualidade e segurança
+---------------------
+- TypeScript strict/noUnusedLocals é relevante no frontend.
+- Jest e ts-jest no backend.
+- Supertest para testes HTTP.
+- MongoDB Memory Server para testes.
+- ESLint.
+- Prettier no backend.
+- CodeQL no CI.
+- Semgrep no workflow de segurança.
+- OWASP ZAP executado via Docker no workflow de segurança.
+- npm audit para dependências.
+
+
+4. ESTRUTURA DO REPOSITÓRIO
+===========================
+
+personal-organization-app/
+├── backend/                         API Node/Express/MongoDB
+├── frontend/                        SPA React/Vite/Tailwind
+├── frontend-blazor/                 implementação alternativa experimental em Blazor
+├── .github/workflows/               CI e segurança
+├── CLAUDE.md                        instruções arquiteturais do projeto
+├── package.json                     configuração raiz/workspaces
+├── package-lock.json                lockfile raiz
+├── readme.md                        documentação geral original
+├── PROJECT_CONTEXT.txt              este arquivo
+└── .gitignore
+
+O frontend e o backend são os componentes principais. frontend-blazor não deve ser alterado durante as melhorias normais do frontend React, salvo solicitação explícita.
+
+
+5. CONFIGURAÇÃO RAIZ E WORKSPACES
+=================================
+
+O package.json raiz define workspaces para:
+
+- backend;
+- frontend.
+
+Scripts raiz atuais:
+
+- npm run dev: inicia o frontend pelo workspace.
+- npm run build: compila backend e depois frontend.
+- npm run test: executa testes do backend.
+- npm run lint: executa lint/type-check do backend e lint do frontend.
+- npm run lint:fix: tenta correções configuradas nos workspaces.
+
+Frontend:
+
+- npm run dev
+- npm run build
+- npm run lint
+- npm run preview
+
+Backend:
+
+- npm run dev
+- npm run build
+- npm start
+- npm run vercel-build
+- npm run lint
+- npm test
+- npm run test:ci
+
+Não adicionar dependências desnecessárias. O problema de deploy anterior envolveu uma dependência root `concurrently` e divergência de workspaces/lockfile. A instalação da Vercel deve usar manifests e lockfiles coerentes. Não usar edição manual massiva do lockfile como solução.
+
+
+6. FRONTEND — ARQUITETURA
+=========================
+
+Entrada e roteamento
+--------------------
+
+Arquivos importantes:
+
+- frontend/src/main.tsx
+- frontend/src/App.tsx
+- frontend/src/components/Layout.tsx
+- frontend/src/context/AuthContext.tsx
+- frontend/src/hooks/useAuth.ts
+- frontend/src/services/api.ts
+
+Rotas principais:
+
+- /sign-in — login e cadastro.
+- / — dashboard protegido.
+- /tasks — tarefas.
+- /notes — notas.
+- /habits — hábitos.
+- /goals — metas.
+- /studies — estudos.
+- /ai — assistente de IA.
+- /calendar — placeholder de calendário/funcionalidade futura.
+
+A rota principal usa ProtectedRoute. Usuários não autenticados são redirecionados para /sign-in.
+
+Layout global
+-------------
+
+`frontend/src/components/Layout.tsx` controla:
+
+- sidebar desktop;
+- drawer/sidebar mobile;
+- overlay mobile;
+- header;
+- área principal com Outlet;
+- animação de troca de rota;
+- FloatingAIButton;
+- InstallPWA;
+- ThemeCustomizer.
+
+`Header.tsx` controla:
+
+- menu mobile;
+- breadcrumb simples;
+- customização de tema;
+- alternância claro/escuro;
+- informações do usuário;
+- logout.
+
+`Sidebar.tsx` controla a navegação lateral e o estado recolhido.
+
+
+7. FRONTEND — DESIGN SYSTEM E UI
+================================
+
+Arquivos de estilo principais:
+
+- frontend/src/index.css
+- frontend/src/styles/base.css
+- frontend/src/styles/components.css
+- frontend/src/styles/animations.css
+- frontend/src/theme/theme.css
+- frontend/src/theme/themes.ts
+
+Estado atual do sistema visual
+------------------------------
+
+A aplicação passou por uma modernização gradual e está migrando de uma aparência retro para um sistema SaaS premium, limpo e semântico.
+
+Direção desejada:
+
+- inspiração Linear/Vercel/Apple/SaaS premium;
+- espaçamento baseado em 4px/8px;
+- superfícies limpas;
+- bordas finas;
+- sombras sutis;
+- raios consistentes de 8px, 12px, 16px e 20px;
+- tipografia moderna e legível;
+- estados Default, Hover, Focus, Active e Disabled;
+- WCAG AA como objetivo mínimo.
+
+Tokens existentes/relevantes:
+
+- --bg-base
+- --bg-surface
+- --bg-elevated
+- --text-primary
+- --text-secondary
+- --text-tertiary
+- --border
+- --border-gold
+- --gold
+- --gold-dark
+- --gold-light
+- --success
+- --warning
+- --danger
+- --focus-ring
+- --space-1 até --space-12
+- --font-display
+- --font-body
+- --font-mono
+- --font-ui
+- --font-serif-alt
+- --radius-retro-sm/md/lg/xl/full
+
+Dark mode atual
+---------------
+
+O modo dark foi atualizado para utilizar grafite profundo:
+
+- base: #0b1020
+- surface: #111827
+- elevated: #182235
+- texto primário: #f8fafc
+- texto secundário: #dbe4f0
+- texto terciário: #a8b6ca
+- bordas: #334155
+- dourado: #f6c453
+- foco: #67e8f9
+- sucesso: #34d399
+- alerta: #fbbf24
+- erro: #fb7185
+
+Esses valores devem ser tratados como ponto de partida e verificados com ferramenta de contraste. Não afirmar que a aplicação está 100% acessível sem validação visual e de contraste.
+
+Componentes UI reutilizáveis
+-----------------------------
+
+Localização: frontend/src/components/ui/
+
+- Button.tsx — botão com variantes primary, secondary, ghost, danger e gold; tamanhos sm/md/lg.
+- Card.tsx — card com elevação, hover, decoração e callback opcional.
+- Input.tsx — input com label e erro.
+- Select.tsx — select com label e opções.
+- Modal.tsx — modal base.
+- ConfirmDialog.tsx — confirmação.
+- EmptyState.tsx — estado vazio.
+- LoadingSpinner.tsx — carregamento.
+- PageHeader.tsx — cabeçalho de página.
+- SearchInput.tsx — busca.
+- DashboardCard.tsx — seção semântica do dashboard com título, descrição, ícone, link de ação e conteúdo.
+- StatCard.tsx — KPI/indicador com status neutral, positive ou attention.
+
+Regras para novos componentes:
+
+- Reutilizar tokens semânticos.
+- Não hardcodar combinações incompatíveis de gray/white para dark mode.
+- Expor estados visuais claros.
+- Usar labels e associações HTML corretas.
+- Garantir focus-visible.
+- Preferir componentes pequenos e realmente reutilizados.
+- Não criar abstração para um único uso sem benefício claro.
+
+
+8. PREFERÊNCIAS DO USUÁRIO E TEMAS
+==================================
+
+`frontend/src/store/slices/userPreferencesSlice.ts` guarda:
+
+- theme: light/dark;
+- sidebarCollapsed;
+- colorTheme;
+- font.
+
+`frontend/src/store/preferencesMiddleware.ts`:
+
+- aplica classe dark no documentElement;
+- salva preferências no localStorage;
+- aplica tema de cores via CSS variables;
+- carrega Google Fonts quando configurado;
+- aplica fonte selecionada.
+
+`frontend/src/theme/themes.ts` contém temas de cor como:
+
+- default/azul;
+- emerald;
+- violet;
+- rose;
+- amber;
+- teal.
+
+Ao modernizar cores, preservar a possibilidade de troca de tema e evitar quebrar o ThemeCustomizer. Tokens dark podem sobrescrever superfícies/textos, mas a cor primária escolhida pelo usuário deve continuar funcionando quando houver contraste suficiente.
+
+
+9. FRONTEND — DASHBOARD
+=======================
+
+Arquivos:
+
+- frontend/src/pages/Dashboard.tsx
+- frontend/src/components/DashboardWidgets.tsx
+- frontend/src/store/slices/dashboardSlice.ts
+- frontend/src/components/ui/DashboardCard.tsx
+- frontend/src/components/ui/StatCard.tsx
+
+Dashboard atual
+---------------
+
+O dashboard possui:
+
+- WeatherWidget;
+- cabeçalho “Seu foco para hoje”;
+- indicador de sinais de atenção;
+- KPIs de tarefas, hábitos, metas e estudos;
+- bloco “Próxima ação”;
+- card de Tarefas migrado para DashboardCard;
+- card de Hábitos migrado para DashboardCard;
+- card de Metas migrado para DashboardCard;
+- card de Notas migrado para DashboardCard;
+- widget de gráficos;
+- calendário mensal compacto;
+- gamificação;
+- estudos;
+- assistente IA.
+
+Dados suportados pelo dashboardSlice:
+
+Tasks:
+- total;
+- pending;
+- completed;
+- today;
+- overdue;
+- recent.
+
+Habits:
+- total;
+- todayCheckIns;
+- bestStreak;
+- streaks.
+
+Goals:
+- active;
+- completed;
+- recent.
+
+Studies:
+- subjects;
+- weekSessions;
+- weekStudyHours.
+
+Notes:
+- total;
+- recent.
+
+Não criar métricas que o backend não fornece. Derivações devem ser simples, documentadas e coerentes.
+
+Analytics
+---------
+
+`DashboardWidgets.tsx` contém:
+
+- `buildWorkloadData`;
+- `buildProgressData`;
+- `buildConsistencyData`;
+- seletor semântico de análise;
+- gráficos Recharts de carga, progresso e constância;
+- estado vazio;
+- labels acessíveis;
+- calendário com labels estáticos de módulo;
+- Set memoizado de datas com tarefas;
+- dias do mês memoizados.
+
+Não remover essas otimizações sem medir benefício.
+
+
+10. MÓDULOS DE NEGÓCIO DO FRONTEND
+==================================
+
+Tasks
+-----
+
+- CRUD de tarefas.
+- Prioridade baixa/média/alta.
+- Conclusão/toggle.
+- Busca, filtros e datas.
+- TaskCard e TaskModal.
+
+Notes
+-----
+
+- Cards coloridos.
+- Busca.
+- Criação/edição/exclusão.
+- NoteCard e NoteModal.
+
+Habits
+------
+
+- Hábitos diários/semanais.
+- Check-in.
+- Streaks.
+- Cores e acompanhamento de consistência.
+
+Goals
+-----
+
+- Metas financeiras e pessoais.
+- Valor alvo e valor atual.
+- Progresso visual.
+- Milestones/deadlines conforme modelo.
+
+Studies
+-------
+
+- Subjects/matérias.
+- Sessões de estudo.
+- Sessões semanais e horas.
+
+AI
+--
+
+- Chat.
+- Briefing diário.
+- Sugestão de tarefas.
+- Botão flutuante.
+- Página completa do assistente.
+
+Gamification
+------------
+
+- XP.
+- Níveis.
+- Streaks.
+- Achievements.
+- UserStats.
+
+
+11. BACKEND — ARQUITETURA
+=========================
+
+Entrada:
+
+- backend/src/server.ts
+- backend/src/app.ts
+- backend/api/index.ts
+- backend/src/routes/index.ts
+
+Responsabilidades principais:
+
+- Express app;
+- conexão MongoDB;
+- rotas REST;
+- autenticação JWT;
+- cookies e proteção CSRF conforme configuração;
+- validação Zod;
+- rate limiting;
+- Helmet;
+- CORS;
+- tratamento de erros;
+- Swagger.
+
+Models
+------
+
+- User.ts
+- Task.ts
+- Note.ts
+- Domain.ts
+- Habit.ts
+- Goal.ts
+- Subject.ts
+- AIChat.ts
+- Achievement.ts
+- UserStats.ts
+
+Controllers
+-----------
+
+- authController.ts
+- taskController.ts
+- noteController.ts
+- domainController.ts
+- habitController.ts
+- goalController.ts
+- studyController.ts
+- aiController.ts
+- dashboardController.ts
+- gamificationController.ts
+
+Services
+--------
+
+- aiService.ts — integração OpenRouter.
+- domainService.ts.
+- gamificationService.ts.
+- streakService.ts.
+- cache.ts e outros utilitários.
+
+Validators
+----------
+
+- authValidator.ts
+- taskValidator.ts
+- noteValidator.ts
+- domainValidator.ts
+- habitValidator.ts
+- goalValidator.ts
+- studyValidator.ts
+
+Não alterar o contrato dos endpoints durante refactors de UI. Se uma mudança de API for necessária, atualizar backend, tipos frontend, documentação e testes juntos.
+
+
+12. ENDPOINTS PRINCIPAIS
+=======================
+
+Autenticação:
+
+- POST /api/auth/register
+- POST /api/auth/login
+- GET /api/auth/me
+
+Tarefas:
+
+- GET /api/tasks
+- POST /api/tasks
+- PUT /api/tasks/:id
+- DELETE /api/tasks/:id
+- PATCH /api/tasks/:id/toggle
+
+Notas:
+
+- GET /api/notes
+- POST /api/notes
+- PUT /api/notes/:id
+- DELETE /api/notes/:id
+
+Domínios:
+
+- GET /api/domains
+- POST /api/domains
+- POST /api/domains/seed
+
+Hábitos:
+
+- GET /api/habits
+- POST /api/habits
+- PUT /api/habits/:id
+- DELETE /api/habits/:id
+- endpoints de check-in conforme routes/index.ts.
+
+Metas:
+
+- GET /api/goals
+- POST /api/goals
+- PUT /api/goals/:id
+- DELETE /api/goals/:id
+
+Estudos:
+
+- GET /api/subjects
+- POST /api/subjects
+- GET /api/study-sessions
+- POST /api/study-sessions
+
+IA:
+
+- POST /api/ai/chat
+- GET /api/ai/daily-briefing
+- GET /api/ai/suggest-tasks
+
+Dashboard:
+
+- GET /api/dashboard
+
+Swagger local:
+
+- http://localhost:3001/api-docs
+
+
+13. CONFIGURAÇÃO E AMBIENTE
+===========================
+
+Backend .env normalmente usa:
+
+- PORT=3001
+- MONGODB_URI=mongodb://localhost:27017/personal-org
+- JWT_SECRET
+- JWT_EXPIRES_IN=7d
+- CORS_ORIGIN=http://localhost:5173
+- OPENROUTER_API_KEY
+- OPENROUTER_MODEL
+
+Frontend .env:
+
+- VITE_API_URL=http://localhost:3001
+
+Nunca inserir secrets reais em commits, documentação pública ou componentes.
+
+
+14. CI/CD E DEPLOY
+==================
+
+Workflows:
+
+- .github/workflows/ci.yml
+- .github/workflows/security.yml
+
+CI executa:
+
+- checkout;
+- instalação backend;
+- type-check backend;
+- testes backend;
+- instalação frontend;
+- type-check frontend;
+- lint frontend;
+- build frontend;
+- npm audit;
+- CodeQL.
+
+Security workflow executa:
+
+- Semgrep instalado via pip e executado em SARIF;
+- OWASP ZAP via imagem Docker oficial;
+- npm audit/dependency checks.
+
+Runners foram fixados em ubuntu-24.04 e actions atualizadas para checkout@v5/setup-node@v5 em razão de avisos de migração do GitHub Actions.
+
+Problemas conhecidos de deploy:
+
+- A Vercel anteriormente mostrou commit antigo contendo `concurrently@^8.2.3`.
+- Se o log usar um commit antigo, as correções locais não estarão no deploy.
+- Verificar branch, repositório e Root Directory da Vercel.
+- O lockfile raiz precisa estar alinhado aos workspaces.
+- Para frontend separado, a Vercel pode usar `frontend` como Root Directory.
+- Para backend separado, usar `backend` e sua configuração própria.
+- Não confundir erro de deploy com erro de UI.
+
+
+15. DIRETRIZES DE UI/UX FUTURAS
+===============================
+
+A repaginação completa deve seguir:
+
+Grid e espaçamento:
+
+- base de 8px;
+- permitir 4px para ajustes menores;
+- preferir 8, 12, 16, 24, 32, 40 e 48px;
+- evitar valores arbitrários sem justificativa.
+
+Tipografia:
+
+- Display para mensagens principais;
+- Heading para títulos de seção;
+- Body para leitura;
+- Label para controles e metadados;
+- Inter/system-safe como default moderno;
+- line-height suficiente para leitura;
+- não usar texto cinza escuro sobre fundo escuro.
+
+Cores:
+
+- Primary para ação principal/brand;
+- Secondary/accent para apoio;
+- Background/base para página;
+- Surface para cards;
+- Elevated para controles/elementos destacados;
+- Border para separação;
+- Text primary/secondary/muted;
+- Success, warning e danger;
+- validar combinações WCAG AA.
+
+Componentes:
+
+- Default;
+- Hover;
+- Focus-visible;
+- Active;
+- Disabled;
+- Loading;
+- Empty;
+- Error.
+
+Microinterações:
+
+- sutis;
+- rápidas;
+- não bloquear tarefas;
+- respeitar prefers-reduced-motion;
+- evitar animação apenas decorativa em excesso.
+
+Conversão/UX:
+
+Apesar de ser um produto de produtividade e não uma landing page de venda direta, CTAs devem ser orientados à ação:
+
+- Criar tarefa;
+- Fazer check-in;
+- Continuar estudo;
+- Revisar meta;
+- Abrir assistente;
+- Ver detalhes.
+
+CTAs primários devem ser visualmente claros, mas não agressivos. A ação mais importante da tela deve ter destaque único.
+
+
+16. PROMPT POSTERIOR DE PSICOLOGIA DAS CORES E CONVERSÃO
+========================================================
+
+Existe um prompt planejado para uma etapa posterior de identidade cromática e UX de conversão. Ele deverá ser aplicado somente após confirmar:
+
+1. nicho e produto;
+2. público-alvo e faixa etária;
+3. objetivo principal do site;
+4. três sentimentos que a marca deve transmitir.
+
+Esse prompt deve produzir:
+
+- paleta completa com hexadecimais;
+- variações primary hover/active;
+- superfícies, bordas e textos;
+- status;
+- justificativa psicológica;
+- regras WCAG AA/AAA;
+- componentes e recursos de UX;
+- microinterações;
+- posicionamento e comportamento de CTAs.
+
+Contexto provável atual:
+
+- produto: organizador pessoal SaaS;
+- público: estudantes, profissionais e pessoas organizando a vida;
+- objetivo: uso recorrente/produtividade;
+- sentimentos ainda precisam ser confirmados.
+
+Não concluir a paleta final de conversão sem confirmar esses dados.
+
+
+17. ESTADO DE IMPLEMENTAÇÃO CONHECIDO
+======================================
+
+Já implementado gradualmente:
+
+- DashboardCard.
+- StatCard com status.
+- Indicador de próxima ação.
+- Dashboard orientado a atenção/progresso.
+- ChartsWidget com views carga/progresso/constância.
+- Helpers memoizáveis para gráficos.
+- MiniCalendar com Set memoizado de prazos.
+- Migração de Tarefas para DashboardCard.
+- Migração de Hábitos para DashboardCard.
+- Migração de Metas para DashboardCard.
+- Migração de Notas para DashboardCard.
+- IDs e labels com melhorias de acessibilidade em componentes.
+- Tokens semânticos básicos.
+- Dark mode grafite inicial.
+- Foco visível e reduced motion.
+- Button/Card/Input/Select parcialmente migrados para tokens.
+- Workflows CI/security parcialmente atualizados.
+
+Ainda pendente:
+
+- corrigir e confirmar deploy Vercel com commit atualizado;
+- verificar lockfiles/workspaces;
+- migrar Studies e AI para DashboardCard;
+- migrar restantes das páginas para tokens semânticos;
+- revisar completamente dark mode;
+- validar contraste visualmente;
+- padronizar Modal, EmptyState, PageHeader, LoadingSpinner;
+- criar testes focados para helpers e componentes;
+- eliminar imports/variáveis não usados;
+- executar build/lint sem bloqueios;
+- completar documentação de design system;
+- aplicar mapeamento final de psicologia das cores após confirmação do posicionamento.
+
+
+18. REGRAS PARA A FERRAMENTA DE ASSISTÊNCIA
+===========================================
+
+Antes de alterar código:
+
+1. Ler CLAUDE.md e este arquivo.
+2. Identificar o slice atual do roadmap.
+3. Ler os arquivos-alvo completos ou trechos necessários.
+4. Preservar APIs, tipos e comportamento existente.
+5. Preferir mudanças pequenas e reversíveis.
+6. Não copiar Power BI/Figma assets.
+7. Não adicionar dependências sem necessidade.
+8. Não afirmar que build/test/deploy passou sem executar e observar o resultado.
+9. Se um comando estiver bloqueado, reportar honestamente.
+10. Verificar erros TypeScript antes de concluir.
+11. Para UI, conferir claro/escuro, mobile/desktop e teclado.
+12. Para alterações de segurança/deploy, separar o escopo da UI.
+
+Ao trabalhar em uma melhoria:
+
+- explicar o objetivo do slice;
+- listar arquivos modificados;
+- manter o diff pequeno;
+- informar como validar;
+- registrar limitações;
+- atualizar este arquivo apenas quando a arquitetura/estado do projeto mudar de forma relevante.
+
+
+19. COMANDOS DE REFERÊNCIA
+==========================
+
+Instalação raiz:
+
+npm install
+
+Frontend:
+
+cd frontend
+npm install
+npm run dev
+npm run build
+npm run lint
+
+Backend:
+
+cd backend
+npm install
+npm run dev
+npm run build
+npm run lint
+npm test
+npm run test:ci
+
+Build raiz:
+
+npm run build
+
+Lint raiz:
+
+npm run lint
+
+
+20. RESULTADO ESPERADO DO PRODUTO
+=================================
+
+O resultado final deve ser uma aplicação pessoal moderna, confiável e agradável, capaz de:
+
+- centralizar tarefas, hábitos, metas, estudos e notas;
+- mostrar contexto e prioridade sem sobrecarregar;
+- guiar o usuário para o próximo passo;
+- usar IA como assistente contextual;
+- funcionar bem em desktop e mobile;
+- ser legível em light e dark;
+- manter acessibilidade e contraste;
+- ter código modular e sustentável;
+- fazer deploy de forma reprodutível;
+- evoluir por slices pequenos sem quebrar funcionalidades existentes.
+
+Fim do contexto do projeto.
