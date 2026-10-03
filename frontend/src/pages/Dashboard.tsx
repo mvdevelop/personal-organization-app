@@ -149,31 +149,17 @@ const Dashboard: React.FC = () => {
               </div>
             </DashboardCard>
 
-            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="medal-ring !w-10 !h-10 !border-pink-400 bg-pink-50 dark:bg-pink-900/20">
-                    <StickyNote className="w-5 h-5 text-pink-500" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-semibold text-sm text-gray-900 dark:text-white">Notas</h2>
-                    <p className="font-body text-xs text-gray-500 dark:text-gray-400">{n?.total ?? 0} notas criadas</p>
-                  </div>
-                </div>
-                <Link to="/notes" className="text-gray-400 hover:text-primary transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+            <DashboardCard title="Notas" description={`${n?.total ?? 0} notas criadas`} icon={<StickyNote className="w-5 h-5" />} href="/notes" actionLabel="Abrir notas">
               <div className="space-y-2">
                 {n?.recent?.length ? n.recent.slice(0, 4).map((note) => (
                   <div key={note.id} className="flex items-center gap-2 font-body text-sm py-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-pink-400 flex-shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-pink-400 flex-shrink-0" aria-hidden="true" />
                     <span className="flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{note.title}</span>
                     <span className="font-mono text-[11px] text-gray-400">{new Date(note.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</span>
                   </div>
                 )) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhuma nota ainda</p>}
               </div>
-            </div>
+            </DashboardCard>
           </div>
 
           {/* Studies + AI */}

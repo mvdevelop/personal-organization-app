@@ -6,6 +6,22 @@
 */
 
 :root {
+  /* --- Core surfaces and readable semantic text --- */
+  --bg-base: #f7f8fb;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f0f3f8;
+  --text-primary: #172033;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --border: #d7deea;
+  --border-gold: #c9a84c;
+  --gold: #b68a20;
+  --gold-dark: #8f6915;
+  --gold-light: #f5e7b5;
+  --success: #059669;
+  --warning: #b45309;
+  --danger: #dc2626;
+
   /* --- Fonts --- */
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
