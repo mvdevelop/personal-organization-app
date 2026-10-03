@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 import type { Task } from '../store/slices/tasksSlice';
 import Modal from './ui/Modal';
 import Button from './ui/Button';

@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 import {
-  Menu, Sun, Moon, LogOut, User, Palette,
+  Menu, Sun, Moon, LogOut, Palette,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
@@ -25,7 +25,7 @@ const ROUTE_LABELS: Record<string, string> = {
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
   const { isSignedIn, user, signOut } = useAuth()
   const dispatch = useAppDispatch()
-  const { theme, sidebarCollapsed } = useAppSelector(state => state.userPreferences)
+  const { theme } = useAppSelector(state => state.userPreferences)
   const location = useLocation()
 
   if (!isSignedIn) return null

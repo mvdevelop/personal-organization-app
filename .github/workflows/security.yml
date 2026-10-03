@@ -13,7 +13,7 @@ jobs:
   # === SAST: Static Analysis ===
   sast:
     name: SAST (Semgrep)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       actions: read
@@ -23,17 +23,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Semgrep
+        run: python3 -m pip install --disable-pip-version-check semgrep
+
       - name: Run Semgrep
-        uses: returntocorp/semgrep-adapter@v1
+        run: semgrep scan --config p/ci --error --sarif --output semgrep.sarif
+
+      - name: Upload Semgrep report
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
-          config: p/ci
-          publishDefects: true
-          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
+          sarif_file: semgrep.sarif
 
   # === Dependency Scanning ===
   dependency-graph:
     name: Dependency Graph
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       actions: read
@@ -62,7 +67,7 @@ jobs:
   # === DAST: Dynamic Analysis (OWASP ZAP) ===
   dast:
     name: DAST (OWASP ZAP)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       actions: read
@@ -92,15 +97,27 @@ jobs:
           NODE_ENV: production
 
       - name: Run OWASP ZAP Baseline Scan
-        uses: zscaler/owasp-zap-action@v1
-        with:
-          target: http://localhost:3001/api
-          rules_file_name: .zap/rules.tsv
-          cmd_line_options: '-a'
+        run: |
+          docker run --network host --user 0 \
+            -v "${{ github.workspace }}:/zap/wrk/:rw" \
+            -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+            -t http://localhost:3001/api \
+            -r zap-report.html \
+            -J zap-report.json \
+            -a || test -f zap-report.html
 
       - name: Upload ZAP report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: zap-report
-          path: .zap/*.xml
+          path: |
+            zap-report.html
+            zap-report.json
+
+      - name: Upload ZAP SARIF when available
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('zap-report.sarif') != ''
+        with:
+          sarif_file: zap-report.sarif
+
