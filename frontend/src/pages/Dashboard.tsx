@@ -132,37 +132,22 @@ const Dashboard: React.FC = () => {
 
           {/* Goals + Notes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="medal-ring !w-10 !h-10 !border-purple-400 bg-purple-50 dark:bg-purple-900/20">
-                    <Trophy className="w-5 h-5 text-purple-500" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-semibold text-sm text-gray-900 dark:text-white">Metas</h2>
-                    <p className="font-body text-xs text-gray-500 dark:text-gray-400">{g?.active ?? 0} ativas · {g?.completed ?? 0} concluídas</p>
-                  </div>
-                </div>
-                <Link to="/goals" className="text-gray-400 hover:text-primary transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+            <DashboardCard title="Metas" description={`${g?.active ?? 0} ativas · ${g?.completed ?? 0} concluídas`} icon={<Trophy className="w-5 h-5" />} href="/goals" actionLabel="Abrir metas">
               <div className="space-y-3">
-                {g?.recent?.length ? g.recent.slice(0, 3).map((goal) => (
-                  <div key={goal.id} className="font-body text-sm">
+                {g?.recent?.length ? g.recent.slice(0, 3).map((goal) => {
+                  const progress = goal.targetValue ? Math.min(100, Math.round((goal.currentValue / goal.targetValue) * 100)) : 0
+                  return <div key={goal.id} className="font-body text-sm">
                     <div className="flex justify-between items-center mb-1">
                       <span className="truncate text-xs font-medium text-gray-900 dark:text-white">{goal.title}</span>
-                      {goal.targetValue && <span className="font-mono text-xs text-gray-400">{Math.round((goal.currentValue / goal.targetValue) * 100)}%</span>}
+                      {goal.targetValue ? <span className="font-mono text-xs text-gray-400">{progress}%</span> : null}
                     </div>
-                    {goal.targetValue && (
-                      <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((goal.currentValue / goal.targetValue) * 100))}%` }} />
-                      </div>
-                    )}
+                    {goal.targetValue ? <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden" role="progressbar" aria-label={`Progresso da meta ${goal.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
+                    </div> : null}
                   </div>
-                )) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhuma meta ativa</p>}
+                }) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhuma meta ativa</p>}
               </div>
-            </div>
+            </DashboardCard>
 
             <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
               <div className="flex items-start justify-between mb-4">
