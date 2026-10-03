@@ -11,7 +11,7 @@ const variantClasses: Record<string, string> = {
   primary: 'bg-primary text-white hover:bg-primary-hover',
   gold: 'btn-gold',
   secondary: 'btn-outline',
-  ghost: 'bg-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent',
+  ghost: 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] border border-transparent',
   danger: 'btn-danger',
 }
 

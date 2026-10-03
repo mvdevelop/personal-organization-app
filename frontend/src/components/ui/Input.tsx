@@ -9,10 +9,11 @@ export const Input: React.FC<InputProps> = ({ label, error, className = '', ...p
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label className="label-retro">{label}</label>
+        <label htmlFor={props.id || label.toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="label-retro text-[var(--text-secondary)]">{label}</label>
       )}
       <input
-        className={`input-retro w-full px-3 py-2 ${className}`}
+        id={props.id || label?.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
+        className={`input-retro w-full px-3 py-2 rounded-[var(--radius-retro-sm)] ${className}`}
         {...props}
       />
       {error && (

@@ -26,7 +26,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`bg-surface rounded transition-all duration-250
+      className={`ui-surface rounded-[var(--radius-retro-md)] transition-all duration-250 text-[var(--text-primary)]
         ${elevationClasses[elevation] || elevationClasses.raised}
         ${hover ? 'hover:shadow-warm-md hover:-translate-y-0.5 cursor-pointer' : ''}
         ${decorated ? 'section-arch' : ''}
