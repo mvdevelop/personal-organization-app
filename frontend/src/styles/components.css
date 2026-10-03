@@ -1,3 +1,30 @@
+/* ===== Premium semantic controls ===== */
+.btn-gold:focus-visible,
+.btn-primary:focus-visible,
+.btn-outline:focus-visible,
+.input-retro:focus-visible,
+.select-retro:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.input-retro,
+.select-retro {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.input-retro::placeholder { color: var(--text-tertiary); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ===== Componentes Customizados — Schedule ===== */
 
 /* Decision-first dashboard surfaces */
