@@ -62,7 +62,7 @@ describe('DashboardCard Component', () => {
 
   it('should apply custom className', () => {
     renderWithRouter(<DashboardCard {...defaultProps} className="custom-class" />);
-    const card = screen.getByText('Minha Tarefa').parentElement?.parentElement?.parentElement;
+    const card = document.querySelector('.dashboard-card');
     expect(card).toHaveClass('custom-class');
   });
 });

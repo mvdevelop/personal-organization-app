@@ -7,7 +7,19 @@ global.fetch = mockFetch as unknown as typeof fetch;
 describe('API Client', () => {
   beforeEach(() => {
     mockFetch.mockReset();
-    sessionStorage.clear();
+    // Garantir que sessionStorage esteja limpo e funcional
+    const store: Record<string, string> = {};
+    Object.defineProperty(window, 'sessionStorage', {
+      value: {
+        getItem: vi.fn((key: string) => store[key] || null),
+        setItem: vi.fn((key: string, value: string) => { store[key] = value; }),
+        removeItem: vi.fn((key: string) => { delete store[key]; }),
+        clear: vi.fn(() => { Object.keys(store).forEach(k => delete store[k]); }),
+        length: 0,
+        key: vi.fn(),
+      },
+      writable: true,
+    });
     vi.clearAllMocks();
   });
 
@@ -31,7 +43,7 @@ describe('API Client', () => {
   describe('GET requests', () => {
     it('should make GET request and return data', async () => {
       const mockData = [{ id: '1', title: 'Test' }];
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -50,25 +62,19 @@ describe('API Client', () => {
 
     it('should include auth token in headers when available', async () => {
       setAuthToken('my-token');
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => ([]),
       });
 
       await api.get('/api/tasks');
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer my-token',
-          }),
-        })
-      );
+      const [, options] = mockFetch.mock.calls[0];
+      expect(options.headers.Authorization).toBe('Bearer my-token');
     });
 
     it('should handle 204 No Content response', async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 204,
       });
@@ -78,7 +84,7 @@ describe('API Client', () => {
     });
 
     it('should handle 404 response', async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: false,
         status: 404,
         json: async () => ({ error: 'Not found' }),
@@ -88,7 +94,7 @@ describe('API Client', () => {
     });
 
     it('should handle 500 response', async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: false,
         status: 500,
         json: async () => ({ error: 'Internal server error' }),
@@ -104,7 +110,7 @@ describe('API Client', () => {
     });
 
     it('should handle network errors', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network failure'));
+      mockFetch.mockRejectedValue(new Error('Network failure'));
 
       await expect(api.get('/api/tasks')).rejects.toThrow('Network failure');
     });
@@ -113,7 +119,7 @@ describe('API Client', () => {
   describe('POST requests', () => {
     it('should make POST request with JSON body', async () => {
       const mockData = { id: '1', title: 'New Task' };
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 201,
         json: async () => mockData,
@@ -131,7 +137,7 @@ describe('API Client', () => {
   describe('PUT requests', () => {
     it('should make PUT request with JSON body', async () => {
       const mockData = { id: '1', title: 'Updated' };
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -148,7 +154,7 @@ describe('API Client', () => {
   describe('PATCH requests', () => {
     it('should make PATCH request', async () => {
       const mockData = { id: '1', completed: true };
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -164,7 +170,7 @@ describe('API Client', () => {
 
   describe('DELETE requests', () => {
     it('should make DELETE request', async () => {
-      mockFetch.mockResolvedValueOnce({
+      mockFetch.mockResolvedValue({
         ok: true,
         status: 204,
       });
