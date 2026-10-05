@@ -28,7 +28,7 @@ export interface UpdateTaskInput {
   dueDate?: string | null
 }
 
-interface TasksState {
+export interface TasksState {
   tasks: Task[]
   filter: 'all' | 'active' | 'completed'
   searchQuery: string

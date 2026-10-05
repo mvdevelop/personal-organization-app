@@ -1,12 +1,14 @@
 import { api, ApiClientError, setAuthToken, getAuthToken } from '../../services/api';
 
 // Mock do fetch global
-global.fetch = vi.fn();
+const mockFetch = vi.fn();
+global.fetch = mockFetch as unknown as typeof fetch;
 
 describe('API Client', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockFetch.mockReset();
     sessionStorage.clear();
+    vi.clearAllMocks();
   });
 
   describe('Token Management', () => {
@@ -29,7 +31,7 @@ describe('API Client', () => {
   describe('GET requests', () => {
     it('should make GET request and return data', async () => {
       const mockData = [{ id: '1', title: 'Test' }];
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -37,7 +39,7 @@ describe('API Client', () => {
 
       const result = await api.get('/api/tasks');
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/api/tasks'),
         expect.objectContaining({
           method: 'GET',
@@ -48,14 +50,14 @@ describe('API Client', () => {
 
     it('should include auth token in headers when available', async () => {
       setAuthToken('my-token');
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ([]),
       });
 
       await api.get('/api/tasks');
-      expect(fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
           headers: expect.objectContaining({
@@ -66,7 +68,7 @@ describe('API Client', () => {
     });
 
     it('should handle 204 No Content response', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
@@ -76,7 +78,7 @@ describe('API Client', () => {
     });
 
     it('should handle 404 response', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
         json: async () => ({ error: 'Not found' }),
@@ -86,7 +88,7 @@ describe('API Client', () => {
     });
 
     it('should handle 500 response', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
         json: async () => ({ error: 'Internal server error' }),
@@ -102,7 +104,7 @@ describe('API Client', () => {
     });
 
     it('should handle network errors', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network failure'));
+      mockFetch.mockRejectedValueOnce(new Error('Network failure'));
 
       await expect(api.get('/api/tasks')).rejects.toThrow('Network failure');
     });
@@ -111,7 +113,7 @@ describe('API Client', () => {
   describe('POST requests', () => {
     it('should make POST request with JSON body', async () => {
       const mockData = { id: '1', title: 'New Task' };
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 201,
         json: async () => mockData,
@@ -120,7 +122,7 @@ describe('API Client', () => {
       const result = await api.post('/api/tasks', { title: 'New Task' });
       expect(result).toEqual(mockData);
 
-      const [, options] = (fetch as jest.Mock).mock.calls[0];
+      const [, options] = mockFetch.mock.calls[0];
       expect(options.method).toBe('POST');
       expect(options.body).toBe(JSON.stringify({ title: 'New Task' }));
     });
@@ -129,7 +131,7 @@ describe('API Client', () => {
   describe('PUT requests', () => {
     it('should make PUT request with JSON body', async () => {
       const mockData = { id: '1', title: 'Updated' };
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -138,7 +140,7 @@ describe('API Client', () => {
       const result = await api.put('/api/tasks/1', { title: 'Updated' });
       expect(result).toEqual(mockData);
 
-      const [, options] = (fetch as jest.Mock).mock.calls[0];
+      const [, options] = mockFetch.mock.calls[0];
       expect(options.method).toBe('PUT');
     });
   });
@@ -146,7 +148,7 @@ describe('API Client', () => {
   describe('PATCH requests', () => {
     it('should make PATCH request', async () => {
       const mockData = { id: '1', completed: true };
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockData,
@@ -155,21 +157,21 @@ describe('API Client', () => {
       const result = await api.patch('/api/tasks/1/toggle');
       expect(result).toEqual(mockData);
 
-      const [, options] = (fetch as jest.Mock).mock.calls[0];
+      const [, options] = mockFetch.mock.calls[0];
       expect(options.method).toBe('PATCH');
     });
   });
 
   describe('DELETE requests', () => {
     it('should make DELETE request', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 204,
       });
 
       await api.delete('/api/tasks/1');
 
-      const [, options] = (fetch as jest.Mock).mock.calls[0];
+      const [, options] = mockFetch.mock.calls[0];
       expect(options.method).toBe('DELETE');
     });
   });

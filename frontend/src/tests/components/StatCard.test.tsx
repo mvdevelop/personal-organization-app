@@ -17,20 +17,20 @@ describe('StatCard Component', () => {
   });
 
   it('should render with status neutral by default', () => {
-    render(<StatCard {...defaultProps} />);
-    const card = screen.getByText('5').parentElement?.parentElement;
+    const { container } = render(<StatCard {...defaultProps} />);
+    const card = container.querySelector('.dashboard-kpi');
     expect(card).toHaveClass('dashboard-kpi--neutral');
   });
 
   it('should render with positive status', () => {
-    render(<StatCard {...defaultProps} status="positive" />);
-    const card = screen.getByText('5').parentElement?.parentElement;
+    const { container } = render(<StatCard {...defaultProps} status="positive" />);
+    const card = container.querySelector('.dashboard-kpi');
     expect(card).toHaveClass('dashboard-kpi--positive');
   });
 
   it('should render with attention status', () => {
-    render(<StatCard {...defaultProps} status="attention" />);
-    const card = screen.getByText('5').parentElement?.parentElement;
+    const { container } = render(<StatCard {...defaultProps} status="attention" />);
+    const card = container.querySelector('.dashboard-kpi');
     expect(card).toHaveClass('dashboard-kpi--attention');
   });
 
@@ -55,7 +55,7 @@ describe('StatCard Component', () => {
   });
 
   it('should apply custom color when provided', () => {
-    render(<StatCard {...defaultProps} color="#ef4444" />);
+    const { container } = render(<StatCard {...defaultProps} color="#ef4444" />);
     const valueElement = screen.getByText('5');
     expect(valueElement).toHaveStyle({ color: '#ef4444' });
   });
@@ -65,8 +65,9 @@ describe('StatCard Component', () => {
     expect(screen.getByText('100%')).toBeInTheDocument();
   });
 
-  it('should render icon', () => {
-    render(<StatCard {...defaultProps} />);
-    expect(screen.getByTestId('list-todo-icon') || screen.getByLabelText('icone') || document.querySelector('svg')).toBeInTheDocument();
+  it('should render icon svg', () => {
+    const { container } = render(<StatCard {...defaultProps} />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
   });
 });
