@@ -175,6 +175,50 @@ h1:focus { outline: none; }
 
 .rounded { border-radius: 4px; }
 
+.dashboard-hero,
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.dashboard-hero {
+    padding: 28px 32px;
+    border-radius: 24px;
+    background: linear-gradient(115deg, rgba(101, 85, 143, 0.14), rgba(182, 95, 133, 0.08));
+    border: 1px solid rgba(101, 85, 143, 0.12);
+}
+
+.eyebrow {
+    display: block;
+    color: var(--schedule-primary) !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.12em;
+}
+
+.dashboard-title,
+.page-header-title {
+    color: var(--schedule-ink);
+    font-weight: 800 !important;
+    letter-spacing: -0.04em;
+}
+
+.page-header {
+    margin-bottom: 28px;
+}
+
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero-action {
+    box-shadow: 0 8px 18px rgba(101, 85, 143, 0.2);
+}
+
 /* ---- Dashboard ---- */
 
 .dashboard-grid-2cols {

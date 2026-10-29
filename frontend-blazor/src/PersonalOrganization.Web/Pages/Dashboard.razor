@@ -18,18 +18,19 @@
 else
 {
     <!-- Greeting -->
-    <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-content-between mb-6">
+    <section class="dashboard-hero mb-6">
         <div>
-            <MudText Typo="Typo.h4">@_greeting</MudText>
+            <MudText Typo="Typo.overline" Class="eyebrow">SEU DIA, DO SEU JEITO</MudText>
+            <MudText Typo="Typo.h4" Class="dashboard-title">@_greeting</MudText>
             <MudText Typo="Typo.body2" Color="Color.Secondary">@_dateStr</MudText>
         </div>
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                    StartIcon="@Icons.Material.Filled.SmartToy"
                    Href="/ai"
-                   Class="mt-2 mt-sm-0">
+                   Class="hero-action mt-2 mt-sm-0">
             Resumo do dia com IA
         </MudButton>
-    </div>
+    </section>
 
     <!-- Quick Stats Row -->
     <div class="d-flex gap-3 flex-wrap mb-6">

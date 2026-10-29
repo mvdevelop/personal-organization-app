@@ -7,7 +7,15 @@
 
 <PageTitle>Tarefas — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Minhas Tarefas</MudText>
+<PageHeader Title="Minhas tarefas" Description="Tudo o que você precisa mover hoje, em um só lugar." Eyebrow="ORGANIZAÇÃO">
+    <Actions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => OpenCreateDialog())">
+            Nova tarefa
+        </MudButton>
+    </Actions>
+</PageHeader>
 
 <!-- Loading state -->
 @if (_loading && _tasks.Count == 0)
@@ -45,11 +53,6 @@ else
                            Color="@(_filter == "completed" ? Color.Primary : Color.Default)"
                            Size="Size.Small">Concluídas</MudButton>
             </MudButtonGroup>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(() => OpenCreateDialog())">
-                Nova Tarefa
-            </MudButton>
         </div>
     </div>
 
