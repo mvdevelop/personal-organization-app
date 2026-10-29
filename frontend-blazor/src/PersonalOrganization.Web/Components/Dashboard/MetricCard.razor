@@ -1,0 +1,23 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="sa-metric">
+    <div class="sa-metric-top">
+        <span class="sa-metric-label">@Label</span>
+        <span class="sa-metric-pill @PillClass">@Pill</span>
+    </div>
+    <div class="sa-metric-value">@Value@if (!string.IsNullOrEmpty(Unit)){<small>@Unit</small>}</div>
+    <div class="sa-metric-note">
+        <MudIcon Icon="@Icon" Size="Size.Small" />
+        <span>@Note</span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter] public string Unit { get; set; } = "";
+    [Parameter, EditorRequired] public string Pill { get; set; } = "";
+    [Parameter] public string PillClass { get; set; } = "";
+    [Parameter, EditorRequired] public string Note { get; set; } = "";
+    [Parameter, EditorRequired] public string Icon { get; set; } = Icons.Material.Outlined.Checklist;
+}

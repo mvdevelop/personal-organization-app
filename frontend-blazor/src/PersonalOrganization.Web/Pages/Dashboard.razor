@@ -5,378 +5,594 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
-<PageTitle>Dashboard — Schedule</PageTitle>
+<PageTitle>Dashboard — Smart Agenda</PageTitle>
 
-<!-- Loading -->
 @if (_loading && _data == null)
 {
-    <div class="d-flex flex-column align-center justify-center py-20">
-        <MudProgressCircular Indeterminate="true" Size="Size.Large" />
-        <MudText Class="mt-4" Typo="Typo.body2" Color="Color.Secondary">Carregando dashboard...</MudText>
+    <div class="page-loading" role="status" aria-live="polite">
+        <MudProgressCircular Indeterminate="true" Size="Size.Medium" Color="Color.Primary" />
+        <span>Carregando seu painel...</span>
     </div>
 }
 else
 {
-    <!-- Greeting -->
-    <section class="dashboard-hero mb-6">
-        <div>
-            <MudText Typo="Typo.overline" Class="eyebrow">SEU DIA, DO SEU JEITO</MudText>
-            <MudText Typo="Typo.h4" Class="dashboard-title">@_greeting</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@_dateStr</MudText>
-        </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.SmartToy"
-                   Href="/ai"
-                   Class="hero-action mt-2 mt-sm-0">
-            Resumo do dia com IA
-        </MudButton>
-    </section>
-
-    <!-- Quick Stats Row -->
-    <div class="stats-grid mb-6">
-        <MudPaper Elevation="0" Class="stat-card">
-            <span class="stat-icon tone-tasks"><MudIcon Icon="@Icons.Material.Filled.Checklist" /></span>
-            <div>
-                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Tasks.Pending ?? 0)</MudText>
-                <MudText Typo="Typo.caption" Class="stat-label">Tarefas pendentes</MudText>
-            </div>
-        </MudPaper>
-        <MudPaper Elevation="0" Class="stat-card">
-            <span class="stat-icon tone-habits"><MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" /></span>
-            <div>
-                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Habits.BestStreak ?? 0)</MudText>
-                <MudText Typo="Typo.caption" Class="stat-label">Melhor sequência</MudText>
-            </div>
-        </MudPaper>
-        <MudPaper Elevation="0" Class="stat-card">
-            <span class="stat-icon tone-goals"><MudIcon Icon="@Icons.Material.Filled.Star" /></span>
-            <div>
-                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Goals.Active ?? 0)</MudText>
-                <MudText Typo="Typo.caption" Class="stat-label">Metas ativas</MudText>
-            </div>
-        </MudPaper>
-        <MudPaper Elevation="0" Class="stat-card">
-            <span class="stat-icon tone-studies"><MudIcon Icon="@Icons.Material.Filled.MenuBook" /></span>
-            <div>
-                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
-                <MudText Typo="Typo.caption" Class="stat-label">Horas de estudo</MudText>
-            </div>
-        </MudPaper>
-    </div>
-
-    <!-- Main 2-Column Grid -->
-    <div class="dashboard-grid-2cols">
-        <!-- Left Column -->
-        <div class="d-flex flex-column gap-4">
-
-            <!-- Tasks + Habits Row -->
-            <div class="d-flex gap-4 flex-wrap">
-                <!-- Tasks Card -->
-                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="min-width: 260px;">
-                    <div class="d-flex align-center justify-content-between mb-3">
-                        <div class="d-flex align-center gap-3">
-                            <span class="card-glyph tone-tasks"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" /></span>
-                            <div>
-                                <MudText Typo="Typo.subtitle2">Tarefas</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Tasks.Completed ?? 0)/@(_data?.Tasks.Total ?? 0) concluídas</MudText>
-                            </div>
-                        </div>
-                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/tasks" Color="Color.Default" />
-                    </div>
-
-                    <!-- Progress bar -->
-                    @{
-                        var taskProgress = (_data?.Tasks.Total ?? 0) > 0 ? (_data!.Tasks.Completed * 100.0 / _data.Tasks.Total) : 0.0;
-                    }
-                    <MudProgressLinear Value="@taskProgress" Color="Color.Primary" Class="mb-3" />
-
-                    <!-- Overdue alert -->
-                    @if (_data?.Tasks.Overdue > 0)
-                    {
-                        <MudAlert Severity="Severity.Error" Class="mb-3" Dense="true">
-                            <MudText Typo="Typo.caption">
-                                @_data.Tasks.Overdue tarefa@(_data.Tasks.Overdue > 1 ? "s" : "") atrasada@(_data.Tasks.Overdue > 1 ? "s" : "")
-                            </MudText>
-                        </MudAlert>
-                    }
-                    else if (_data?.Tasks.Total == 0)
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-4">Nenhuma tarefa ainda</MudText>
-                    }
-
-                    <!-- Recent tasks -->
-                    @if (_data?.Tasks.Recent != null)
-                    {
-                        <div class="d-flex flex-column gap-2">
-                            @foreach (var task in _data.Tasks.Recent.Take(3))
-                            {
-                                <div class="d-flex align-center gap-2">
-                                    @{
-                                        var circleColor = task.Completed ? "#22c55e" : task.Priority == "high" ? "#ef4444" : task.Priority == "medium" ? "#f59e0b" : "#d1d5db";
-                                    }
-                                    <div Style="width: 8px; height: 8px; border-radius: 50%; background-color: @circleColor; flex-shrink: 0;"></div>
-                                    <MudText Typo="Typo.body2"
-                                             Class="@(task.Completed ? "flex-grow-1 text-truncate text-decoration-line-through mud-text-secondary" : "flex-grow-1 text-truncate")">
-                                        @task.Title
-                                    </MudText>
-                                    @if (!string.IsNullOrEmpty(task.DueDate))
-                                    {
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @(DateTime.Parse(task.DueDate).ToString("dd/MM"))
-                                        </MudText>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    }
-                </MudPaper>
-
-                <!-- Habits Card -->
-                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="min-width: 260px;">
-                    <div class="d-flex align-center justify-content-between mb-3">
-                        <div class="d-flex align-center gap-3">
-                            <span class="card-glyph tone-habits"><MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" /></span>
-                            <div>
-                                <MudText Typo="Typo.subtitle2">Hábitos</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Habits.TodayCheckIns ?? 0) check-ins hoje</MudText>
-                            </div>
-                        </div>
-                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/habits" Color="Color.Default" />
-                    </div>
-
-                    <div class="d-flex align-center gap-4 mb-3">
-                        <div class="d-flex align-center gap-1">
-                            <MudText Typo="Typo.h4" Style="color: #f97316;">@(_data?.Habits.BestStreak ?? 0)</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">🔥 max</MudText>
-                        </div>
-                        <div class="d-flex align-center gap-1">
-                            <MudText Typo="Typo.h4" Color="Color.Default">@(_data?.Habits.Total ?? 0)</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">hábitos</MudText>
-                        </div>
-                    </div>
-
-                    @if (_data?.Habits.Streaks != null && _data.Habits.Streaks.Length > 0)
-                    {
-                        <div class="d-flex flex-column gap-1">
-                            @foreach (var s in _data.Habits.Streaks.Take(4))
-                            {
-                                <div class="d-flex align-center gap-2">
-                                    <div Style="width: 8px; height: 8px; border-radius: 50%; background-color: @(s.Color ?? "#3b82f6"); flex-shrink: 0;"></div>
-                                    <MudText Typo="Typo.caption" Class="flex-grow-1 text-truncate">@s.Title</MudText>
-                                    <MudText Typo="Typo.caption" Style="color: #f97316; font-weight: 500;">@s.Streak d</MudText>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-3">Nenhum hábito ainda</MudText>
-                    }
-                </MudPaper>
-            </div>
-
-            <!-- Goals + Notes Row -->
-            <div class="d-flex gap-4 flex-wrap">
-                <!-- Goals Card -->
-                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="min-width: 260px;">
-                    <div class="d-flex align-center justify-content-between mb-3">
-                        <div class="d-flex align-center gap-3">
-                            <span class="card-glyph tone-goals"><MudIcon Icon="@Icons.Material.Filled.Star" /></span>
-                            <div>
-                                <MudText Typo="Typo.subtitle2">Metas</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Goals.Active ?? 0) ativas · @(_data?.Goals.Completed ?? 0) concluídas</MudText>
-                            </div>
-                        </div>
-                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/goals" Color="Color.Default" />
-                    </div>
-
-                    @if (_data?.Goals.Recent != null && _data.Goals.Recent.Length > 0)
-                    {
-                        <div class="d-flex flex-column gap-3">
-                            @foreach (var goal in _data.Goals.Recent.Take(3))
-                            {
-                                <div>
-                                    <div class="d-flex justify-content-between align-center mb-1">
-                                        <MudText Typo="Typo.caption" Class="text-truncate font-weight-medium">@goal.Title</MudText>
-                                        @if (goal.TargetValue.HasValue && goal.TargetValue > 0)
-                                        {
-                                            var pct = Math.Min(100, (int)(goal.CurrentValue / goal.TargetValue.Value * 100));
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">@pct%</MudText>
-                                        }
-                                    </div>
-                                    @if (goal.TargetValue.HasValue && goal.TargetValue > 0)
-                                    {
-                                        var pct = Math.Min(100.0, goal.CurrentValue / goal.TargetValue.Value * 100.0);
-                                        <MudProgressLinear Value="@pct" Color="Color.Secondary" Class="rounded" Style="height: 6px;" />
-                                    }
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-3">Nenhuma meta ativa</MudText>
-                    }
-                </MudPaper>
-
-                <!-- Notes Card -->
-                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="min-width: 260px;">
-                    <div class="d-flex align-center justify-content-between mb-3">
-                        <div class="d-flex align-center gap-3">
-                            <span class="card-glyph tone-notes"><MudIcon Icon="@Icons.Material.Filled.NoteAlt" /></span>
-                            <div>
-                                <MudText Typo="Typo.subtitle2">Notas</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Notes.Total ?? 0) notas criadas</MudText>
-                            </div>
-                        </div>
-                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/notes" Color="Color.Default" />
-                    </div>
-
-                    @if (_data?.Notes.Recent != null && _data.Notes.Recent.Length > 0)
-                    {
-                        <div class="d-flex flex-column gap-2">
-                            @foreach (var note in _data.Notes.Recent.Take(4))
-                            {
-                                <div class="d-flex align-center gap-2">
-                                    <div Style="width: 6px; height: 6px; border-radius: 50%; background-color: #ec4899; flex-shrink: 0;"></div>
-                                    <MudText Typo="Typo.caption" Class="flex-grow-1 text-truncate">@note.Title</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        @(DateTime.Parse(note.UpdatedAt).ToString("dd/MM"))
-                                    </MudText>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-3">Nenhuma nota ainda</MudText>
-                    }
-                </MudPaper>
-            </div>
-
-            <!-- Studies + AI Row -->
-            <div class="d-flex gap-4 flex-wrap">
-                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="min-width: 260px;">
-                    <div class="d-flex align-center justify-content-between mb-3">
-                        <div class="d-flex align-center gap-3">
-                            <span class="card-glyph tone-studies"><MudIcon Icon="@Icons.Material.Filled.MenuBook" /></span>
-                            <div>
-                                <MudText Typo="Typo.subtitle2">Estudos</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Studies.Subjects ?? 0) matérias</MudText>
-                            </div>
-                        </div>
-                        <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/studies" Color="Color.Default" />
-                    </div>
-                    <div class="mini-metrics">
-                        <div class="mini-metric">
-                            <MudText Typo="Typo.h5" Class="mini-metric-value">@(_data?.Studies.WeekSessions ?? 0)</MudText>
-                            <MudText Typo="Typo.caption" Class="stat-label">Sessões na semana</MudText>
-                        </div>
-                        <div class="mini-metric">
-                            <MudText Typo="Typo.h5" Class="mini-metric-value">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
-                            <MudText Typo="Typo.caption" Class="stat-label">Horas na semana</MudText>
-                        </div>
-                    </div>
-                </MudPaper>
-
-                <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1 d-flex align-center gap-3"
-                          Style="min-width: 260px;">
-                    <span class="card-glyph tone-ai"><MudIcon Icon="@Icons.Material.Filled.SmartToy" /></span>
-                    <div>
-                        <MudText Typo="Typo.subtitle2">Assistente IA</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Peça um resumo do seu dia ou sugestões</MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/ai" Size="Size.Small"
-                                   EndIcon="@Icons.Material.Filled.ArrowForward">
-                            Abrir chat
-                        </MudButton>
-                    </div>
-                </MudPaper>
-            </div>
+    <!-- ===== Greeting + weather ===== -->
+    <section class="dash-head">
+        <div class="dash-head-copy">
+            <span class="dash-date">@_dateLabel</span>
+            <h1 class="dash-title">@_greeting, @_displayName! <span aria-hidden="true">@_greetingEmoji</span></h1>
+            <p class="dash-sub">Um passo de cada vez. Vamos organizar o que importa hoje.</p>
         </div>
 
-        <!-- Right Column -->
-        <div class="d-flex flex-column gap-4">
-            <!-- Clock Widget -->
-            <MudPaper Elevation="0" Class="dashboard-card clock-card pa-4 text-center">
-                <MudText Typo="Typo.h2" Style="font-size: 2.5rem; font-weight: 300; letter-spacing: 2px; font-variant-numeric: tabular-nums;">
-                    @_currentTime.ToString("HH:mm")
-                </MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                    @_currentTime.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))
-                </MudText>
-            </MudPaper>
-
-            <!-- Gamification Panel -->
-            <MudPaper Elevation="0" Class="dashboard-card pa-4">
-                <div class="d-flex align-center gap-3 mb-3">
-                    <span class="stat-icon tone-reward"><MudIcon Icon="@Icons.Material.Filled.EmojiEvents" /></span>
-                    <div>
-                        <MudText Typo="Typo.subtitle2">Nível @(_gamification?.Level ?? 0)</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            @(_gamification?.CurrentXp ?? 0) / @(_gamification?.NextLevelXp ?? 100) XP
-                        </MudText>
+        <aside class="weather-card" aria-label="Informações ilustrativas de clima">
+            <div class="weather-top">
+                <div>
+                    <div class="weather-temp">
+                        <strong>@Weather.Temperature</strong>
+                        <span>@Weather.Condition</span>
                     </div>
                 </div>
-                <MudProgressLinear Value="@(_gamification?.Progress ?? 0)" Color="Color.Warning" Class="mb-3" Style="height: 8px; border-radius: 4px;" />
+                <span class="weather-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Outlined.Cloud" />
+                </span>
+            </div>
+            <div class="weather-location">
+                <MudIcon Icon="@Icons.Material.Outlined.Place" Size="Size.Small" />
+                <span>@Weather.Location</span>
+            </div>
+            <div class="weather-meta">
+                <span>
+                    <MudIcon Icon="@Icons.Material.Outlined.Thermostat" Size="Size.Small" />
+                    Sensação @Weather.FeelsLike
+                </span>
+                <span>
+                    <MudIcon Icon="@Icons.Material.Outlined.WaterDrop" Size="Size.Small" />
+                    Umidade @Weather.Humidity
+                </span>
+            </div>
+            <span class="weather-disclaimer">Dados ilustrativos</span>
+        </aside>
+    </section>
 
-                @if (_gamification?.UnlockedAchievements != null && _gamification.UnlockedAchievements.Length > 0)
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Conquistas desbloqueadas:</MudText>
-                    <div class="d-flex gap-2 flex-wrap">
-                        @foreach (var a in _gamification.UnlockedAchievements.Take(6))
-                        {
-                            <MudTooltip Text="@($"{a.Title} — {a.Description}")">
-                                <span Style="font-size: 1.5rem; cursor: default;">@a.Icon</span>
-                            </MudTooltip>
-                        }
-                    </div>
-                    @if (_gamification.UnlockedAchievements.Length > 6)
-                    {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">+@(_gamification.UnlockedAchievements.Length - 6) outras</MudText>
-                    }
-                }
-                else
-                {
-                    <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="py-2">
-                        Complete atividades para ganhar conquistas!
-                    </MudText>
-                }
-            </MudPaper>
+    <!-- ===== AI overview ===== -->
+    <section class="sa-section" aria-labelledby="ai-heading">
+        <div class="sa-section-head">
+            <div>
+                <h2 class="sa-section-title" id="ai-heading">
+                    <MudIcon Icon="@Icons.Material.Outlined.AutoAwesome" />
+                    Resumo com IA
+                </h2>
+                <p class="sa-section-sub">Painel de decisão · Seu foco para hoje</p>
+            </div>
         </div>
+
+        <div class="ai-grid">
+            <article class="ai-decision">
+                <span class="ai-badge is-accent">PAINEL DE DECISÃO</span>
+                <h3 class="ai-decision-title">Veja o que pede atenção</h3>
+                <p class="ai-decision-text">Escolha o próximo passo e avance no seu ritmo.</p>
+
+                <div class="ai-decision-foot">
+                    <div class="ai-signals">
+                        <span class="ai-signals-dot" aria-hidden="true"></span>
+                        <span><strong>@_attentionSignals @(_attentionSignals == 1 ? "sinal" : "sinais") de atenção</strong></span>
+                        <span class="mud-text-secondary">· Uma boa hora para revisar sua rotina.</span>
+                    </div>
+                    <span class="ai-status">@(_attentionSignals > 0 ? "Requer atenção" : "Tudo em ordem")</span>
+                </div>
+            </article>
+
+            <article class="ai-reco">
+                <div class="ai-reco-head">
+                    <span class="ai-badge is-success">RECOMENDAÇÃO</span>
+                    <span class="ai-reco-number" aria-hidden="true">01</span>
+                </div>
+                <h3 class="ai-reco-title">Próxima ação</h3>
+                <p class="ai-reco-text">
+                    Seu próximo passo aparece aqui quando houver uma tarefa.
+                    Por enquanto, aproveite para revisar suas metas.
+                </p>
+                <a class="sa-primary-btn" href="/tasks">
+                    Abrir tarefas
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                </a>
+            </article>
+        </div>
+    </section>
+
+    <!-- ===== Productivity metrics ===== -->
+    <section class="metrics-grid" aria-label="Indicadores de produtividade">
+        <MetricCard Label="Tarefas pendentes"
+                    Value="@PendingTasks.ToString()"
+                    Pill="@_completionLabel"
+                    PillClass="is-success"
+                    Note="Tudo em dia · excelente ritmo"
+                    Icon="@Icons.Material.Outlined.Checklist" />
+        <MetricCard Label="Melhor streak"
+                    Value="@BestStreak.ToString()"
+                    Unit="dias"
+                    Pill="dias seguidos"
+                    PillClass="is-warning"
+                    Note="Faça um check-in hoje"
+                    Icon="@Icons.Material.Outlined.LocalFireDepartment" />
+        <MetricCard Label="Metas ativas"
+                    Value="@ActiveGoals.ToString()"
+                    Pill="@($"{CompletedGoals} concluídas")"
+                    PillClass="is-pink"
+                    Note="Continue progredindo"
+                    Icon="@Icons.Material.Outlined.Flag" />
+        <MetricCard Label="Horas de estudo"
+                    Value="@StudyHours.ToString()"
+                    Unit="h"
+                    Pill="na semana"
+                    PillClass="is-accent"
+                    Note="Que tal uma sessão curta?"
+                    Icon="@Icons.Material.Outlined.MenuBook" />
+    </section>
+
+    <!-- ===== Tasks + habits ===== -->
+    <div class="grid-2">
+        <article class="sa-card" aria-labelledby="tasks-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="tasks-heading">
+                        <span class="sa-glyph is-accent"><MudIcon Icon="@Icons.Material.Outlined.Checklist" /></span>
+                        Tarefas
+                    </h2>
+                    <p class="sa-card-sub">Seu progresso de hoje</p>
+                </div>
+                <a class="sa-link-btn" href="/tasks">
+                    Abrir tarefas
+                    <MudIcon Icon="@Icons.Material.Filled.NorthEast" Size="Size.Small" />
+                </a>
+            </div>
+
+            <div class="progress-head">
+                <span>@_completedTasks de @_taskRows.Count concluídas</span>
+                <strong>@_taskPercent%</strong>
+            </div>
+            <div class="sa-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                 aria-valuenow="@_taskPercent" aria-label="Progresso das tarefas">
+                <span style="width: @(_taskPercent)%"></span>
+            </div>
+
+            @if (_taskRows.Count == 0)
+            {
+                <div class="empty-note">
+                    <MudIcon Icon="@Icons.Material.Outlined.TaskAlt" />
+                    Nenhuma tarefa pendente. Aproveite para revisar suas metas.
+                </div>
+            }
+            else
+            {
+                <div class="task-list mt-3">
+                    @foreach (var task in _taskRows)
+                    {
+                        <div class="task-row @(task.Completed ? "is-done" : "")">
+                            <button type="button"
+                                    class="sa-check @(task.Completed ? "is-done" : "")"
+                                    aria-pressed="@(task.Completed ? "true" : "false")"
+                                    aria-label="Marcar @task.Title como @(task.Completed ? "pendente" : "concluída")"
+                                    @onclick="() => ToggleTask(task)">
+                                <MudIcon Icon="@Icons.Material.Filled.Check" />
+                            </button>
+                            <div class="task-row-main">
+                                <span class="task-row-title">@task.Title</span>
+                                <div class="task-row-meta">
+                                    <MudIcon Icon="@Icons.Material.Outlined.CalendarToday" />
+                                    <span>@task.Due</span>
+                                    <span class="sa-tag @task.TagClass">@task.Category</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (_completedTasks == _taskRows.Count)
+                {
+                    <div class="empty-note">
+                        <MudIcon Icon="@Icons.Material.Outlined.TaskAlt" />
+                        Nenhuma tarefa pendente. Aproveite para revisar suas metas.
+                    </div>
+                }
+            }
+
+            @if (_usingDemoTasks)
+            {
+                <p class="demo-note">Exemplos ilustrativos — crie sua primeira tarefa para ver seus dados.</p>
+            }
+        </article>
+
+        <article class="sa-card" aria-labelledby="habits-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="habits-heading">
+                        <span class="sa-glyph is-warning"><MudIcon Icon="@Icons.Material.Outlined.Loop" /></span>
+                        Hábitos
+                    </h2>
+                    <p class="sa-card-sub">Pequenas ações, grandes mudanças</p>
+                </div>
+                <a class="sa-link-btn" href="/habits">
+                    Abrir hábitos
+                    <MudIcon Icon="@Icons.Material.Filled.NorthEast" Size="Size.Small" />
+                </a>
+            </div>
+
+            <div class="habit-stats">
+                <div class="habit-stat">
+                    <div class="habit-stat-value">@_habitRows.Count(h => h.CheckedToday) <small>/ @_habitRows.Count hábitos</small></div>
+                    <div class="habit-stat-label">Check-ins hoje</div>
+                </div>
+                <div class="habit-stat">
+                    <div class="habit-stat-value">@BestStreak <small>dias</small></div>
+                    <div class="habit-stat-label">Maior sequência</div>
+                </div>
+            </div>
+
+            @if (_habitRows.Count == 0)
+            {
+                <div class="empty-note">
+                    <MudIcon Icon="@Icons.Material.Outlined.Loop" />
+                    Nenhum hábito ainda. Crie um pequeno hábito para começar.
+                </div>
+            }
+            else
+            {
+                @foreach (var habit in _habitRows)
+                {
+                    <div class="habit-row">
+                        <button type="button"
+                                class="sa-check is-habit @(habit.CheckedToday ? "is-done" : "")"
+                                aria-pressed="@(habit.CheckedToday ? "true" : "false")"
+                                aria-label="Check-in de @habit.Title hoje"
+                                @onclick="() => ToggleHabit(habit)">
+                            <MudIcon Icon="@Icons.Material.Filled.Check" />
+                        </button>
+                        <span class="habit-dot" style="background: @habit.Color" aria-hidden="true"></span>
+                        <div class="habit-row-main">
+                            <span class="habit-row-title">@habit.Title</span>
+                            <span class="habit-row-sub">@habit.Description</span>
+                        </div>
+                        <span class="habit-streak">
+                            <MudIcon Icon="@Icons.Material.Outlined.LocalFireDepartment" />
+                            @habit.Streak d
+                        </span>
+                    </div>
+                }
+            }
+
+            @if (_usingDemoHabits)
+            {
+                <p class="demo-note">Exemplos ilustrativos — crie seu primeiro hábito para ver seus dados.</p>
+            }
+        </article>
     </div>
+
+    <!-- ===== Goals / notes / studies ===== -->
+    <div class="grid-3">
+        <article class="sa-card" aria-labelledby="goals-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="goals-heading">
+                        <span class="sa-glyph is-pink"><MudIcon Icon="@Icons.Material.Outlined.Flag" /></span>
+                        Metas
+                    </h2>
+                    <p class="sa-card-sub">@ActiveGoals ativas · @CompletedGoals concluídas</p>
+                </div>
+                <a class="sa-link-btn" href="/goals">
+                    Ver todas
+                    <MudIcon Icon="@Icons.Material.Filled.NorthEast" Size="Size.Small" />
+                </a>
+            </div>
+
+            @if (_goalRows.Count == 0)
+            {
+                <div class="empty-note">
+                    <MudIcon Icon="@Icons.Material.Outlined.Flag" />
+                    Nenhuma meta ativa. Defina um destino para começar.
+                </div>
+            }
+            else
+            {
+                @foreach (var goal in _goalRows)
+                {
+                    <div class="goal-row">
+                        <div class="goal-head">
+                            <span class="goal-emoji" aria-hidden="true"><MudIcon Icon="@goal.Icon" /></span>
+                            <span class="goal-title">@goal.Title</span>
+                            <span class="goal-pct">@goal.Percent.ToString("0")%</span>
+                        </div>
+                        <div class="sa-progress is-pink" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                             aria-valuenow="@goal.Percent" aria-label="Progresso da meta @goal.Title">
+                            <span style="width: @goal.Percent%"></span>
+                        </div>
+                    </div>
+                }
+            }
+
+            @if (_usingDemoGoals)
+            {
+                <p class="demo-note">Exemplos ilustrativos — dados da sua conta aparecem aqui.</p>
+            }
+        </article>
+
+        <article class="sa-card" aria-labelledby="notes-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="notes-heading">
+                        <span class="sa-glyph is-blue"><MudIcon Icon="@Icons.Material.Outlined.StickyNote2" /></span>
+                        Notas
+                    </h2>
+                    <p class="sa-card-sub">@_notesCountLabel</p>
+                </div>
+                <a class="sa-link-btn" href="/notes">
+                    Abrir notas
+                    <MudIcon Icon="@Icons.Material.Filled.NorthEast" Size="Size.Small" />
+                </a>
+            </div>
+
+            <div class="note-preview">
+                <div class="note-preview-title">@_note.Title</div>
+                <div class="note-preview-meta">
+                    <span>@_note.Date</span>
+                    <span aria-hidden="true">·</span>
+                    <span>@_note.Category</span>
+                </div>
+                <p class="note-preview-text">@_note.Excerpt</p>
+            </div>
+
+            @if (_usingDemoNotes)
+            {
+                <p class="demo-note">Prévia ilustrativa — suas notas aparecem aqui.</p>
+            }
+
+            <p class="sa-card-sub mt-3">Capture ideias importantes e encontre tudo em um só lugar.</p>
+        </article>
+
+        <article class="sa-card" aria-labelledby="studies-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="studies-heading">
+                        <span class="sa-glyph is-success"><MudIcon Icon="@Icons.Material.Outlined.MenuBook" /></span>
+                        Estudos
+                    </h2>
+                    <p class="sa-card-sub">Seu aprendizado em números</p>
+                </div>
+                <a class="sa-link-btn" href="/studies">
+                    Abrir
+                    <MudIcon Icon="@Icons.Material.Filled.NorthEast" Size="Size.Small" />
+                </a>
+            </div>
+
+            <div class="study-hero">
+                <strong>@StudySubjects</strong>
+                <span>@(StudySubjects == 1 ? "matéria" : "matérias")</span>
+            </div>
+            <p class="study-sub">
+                @(StudySubjects == 0 ? "Comece a organizar seus estudos" : "Sua rotina de aprendizado está ativa")
+            </p>
+
+            <div class="study-stats">
+                <div class="study-stat">
+                    <strong>@StudySessions</strong>
+                    <span>sessões na semana</span>
+                </div>
+                <div class="study-stat">
+                    <strong>@StudyHours h</strong>
+                    <span>na semana</span>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <!-- ===== Calendar + gamification ===== -->
+    <div class="grid-2">
+        <article class="sa-card" aria-labelledby="cal-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="cal-heading">
+                        <span class="sa-glyph is-blue"><MudIcon Icon="@Icons.Material.Outlined.CalendarMonth" /></span>
+                        Calendário
+                    </h2>
+                    <p class="sa-card-sub">Uma visão simples dos seus dias</p>
+                </div>
+            </div>
+
+            <div class="cal-head">
+                <span class="cal-month">@_calMonthLabel</span>
+                <div class="cal-nav">
+                    <button type="button" class="sa-icon-btn" aria-label="Mês anterior" @onclick="@(() => ChangeMonth(-1))">
+                        <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" />
+                    </button>
+                    <button type="button" class="sa-icon-btn" aria-label="Próximo mês" @onclick="@(() => ChangeMonth(1))">
+                        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
+                    </button>
+                </div>
+            </div>
+
+            <div class="cal-grid" role="grid" aria-label="@($"Calendário de {_calMonthLabel}")">
+                @foreach (var dow in WeekdayLabels)
+                {
+                    <div class="cal-dow" role="columnheader" aria-label="@dow.Full">@dow.Short</div>
+                }
+
+                @foreach (var cell in _calCells)
+                {
+                    <button type="button"
+                            role="gridcell"
+                            class="cal-day @(cell.Outside ? "is-outside" : "") @(cell.IsToday ? "is-today" : "") @(cell.Selected ? "is-selected" : "")"
+                            aria-current="@(cell.IsToday ? "date" : null)"
+                            aria-selected="@(cell.Selected ? "true" : "false")"
+                            aria-label="@cell.Date.ToString("dddd, dd 'de' MMMM 'de' yyyy", PtBr)"
+                            @onclick="() => SelectDay(cell.Date)">
+                        @cell.Date.Day
+                    </button>
+                }
+            </div>
+
+            <div class="cal-foot">
+                <MudIcon Icon="@Icons.Material.Outlined.Event" Size="Size.Small" />
+                <span>Selecionado: <strong>@_selectedDate.ToString("dddd, dd 'de' MMMM", PtBr)</strong></span>
+            </div>
+        </article>
+
+        <article class="sa-card" aria-labelledby="gam-heading">
+            <div class="sa-card-head">
+                <div>
+                    <h2 class="sa-card-title" id="gam-heading">
+                        <span class="sa-glyph is-warning"><MudIcon Icon="@Icons.Material.Outlined.EmojiEvents" /></span>
+                        Nível — @_tierName
+                    </h2>
+                    <p class="sa-card-sub">Continue construindo sua consistência</p>
+                </div>
+                <button type="button" class="sa-link-btn" @onclick="ShowAllAchievements">Ver todas</button>
+            </div>
+
+            <div class="gam-xp">
+                <span><strong>@_currentXp</strong> XP de @_nextLevelXp XP</span>
+                <span>@_xpPercent%</span>
+            </div>
+            <div class="sa-progress is-warning" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                 aria-valuenow="@_xpPercent" aria-label="Progresso de XP">
+                <span style="width: @_xpPercent%"></span>
+            </div>
+
+            <div class="gam-achievements-head">
+                <span>Conquistas</span>
+            </div>
+
+            <div class="achievements">
+                @foreach (var a in Achievements)
+                {
+                    <div class="achievement @(a.Unlocked ? "is-unlocked" : "is-locked")" title="@a.Description">
+                        <MudIcon Icon="@a.Icon" />
+                        <span class="achievement-label">@a.Label</span>
+                    </div>
+                }
+            </div>
+
+            <p class="gam-foot">@_unlockedCount/@Achievements.Count conquistas · @CompletedTasksTotal tarefas concluídas</p>
+        </article>
+    </div>
+
+    <footer class="dash-foot">Smart Agenda · Um dia mais leve começa com clareza.</footer>
 }
 
 @code {
+    private static readonly System.Globalization.CultureInfo PtBr = new("pt-BR");
+
+    private record TaskRow(string Id, string Title, string Category, string TagClass, string Due, bool Completed, bool IsDemo);
+    private record HabitRow(string Id, string Title, string Description, string Color, int Streak, bool CheckedToday, bool IsDemo);
+    private record GoalRow(string Title, string Icon, double Percent);
+    private record AchievementState(string Label, string Description, string Icon, bool Unlocked);
+
+    private static readonly (string Short, string Full)[] WeekdayLabels =
+    {
+        ("D", "domingo"), ("S", "segunda-feira"), ("T", "terça-feira"), ("Q", "quarta-feira"),
+        ("Q", "quinta-feira"), ("S", "sexta-feira"), ("S", "sábado"),
+    };
+
+    private static readonly WeatherInfo Weather = SmartAgendaDemo.Weather;
+
     private DashboardData? _data;
     private GamificationStats? _gamification;
     private bool _loading = true;
-    private string _greeting = "";
-    private string _dateStr = "";
-    private DateTime _currentTime = DateTime.Now;
-    private Timer? _clockTimer;
+
+    private string _displayName = "você";
+    private string _greeting = "Boa noite";
+    private string _greetingEmoji = "🌙";
+    private string _dateLabel = "";
+
+    private readonly List<TaskRow> _taskRows = new();
+    private readonly List<HabitRow> _habitRows = new();
+    private readonly List<GoalRow> _goalRows = new();
+    private bool _usingDemoTasks;
+    private bool _usingDemoHabits;
+    private bool _usingDemoGoals;
+    private bool _usingDemoNotes;
+    private SmartAgendaDemo.DemoNote _note = SmartAgendaDemo.Note();
+    private int _notesTotal;
+
+    private DateTime _calMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DateTime _selectedDate = DateTime.Today;
+    private List<CalCell> _calCells = new();
+    private string _calMonthLabel = "";
+    private record CalCell(DateTime Date, bool Outside, bool IsToday, bool Selected);
+
+    private int PendingTasks => _taskRows.Count(t => !t.Completed);
+    private int _completedTasks => _taskRows.Count(t => t.Completed);
+    private int _taskPercent => _taskRows.Count == 0 ? 100 : (int)Math.Round(_completedTasks * 100.0 / _taskRows.Count);
+    private string _completionLabel => _taskRows.Count == 0 ? "Sem tarefas" : $"{_taskPercent}% concluídas";
+    private int _attentionSignals => (_data?.Tasks.Overdue ?? 0) + PendingTasks;
+
+    private int BestStreak => _habitRows.Count > 0
+        ? _habitRows.Max(h => h.Streak)
+        : _data?.Habits.BestStreak ?? 0;
+
+    private int ActiveGoals => _data?.Goals.Active ?? _goalRows.Count;
+    private int CompletedGoals => _data?.Goals.Completed ?? 0;
+    private int StudyHours => _data?.Studies.WeekStudyHours ?? 0;
+    private int StudySessions => _data?.Studies.WeekSessions ?? 0;
+    private int StudySubjects => _data?.Studies.Subjects ?? 0;
+
+    private int _currentXp => _gamification?.CurrentXp ?? 0;
+    private int _nextLevelXp => _gamification?.NextLevelXp is > 0 ? _gamification!.NextLevelXp : 100;
+    private int _xpPercent => Math.Clamp(_gamification?.Progress ?? 0, 0, 100);
+    private int CompletedTasksTotal => _gamification?.Counters.TasksCompleted ?? 0;
+
+    private string _tierName => (_gamification?.Level ?? 1) switch
+    {
+        <= 2 => "Iniciante",
+        <= 5 => "Aprendiz",
+        <= 9 => "Praticante",
+        <= 14 => "Consistente",
+        _ => "Lendário",
+    };
+
+    private int _unlockedCount => Achievements.Count(a => a.Unlocked);
+
+    private List<AchievementState> Achievements => new()
+    {
+        new("Primeira tarefa", "Conclua sua primeira tarefa", Icons.Material.Outlined.TaskAlt, CompletedTasksTotal > 0),
+        new("Foco", "Conclua 10 tarefas", Icons.Material.Outlined.CenterFocusStrong, CompletedTasksTotal >= 10),
+        new("Consistência", "Registre um hábito", Icons.Material.Outlined.LocalFireDepartment, (_gamification?.Counters.HabitsCreated ?? 0) > 0),
+        new("Aprendizado", "Registre uma sessão de estudo", Icons.Material.Outlined.School, (_gamification?.Counters.StudySessions ?? 0) > 0),
+        new("Organização", "Crie uma nota", Icons.Material.Outlined.FolderOpen, (_gamification?.Counters.NotesCreated ?? 0) > 0),
+    };
+
+    private string _notesCountLabel => _notesTotal > 0
+        ? $"{_notesTotal} {( _notesTotal == 1 ? "nota criada" : "notas criadas")}"
+        : "Nenhuma nota ainda";
 
     protected override async Task OnInitializedAsync()
     {
-        var hour = DateTime.Now.Hour;
-        _greeting = hour < 12 ? "Bom dia! ☀️" : hour < 18 ? "Boa tarde! 🌤️" : "Boa noite! 🌙";
-        _dateStr = DateTime.Now.ToString("dddd, dd 'de' MMMM", new System.Globalization.CultureInfo("pt-BR"));
-
-        // Start clock
-        _clockTimer = new Timer(_ =>
+        var now = DateTime.Now;
+        _greeting = now.Hour switch
         {
-            InvokeAsync(() =>
-            {
-                _currentTime = DateTime.Now;
-                StateHasChanged();
-            });
-        }, null, 1000 - DateTime.Now.Millisecond, 1000);
+            < 12 => "Bom dia",
+            < 18 => "Boa tarde",
+            _ => "Boa noite",
+        };
+        _greetingEmoji = now.Hour switch
+        {
+            < 12 => "☀️",
+            < 18 => "🌤️",
+            _ => "🌙",
+        };
+        _dateLabel = now.ToString("dddd, dd MMM yyyy", PtBr).ToUpperInvariant();
+
+        var user = AuthProvider.GetCurrentUser();
+        _displayName = string.IsNullOrWhiteSpace(user?.Name)
+            ? "você"
+            : user!.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "você";
+
+        BuildCalendar();
 
         await LoadDashboardData();
+        await LoadHabitsAsync();
+        BuildRows();
+
+        _loading = false;
     }
 
     private async Task LoadDashboardData()
@@ -391,7 +607,7 @@ else
         }
         catch
         {
-            Snackbar.Add("Erro ao carregar dashboard", Severity.Error);
+            Snackbar.Add("Não foi possível carregar o dashboard agora.", Severity.Warning);
         }
 
         try
@@ -399,12 +615,252 @@ else
             _gamification = await Api.GetAsync<GamificationStats>("/api/gamification/stats");
         }
         catch { /* optional */ }
-
-        _loading = false;
     }
 
-    public void Dispose()
+    private async Task LoadHabitsAsync()
     {
-        _clockTimer?.Dispose();
+        try
+        {
+            var habits = await Api.GetAsync<List<Habit>>("/api/habits");
+            var today = DateTime.Today.ToString("yyyy-MM-dd");
+            var logs = await Api.GetAsync<List<HabitLog>>($"/api/habits/logs?start={today}&end={today}");
+
+            _habitRows.Clear();
+            foreach (var h in habits)
+            {
+                var log = logs.FirstOrDefault(l => l.HabitId == h.Id);
+                _habitRows.Add(new HabitRow(
+                    h.Id,
+                    h.Title,
+                    string.IsNullOrWhiteSpace(h.Description) ? "Hábito pessoal" : h.Description,
+                    string.IsNullOrWhiteSpace(h.Color) ? "#7778F6" : h.Color,
+                    _data?.Habits.Streaks?.FirstOrDefault(s => s.Title == h.Title)?.Streak ?? 0,
+                    log?.Completed ?? false,
+                    false));
+            }
+
+            if (_habitRows.Count == 0)
+            {
+                foreach (var demo in SmartAgendaDemo.Habits())
+                    _habitRows.Add(new HabitRow(demo.Id, demo.Title, demo.Description, demo.Color, demo.Streak, demo.CheckedToday, true));
+                _usingDemoHabits = true;
+            }
+        }
+        catch
+        {
+            if (_habitRows.Count == 0)
+            {
+                foreach (var demo in SmartAgendaDemo.Habits())
+                    _habitRows.Add(new HabitRow(demo.Id, demo.Title, demo.Description, demo.Color, demo.Streak, demo.CheckedToday, true));
+                _usingDemoHabits = true;
+            }
+        }
+    }
+
+    private void BuildRows()
+    {
+        _taskRows.Clear();
+        var recent = _data?.Tasks.Recent ?? Array.Empty<DashboardRecentTask>();
+
+        if (recent.Length > 0)
+        {
+            foreach (var t in recent.Take(3))
+            {
+                _taskRows.Add(new TaskRow(
+                    t.Id,
+                    t.Title,
+                    PriorityLabel(t.Priority),
+                    PriorityClass(t.Priority),
+                    FormatDue(t.DueDate),
+                    t.Completed,
+                    false));
+            }
+        }
+        else
+        {
+            foreach (var d in SmartAgendaDemo.Tasks())
+                _taskRows.Add(new TaskRow(d.Id, d.Title, d.Category, d.TagKind, d.Due, d.Completed, true));
+            _usingDemoTasks = true;
+        }
+
+        _goalRows.Clear();
+        var goals = _data?.Goals.Recent ?? Array.Empty<DashboardRecentGoal>();
+        if (goals.Length > 0)
+        {
+            foreach (var g in goals.Take(4))
+            {
+                var pct = g.TargetValue is > 0
+                    ? Math.Clamp(g.CurrentValue / g.TargetValue.Value * 100.0, 0, 100)
+                    : 0;
+                _goalRows.Add(new GoalRow(g.Title, GoalIcon(g.Type), pct));
+            }
+        }
+        else
+        {
+            foreach (var d in SmartAgendaDemo.Goals())
+                _goalRows.Add(new GoalRow(d.Title, GoalIconForLabel(d.Icon), d.Percent));
+            _usingDemoGoals = true;
+        }
+
+        _notesTotal = _data?.Notes.Total ?? 0;
+        var note = _data?.Notes.Recent?.FirstOrDefault();
+        if (note != null)
+        {
+            _note = new SmartAgendaDemo.DemoNote(
+                note.Title,
+                FormatNoteDate(note.UpdatedAt),
+                "Nota pessoal",
+                "Capture ideias importantes e encontre tudo em um só lugar.");
+        }
+        else
+        {
+            _note = SmartAgendaDemo.Note();
+            _usingDemoNotes = true;
+        }
+    }
+
+    private static string PriorityLabel(string priority) => priority switch
+    {
+        "high" => "Alta",
+        "low" => "Baixa",
+        _ => "Média",
+    };
+
+    private static string PriorityClass(string priority) => priority switch
+    {
+        "high" => "is-high",
+        "low" => "is-low",
+        _ => "is-medium",
+    };
+
+    private static string GoalIcon(string type) => type switch
+    {
+        "purchase" => Icons.Material.Outlined.ShoppingCart,
+        "learning" => Icons.Material.Outlined.School,
+        "health" => Icons.Material.Outlined.FavoriteBorder,
+        "career" => Icons.Material.Outlined.WorkOutline,
+        _ => Icons.Material.Outlined.AutoAwesome,
+    };
+
+    private static string GoalIconForLabel(string label) => label switch
+    {
+        "Laptop" => Icons.Material.Outlined.Laptop,
+        "Music" => Icons.Material.Outlined.MusicNote,
+        "Monitor" => Icons.Material.Outlined.DesktopWindows,
+        _ => Icons.Material.Outlined.AutoAwesome,
+    };
+
+    private static string FormatDue(string? dueDate)
+    {
+        if (string.IsNullOrWhiteSpace(dueDate)) return "Sem data";
+        return DateTime.TryParse(dueDate, PtBr, System.Globalization.DateTimeStyles.None, out var d)
+            ? d.ToString("d 'de' MMM", PtBr)
+            : dueDate;
+    }
+
+    private static string FormatNoteDate(string? updatedAt)
+    {
+        if (string.IsNullOrWhiteSpace(updatedAt)) return "";
+        return DateTime.TryParse(updatedAt, out var d)
+            ? d.ToString("d 'de' MMM", PtBr)
+            : "";
+    }
+
+    private async Task ToggleTask(TaskRow task)
+    {
+        if (task.IsDemo)
+        {
+            var index = _taskRows.FindIndex(t => t.Id == task.Id);
+            if (index < 0) return;
+            _taskRows[index] = task with { Completed = !task.Completed };
+            return;
+        }
+
+        try
+        {
+            await Api.PatchAsync<TaskItem>($"/api/tasks/{task.Id}/toggle");
+            var index = _taskRows.FindIndex(t => t.Id == task.Id);
+            if (index >= 0)
+                _taskRows[index] = task with { Completed = !task.Completed };
+            Snackbar.Add(task.Completed ? "Tarefa reaberta." : "Tarefa concluída!", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Não foi possível atualizar a tarefa.", Severity.Error);
+        }
+    }
+
+    private async Task ToggleHabit(HabitRow habit)
+    {
+        if (habit.IsDemo)
+        {
+            var index = _habitRows.FindIndex(h => h.Id == habit.Id);
+            if (index < 0) return;
+            _habitRows[index] = habit with { CheckedToday = !habit.CheckedToday };
+            return;
+        }
+
+        try
+        {
+            await Api.PostAsync<HabitLog>("/api/habits/logs", new
+            {
+                habitId = habit.Id,
+                date = DateTime.Today.ToString("yyyy-MM-dd"),
+                completed = !habit.CheckedToday,
+            });
+
+            var index = _habitRows.FindIndex(h => h.Id == habit.Id);
+            if (index >= 0)
+                _habitRows[index] = habit with { CheckedToday = !habit.CheckedToday };
+
+            Snackbar.Add(habit.CheckedToday ? "Check-in removido." : "Check-in registrado!", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Não foi possível registrar o check-in.", Severity.Error);
+        }
+    }
+
+    private void ShowAllAchievements()
+    {
+        Snackbar.Add("As conquistas completas ficam disponíveis na página de gamificação em breve.", Severity.Info);
+    }
+
+    // ----- Calendar -----
+
+    private void BuildCalendar()
+    {
+        _calMonthLabel = _calMonth.ToString("MMMM 'de' yyyy", PtBr);
+        _calCells = new List<CalCell>();
+
+        var first = new DateTime(_calMonth.Year, _calMonth.Month, 1);
+        var offset = (int)first.DayOfWeek; // Sunday = 0
+        var start = first.AddDays(-offset);
+        var days = DateTime.DaysInMonth(_calMonth.Year, _calMonth.Month);
+
+        var total = (int)Math.Ceiling((offset + days) / 7.0) * 7;
+        for (int i = 0; i < total; i++)
+        {
+            var date = start.AddDays(i);
+            _calCells.Add(new CalCell(
+                date,
+                date.Month != _calMonth.Month,
+                date.Date == DateTime.Today,
+                date.Date == _selectedDate.Date));
+        }
+    }
+
+    private void ChangeMonth(int delta)
+    {
+        _calMonth = _calMonth.AddMonths(delta);
+        BuildCalendar();
+    }
+
+    private void SelectDay(DateTime date)
+    {
+        _selectedDate = date;
+        if (date.Month != _calMonth.Month || date.Year != _calMonth.Year)
+            _calMonth = new DateTime(date.Year, date.Month, 1);
+        BuildCalendar();
     }
 }

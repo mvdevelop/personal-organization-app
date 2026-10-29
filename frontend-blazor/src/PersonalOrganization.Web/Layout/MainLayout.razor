@@ -3,130 +3,215 @@
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthProvider
 @inject UserPreferencesService Prefs
+@inject ISnackbar Snackbar
 
 <MudThemeProvider Theme="_theme" IsDarkMode="Prefs.IsDarkMode" />
-<MudLayout>
-    <MudDrawer @bind-Open="_drawerOpen"
-               Variant="DrawerVariant.Responsive"
-               ClipMode="DrawerClipMode.Always"
-               Elevation="0"
-               Class="app-drawer">
-        <MudDrawerHeader Class="app-brand pa-5">
-            <div class="brand-mark">S</div>
-            <div>
-                <MudText Typo="Typo.h6" Class="brand-name">Schedule</MudText>
-                <MudText Typo="Typo.caption" Class="brand-subtitle">seu espaço, no seu ritmo</MudText>
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div class="sa-shell @(Prefs.IsDarkMode ? "is-dark" : "is-light")">
+
+    @if (_mobileOpen)
+    {
+        <div class="sa-scrim" @onclick="CloseMobileNav"></div>
+    }
+
+    <aside class="sa-sidebar @(Prefs.SidebarCollapsed ? "is-collapsed" : "") @(_mobileOpen ? "is-mobile-open" : "")"
+           aria-label="Navegação principal">
+        <div class="sa-sidebar-inner">
+            <a class="sa-brand" href="/" aria-label="Smart Agenda — início">
+                <span class="sa-logo" aria-hidden="true">
+                    <svg viewBox="0 0 32 32" role="presentation" focusable="false">
+                        <rect x="7" y="7" width="18" height="18" rx="5" transform="rotate(45 16 16)" fill="url(#saLogoGradient)" />
+                        <circle cx="16" cy="16" r="4.2" fill="#111318" fill-opacity="0.55" />
+                        <defs>
+                            <linearGradient id="saLogoGradient" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#9293FF" />
+                                <stop offset="1" stop-color="#7778F6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </span>
+                <span class="sa-brand-text">
+                    <span class="sa-brand-name">Smart Agenda</span>
+                    <span class="sa-brand-tag">YOUR DAY, IN SYNC</span>
+                </span>
+            </a>
+
+            <div class="sa-profile" title="@_email">
+                <span class="sa-avatar" aria-hidden="true">@_initial</span>
+                <span class="sa-profile-text">
+                    <span class="sa-profile-name">@_userName</span>
+                    <span class="sa-profile-mail">@_email</span>
+                </span>
             </div>
-        </MudDrawerHeader>
 
-        <MudNavMenu Class="px-3 app-nav-menu">
-            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Dashboard</MudNavLink>
-            <MudNavLink Href="/tasks" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ListAlt">Tarefas</MudNavLink>
-            <MudNavLink Href="/notes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAlt">Notas</MudNavLink>
-            <MudNavLink Href="/habits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TipsAndUpdates">Hábitos</MudNavLink>
-            <MudNavLink Href="/goals" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Star">Metas</MudNavLink>
-            <MudNavLink Href="/studies" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook">Estudos</MudNavLink>
-            <MudNavLink Href="/ai" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SmartToy">Assistente IA</MudNavLink>
-        </MudNavMenu>
-    </MudDrawer>
+            <nav class="sa-nav" aria-label="Seções">
+                @foreach (var item in NavItems)
+                {
+                    <a class="mud-nav-link @(IsActive(item.Href) ? "active" : "")"
+                       href="@item.Href"
+                       title="@item.Label"
+                       aria-current="@(IsActive(item.Href) ? "page" : null)"
+                       @onclick="CloseMobileNav">
+                        <MudIcon Icon="@item.Icon" Size="Size.Small" />
+                        <span class="mud-nav-link-text">@item.Label</span>
+                    </a>
+                }
+            </nav>
 
-    <MudMainContent Class="d-flex flex-column" Style="min-height: 100vh;">
-        <MudAppBar Elevation="0" Class="px-4 app-bar">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Class="mr-2" Title="Alternar navegação" />
-            <div class="app-bar-context flex-grow-1">
-                <MudText Typo="Typo.caption" Class="app-bar-label">Schedule</MudText>
-                <MudText Typo="Typo.subtitle1" Class="app-bar-title">@GetPageTitle()</MudText>
+            <div class="sa-sidebar-foot">
+                <div class="sa-promo">
+                    <span class="sa-promo-icon" aria-hidden="true"><MudIcon Icon="@Icons.Material.Outlined.AutoAwesome" Size="Size.Small" /></span>
+                    <span class="sa-promo-title">Um novo nível de foco</span>
+                    <span class="sa-promo-text">Desbloqueie todo o potencial da sua rotina com o Smart Plus.</span>
+                    <button class="sa-promo-btn" type="button" @onclick="HandlePlans">Conhecer planos</button>
+                </div>
+
+                <button class="sa-collapse" type="button"
+                        @onclick="HandleToggleSidebar"
+                        aria-label="@(Prefs.SidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral")">
+                    <MudIcon Icon="@(Prefs.SidebarCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)" Size="Size.Small" />
+                    <span class="sa-collapse-label">Recolher menu</span>
+                </button>
             </div>
-            <MudIconButton Icon="@(Prefs.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
-                           OnClick="@HandleToggleDarkMode"
-                           Title="Alternar tema" />
-            <MudChip Size="Size.Small" Class="ml-2 mr-2 user-chip" T="string">
-                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
-                @_userName
-            </MudChip>
-            <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" OnClick="@HandleLogout" Title="Sair" Color="Color.Default" />
-        </MudAppBar>
+        </div>
+    </aside>
 
-        <MudContainer MaxWidth="MaxWidth.Large" Class="py-6 px-4 main-content">
+    <div class="sa-main">
+        <header class="sa-topbar">
+            <button class="sa-icon-btn sa-menu-btn" type="button" @onclick="OpenMobileNav" aria-label="Abrir menu">
+                <MudIcon Icon="@Icons.Material.Filled.Menu" />
+            </button>
+
+            <div class="sa-crumbs">
+                <span>Workspace</span>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
+                <strong>@GetPageTitle()</strong>
+            </div>
+
+            <div class="sa-topbar-spacer"></div>
+
+            <button class="sa-icon-btn" type="button" @onclick="OpenSearch" aria-label="Pesquisar (Ctrl + K)" title="Pesquisar">
+                <MudIcon Icon="@Icons.Material.Filled.Search" />
+            </button>
+
+            <button class="sa-icon-btn" type="button" @onclick="ShowNotifications" aria-label="Notificações" title="Notificações">
+                <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" />
+                <span class="sa-notif-dot" aria-hidden="true"></span>
+            </button>
+
+            <button class="sa-icon-btn" type="button" @onclick="HandleToggleTheme"
+                    aria-label="@(Prefs.IsDarkMode ? "Ativar tema claro" : "Ativar tema escuro")"
+                    title="@(Prefs.IsDarkMode ? "Tema claro" : "Tema escuro")">
+                <MudIcon Icon="@(Prefs.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" />
+            </button>
+
+            <span class="sa-plan">Plano gratuito</span>
+
+            <button class="sa-user" type="button" @onclick="ShowAccount" aria-label="Conta de @_userName">
+                <span class="sa-avatar" aria-hidden="true">@_initial</span>
+                <span class="sa-user-name">@_userName</span>
+            </button>
+        </header>
+
+        <main class="sa-page">
             @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+        </main>
+    </div>
+</div>
 
 @code {
-    private bool _drawerOpen = true;
-    private string _userName = "";
+    private bool _mobileOpen;
+    private string _userName = "Usuário";
+    private string _email = "";
+    private string _initial = "U";
+    private string _currentPath = "";
 
-    private readonly MudTheme _theme = new()
+    private readonly MudTheme _theme = Theme.ScheduleTheme.Create();
+
+    private record NavItem(string Label, string Href, string Icon);
+
+    private static readonly NavItem[] NavItems =
     {
-        PaletteLight = new PaletteLight()
-        {
-            Primary = "#65558f",
-            Secondary = "#b65f85",
-            Info = "#5b6c9c",
-            Success = "#3a7a6b",
-            Warning = "#b0781f",
-            Error = "#b8433f",
-            Surface = "#fffdfa",
-            Background = "#f7f5f2",
-            AppbarBackground = "#fffdfa",
-            DrawerBackground = "#fffdfa",
-            Divider = "#e8e3dc",
-            TextPrimary = "#29253d",
-            TextSecondary = "#79758b",
-            ActionDefault = "#79758b",
-            ActionDisabled = "#c3bdc9",
-            Dark = "#29253d",
-        },
-        PaletteDark = new PaletteDark()
-        {
-            Primary = "#c3b3e8",
-            Secondary = "#e8a3bd",
-            Info = "#a9b8e2",
-            Success = "#8fc9b7",
-            Warning = "#e0ba7a",
-            Error = "#e79a95",
-            Surface = "#1f1c2b",
-            Background = "#141220",
-            AppbarBackground = "#1a1727",
-            DrawerBackground = "#1a1727",
-            Divider = "#332e43",
-            TextPrimary = "#f1eef7",
-            TextSecondary = "#a9a3bb",
-            ActionDefault = "#a9a3bb",
-            ActionDisabled = "#4a4459",
-            Dark = "#141220",
-        },
-        Typography = new Typography()
-        {
-            Default = new Default()
-            {
-                FontFamily = new[] { "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif" },
-                FontSize = "0.875rem",
-                FontWeight = 400,
-                LineHeight = 1.5,
-                LetterSpacing = "normal",
-            },
-        },
+        new("Dashboard", "/", Icons.Material.Outlined.SpaceDashboard),
+        new("Tarefas", "/tasks", Icons.Material.Outlined.Checklist),
+        new("Notas", "/notes", Icons.Material.Outlined.StickyNote2),
+        new("Hábitos", "/habits", Icons.Material.Outlined.Loop),
+        new("Metas", "/goals", Icons.Material.Outlined.Flag),
+        new("Estudos", "/studies", Icons.Material.Outlined.MenuBook),
+        new("Assistente IA", "/ai", Icons.Material.Outlined.AutoAwesome),
     };
 
     protected override void OnInitialized()
     {
         Prefs.OnChange += OnPreferencesChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+
         var user = AuthProvider.GetCurrentUser();
-        _userName = user?.Name ?? "Usuário";
+        _userName = string.IsNullOrWhiteSpace(user?.Name) ? "Usuário" : user!.Name;
+        _email = user?.Email ?? "";
+        _initial = string.IsNullOrWhiteSpace(_userName) ? "U" : _userName[..1].ToUpperInvariant();
+        _currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
     }
 
-    private void OnPreferencesChanged()
+    private void OnPreferencesChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        _currentPath = Navigation.ToBaseRelativePath(e.Location);
+        _mobileOpen = false;
         InvokeAsync(StateHasChanged);
     }
 
-    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
-
-    private async Task HandleToggleDarkMode()
+    private bool IsActive(string href)
     {
-        await Prefs.ToggleThemeAsync();
+        if (href == "/")
+            return string.IsNullOrEmpty(_currentPath) || _currentPath == "/";
+
+        return _currentPath.StartsWith(href.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void OpenMobileNav() => _mobileOpen = true;
+
+    private void CloseMobileNav() => _mobileOpen = false;
+
+    private async Task HandleToggleSidebar()
+    {
+        if (_mobileOpen)
+        {
+            _mobileOpen = false;
+            return;
+        }
+
+        await Prefs.ToggleSidebarAsync();
+    }
+
+    private Task HandleToggleTheme() => Prefs.ToggleThemeAsync();
+
+    private Task HandlePlans()
+    {
+        Snackbar.Add("O plano Smart Plus chega em breve. Continue organizando no plano gratuito.", Severity.Info);
+        return Task.CompletedTask;
+    }
+
+    private Task ShowNotifications()
+    {
+        Snackbar.Add("Nenhuma notificação nova por enquanto.", Severity.Normal);
+        return Task.CompletedTask;
+    }
+
+    private Task ShowAccount()
+    {
+        Snackbar.Add($"{_userName} · @_email · Plano gratuito", Severity.Normal);
+        return Task.CompletedTask;
+    }
+
+    private Task OpenSearch()
+    {
+        Navigation.NavigateTo("/search");
+        return Task.CompletedTask;
     }
 
     private async Task HandleLogout()
@@ -137,7 +222,7 @@
 
     private string GetPageTitle()
     {
-        var uri = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var uri = _currentPath.TrimStart('/');
         return uri switch
         {
             "" or "/" => "Dashboard",
@@ -147,12 +232,14 @@
             "goals" => "Metas",
             "studies" => "Estudos",
             "ai" => "Assistente IA",
-            _ => "Schedule"
+            "search" => "Pesquisa",
+            _ => "Smart Agenda"
         };
     }
 
     public void Dispose()
     {
         Prefs.OnChange -= OnPreferencesChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

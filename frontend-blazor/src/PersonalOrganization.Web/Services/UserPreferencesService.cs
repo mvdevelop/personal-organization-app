@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace PersonalOrganization.Web.Services;
 
 /// <summary>
 /// Manages user preferences (theme, sidebar) with localStorage persistence.
+/// Dark mode is the default theme for the Smart Agenda visual identity.
 /// </summary>
 public class UserPreferencesService
 {
@@ -11,9 +12,8 @@ public class UserPreferencesService
     private const string SidebarKey = "orgapp_sidebar";
 
     private readonly StorageService _storage;
-    private bool _initialized;
 
-    public bool IsDarkMode { get; private set; }
+    public bool IsDarkMode { get; private set; } = true;
     public bool SidebarCollapsed { get; private set; }
 
     public event Action? OnChange;
@@ -21,9 +21,6 @@ public class UserPreferencesService
     public UserPreferencesService(StorageService storage)
     {
         _storage = storage;
-        // Default values until initialized
-        IsDarkMode = false;
-        SidebarCollapsed = false;
     }
 
     public async Task InitializeAsync()
@@ -31,7 +28,8 @@ public class UserPreferencesService
         try
         {
             var theme = await _storage.GetLocalAsync(ThemeKey);
-            IsDarkMode = theme == "dark";
+            // No stored preference yet: keep dark mode as the default.
+            IsDarkMode = theme is null || theme == "dark";
 
             var sidebar = await _storage.GetLocalAsync(SidebarKey);
             SidebarCollapsed = sidebar == "true";
@@ -41,21 +39,24 @@ public class UserPreferencesService
             // Use defaults
         }
 
-        _initialized = true;
         NotifyChanged();
     }
 
-    public async Task ToggleThemeAsync()
+    public async Task ToggleThemeAsync() => await SetThemeAsync(!IsDarkMode);
+
+    public async Task SetThemeAsync(bool dark)
     {
-        IsDarkMode = !IsDarkMode;
-        await _storage.SetLocalAsync(ThemeKey, IsDarkMode ? "dark" : "light");
+        IsDarkMode = dark;
+        await _storage.SetLocalAsync(ThemeKey, dark ? "dark" : "light");
         NotifyChanged();
     }
 
-    public async Task ToggleSidebarAsync()
+    public async Task ToggleSidebarAsync() => await SetSidebarAsync(!SidebarCollapsed);
+
+    public async Task SetSidebarAsync(bool collapsed)
     {
-        SidebarCollapsed = !SidebarCollapsed;
-        await _storage.SetLocalAsync(SidebarKey, SidebarCollapsed ? "true" : "false");
+        SidebarCollapsed = collapsed;
+        await _storage.SetLocalAsync(SidebarKey, collapsed ? "true" : "false");
         NotifyChanged();
     }
 
