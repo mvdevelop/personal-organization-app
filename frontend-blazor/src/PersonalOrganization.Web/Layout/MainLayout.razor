@@ -9,15 +9,17 @@
     <MudDrawer @bind-Open="_drawerOpen"
                Variant="DrawerVariant.Responsive"
                ClipMode="DrawerClipMode.Always"
-               Elevation="1">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6" Class="d-flex align-center gap-2 pa-4">
-                <MudIcon Icon="@Icons.Material.Filled.Home" Color="Color.Primary" />
-                <span Style="color: var(--mud-palette-primary); font-weight: 700;">Schedule</span>
-            </MudText>
+               Elevation="0"
+               Class="app-drawer">
+        <MudDrawerHeader Class="app-brand pa-5">
+            <div class="brand-mark">S</div>
+            <div>
+                <MudText Typo="Typo.h6" Class="brand-name">Schedule</MudText>
+                <MudText Typo="Typo.caption" Class="brand-subtitle">seu espaço, no seu ritmo</MudText>
+            </div>
         </MudDrawerHeader>
 
-        <MudNavMenu Class="px-2">
+        <MudNavMenu Class="px-3 app-nav-menu">
             <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Dashboard</MudNavLink>
             <MudNavLink Href="/tasks" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ListAlt">Tarefas</MudNavLink>
             <MudNavLink Href="/notes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.NoteAlt">Notas</MudNavLink>
@@ -54,9 +56,9 @@
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#3b82f6",
-            Secondary = "#6366f1",
-            Info = "#3b82f6",
+            Primary = "#65558f",
+            Secondary = "#b65f85",
+            Info = "#65558f",
             Success = "#22c55e",
             Warning = "#f59e0b",
             Error = "#ef4444",

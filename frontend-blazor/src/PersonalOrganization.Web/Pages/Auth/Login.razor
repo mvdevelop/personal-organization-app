@@ -4,14 +4,14 @@
 
 <RedirectIfAuthenticated />
 
-<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="d-flex flex-column align-center justify-center" Style="min-height: 80vh;">
-    <MudPaper Elevation="8" Class="pa-8 rounded-lg" Style="width: 100%; max-width: 420px;">
-        <div class="d-flex flex-column align-center mb-6">
-            <MudIcon Icon="@(_isSignUp ? Icons.Material.Filled.PersonAdd : Icons.Material.Filled.Login)" Size="Size.Large" Color="Color.Primary" />
-            <MudText Typo="Typo.h5" Class="mt-2">
-                @(_isSignUp ? "Criar Conta" : "Entrar")
-            </MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="auth-shell d-flex flex-column align-center justify-center">
+    <MudPaper Elevation="0" Class="auth-card pa-8">
+        <div class="auth-brand d-flex flex-column align-center mb-6">
+            <div class="brand-mark">S</div>
+            <MudText Typo="Typo.h5" Class="mt-3 auth-title">@(_isSignUp ? "Comece seu espaço" : "Bem-vindo de volta")</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">Organize o que importa, um dia de cada vez.</MudText>
         </div>
+
 
         @if (!string.IsNullOrEmpty(_errorMessage))
         {

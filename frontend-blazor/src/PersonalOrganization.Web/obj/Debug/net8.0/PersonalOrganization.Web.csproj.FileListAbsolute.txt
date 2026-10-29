@@ -1047,3 +1047,6 @@
 /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/refint/PersonalOrganization.Web.dll
 /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/PersonalOrganization.Web.pdb
 /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/obj/Debug/net8.0/ref/PersonalOrganization.Web.dll
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.dll
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\refint\PersonalOrganization.Web.dll
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.pdb
