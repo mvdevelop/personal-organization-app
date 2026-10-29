@@ -379,6 +379,16 @@ h1:focus { outline: none; }
     background: var(--schedule-surface-raised);
 }
 
+.color-input {
+    width: 38px;
+    height: 38px;
+    padding: 3px;
+    cursor: pointer;
+    border: 1px solid var(--schedule-line);
+    border-radius: 10px;
+    background: var(--schedule-surface);
+}
+
 .ai-chat-header {
     border-bottom: 1px solid var(--schedule-line);
     background: linear-gradient(120deg, rgba(101, 85, 143, 0.08), transparent);
@@ -424,20 +434,13 @@ h1:focus { outline: none; }
     }
 }
 
-.stat-card {
-    transition: box-shadow 0.2s ease;
-}
-
-.stat-card:hover {
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-}
-
 .dashboard-card {
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 200ms ease, border-color 200ms ease;
 }
 
 .dashboard-card:hover {
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    box-shadow: var(--schedule-shadow);
+    border-color: rgba(101, 85, 143, 0.25) !important;
 }
 
 .completed-goal {

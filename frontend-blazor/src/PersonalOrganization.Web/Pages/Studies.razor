@@ -61,7 +61,7 @@
                                  Class="flex-0"
                                  Style="width: 100px;" />
                 <input type="color" @bind="_newSubjectColor"
-                       style="width: 36px; height: 36px; border: 1px solid var(--mud-palette-table-lines); border-radius: 8px; cursor: pointer; padding: 2px;" />
+                       class="color-input" />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            OnClick="@HandleAddSubject"
                            Disabled="@(!_subjectFormValid)">
