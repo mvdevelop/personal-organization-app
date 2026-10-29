@@ -32,9 +32,14 @@
 
     <MudMainContent Class="d-flex flex-column" Style="min-height: 100vh;">
         <MudAppBar Elevation="0" Class="px-4 app-bar">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Class="mr-2" />
-            <MudText Typo="Typo.h6" Class="flex-grow-1">@GetPageTitle()</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.DarkMode" OnClick="@HandleToggleDarkMode" Title="Alternar tema" />
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@ToggleDrawer" Class="mr-2" Title="Alternar navegação" />
+            <div class="app-bar-context flex-grow-1">
+                <MudText Typo="Typo.caption" Class="app-bar-label">Schedule</MudText>
+                <MudText Typo="Typo.subtitle1" Class="app-bar-title">@GetPageTitle()</MudText>
+            </div>
+            <MudIconButton Icon="@(Prefs.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                           OnClick="@HandleToggleDarkMode"
+                           Title="Alternar tema" />
             <MudChip Size="Size.Small" Class="ml-2 mr-2 user-chip" T="string">
                 <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
                 @_userName
@@ -58,39 +63,39 @@
         {
             Primary = "#65558f",
             Secondary = "#b65f85",
-            Info = "#65558f",
-            Success = "#22c55e",
-            Warning = "#f59e0b",
-            Error = "#ef4444",
-            Surface = "#ffffff",
-            Background = "#f8fafc",
-            AppbarBackground = "#ffffff",
-            DrawerBackground = "#ffffff",
-            Divider = "#e2e8f0",
-            TextPrimary = "#1e293b",
-            TextSecondary = "#64748b",
-            ActionDefault = "#64748b",
-            ActionDisabled = "#cbd5e1",
-            Dark = "#1e293b",
+            Info = "#5b6c9c",
+            Success = "#3a7a6b",
+            Warning = "#b0781f",
+            Error = "#b8433f",
+            Surface = "#fffdfa",
+            Background = "#f7f5f2",
+            AppbarBackground = "#fffdfa",
+            DrawerBackground = "#fffdfa",
+            Divider = "#e8e3dc",
+            TextPrimary = "#29253d",
+            TextSecondary = "#79758b",
+            ActionDefault = "#79758b",
+            ActionDisabled = "#c3bdc9",
+            Dark = "#29253d",
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#60a5fa",
-            Secondary = "#818cf8",
-            Info = "#60a5fa",
-            Success = "#4ade80",
-            Warning = "#fbbf24",
-            Error = "#f87171",
-            Surface = "#1e293b",
-            Background = "#0f172a",
-            AppbarBackground = "#1e293b",
-            DrawerBackground = "#1e293b",
-            Divider = "#334155",
-            TextPrimary = "#f1f5f9",
-            TextSecondary = "#94a3b8",
-            ActionDefault = "#94a3b8",
-            ActionDisabled = "#475569",
-            Dark = "#0f172a",
+            Primary = "#c3b3e8",
+            Secondary = "#e8a3bd",
+            Info = "#a9b8e2",
+            Success = "#8fc9b7",
+            Warning = "#e0ba7a",
+            Error = "#e79a95",
+            Surface = "#1f1c2b",
+            Background = "#141220",
+            AppbarBackground = "#1a1727",
+            DrawerBackground = "#1a1727",
+            Divider = "#332e43",
+            TextPrimary = "#f1eef7",
+            TextSecondary = "#a9a3bb",
+            ActionDefault = "#a9a3bb",
+            ActionDisabled = "#4a4459",
+            Dark = "#141220",
         },
         Typography = new Typography()
         {

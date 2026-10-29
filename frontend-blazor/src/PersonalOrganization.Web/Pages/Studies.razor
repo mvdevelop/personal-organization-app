@@ -6,14 +6,14 @@
 
 <PageTitle>Estudos — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Estudos</MudText>
+<PageHeader Title="Estudos" Description="Registre sessões e veja o conhecimento se acumular." Eyebrow="APRENDIZADO" />
 
 <!-- Top bar -->
 <div class="d-flex flex-wrap gap-2 align-center mb-4">
     <MudButton Variant="Variant.Filled" Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.Add"
                OnClick="@(() => _showSubjectForm = !_showSubjectForm)">
-        Matéria
+        Nova matéria
     </MudButton>
     <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
         <MudButton OnClick="@(() => SetViewMode("week"))"
@@ -36,8 +36,7 @@
 <!-- Add subject form -->
 @if (_showSubjectForm)
 {
-    <MudPaper Elevation="0" Class="pa-4 mb-4"
-              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+    <MudPaper Elevation="0" Class="pa-4 mb-4 surface-card">
         <MudForm @ref="_subjectForm" @bind-IsValid="_subjectFormValid">
             <div class="d-flex gap-3 flex-wrap align-center">
                 <MudTextField @bind-Value="_newSubjectName"
@@ -91,8 +90,7 @@ else if (_subjects.Count == 0)
 else if (_viewMode == "week")
 {
     <!-- Quick log form -->
-    <MudPaper Elevation="0" Class="pa-4 mb-4"
-              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+    <MudPaper Elevation="0" Class="pa-4 mb-4 surface-card">
         <MudForm @ref="_logForm">
             <div class="d-flex gap-3 flex-wrap align-end">
                 <div>
@@ -145,7 +143,7 @@ else if (_viewMode == "week")
     </MudPaper>
 
     <!-- Weekly table -->
-    <MudPaper Elevation="0" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow-x: auto;" Class="mb-4">
+    <MudPaper Elevation="0" Class="mb-4 surface-card table-shell">
         <table class="habits-table">
             <thead>
                 <tr>
@@ -176,7 +174,7 @@ else if (_viewMode == "week")
                         var ds = d.ToString("yyyy-MM-dd");
                         return _sessions.Where(s => s.SubjectId == subject.Id && s.Date.StartsWith(ds)).Sum(s => s.Duration);
                     });
-                    <tr Style="border-top: 1px solid var(--mud-palette-table-lines);">
+                    <tr class="table-row">
                         <td class="px-4 py-3">
                             <div class="d-flex align-center gap-3">
                                 <div Style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: @(subject.Color + "20"); color: @subject.Color;">
@@ -223,8 +221,7 @@ else if (_viewMode == "week")
     <!-- Recent sessions -->
     @if (_sessions.Count > 0)
     {
-        <MudPaper Elevation="0" Class="pa-4"
-                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+        <MudPaper Elevation="0" Class="pa-4 surface-card">
             <MudText Typo="Typo.subtitle2" Class="mb-3">Sessões desta semana</MudText>
             <div class="d-flex flex-column gap-2">
                 @foreach (var s in _sessions.Take(10))
@@ -247,8 +244,7 @@ else if (_viewMode == "week")
 else
 {
     <!-- Monthly calendar -->
-    <MudPaper Elevation="0" Class="pa-4"
-              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+    <MudPaper Elevation="0" Class="pa-4 surface-card">
         <div class="month-grid">
             @foreach (var dayName in _weekdayNames)
             {
@@ -294,14 +290,12 @@ else
 <!-- Subjects list -->
 @if (_subjects.Count > 0)
 {
-    <MudPaper Elevation="0" Class="pa-4 mt-4"
-              Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+    <MudPaper Elevation="0" Class="pa-4 mt-4 surface-card">
         <MudText Typo="Typo.subtitle2" Class="mb-3">Matérias</MudText>
         <div class="d-flex gap-3 flex-wrap">
             @foreach (var s in _subjects)
             {
-                <MudPaper Elevation="0" Class="d-flex align-center gap-3 pa-3"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 10px;">
+                <MudPaper Elevation="0" Class="d-flex align-center gap-3 pa-3 subject-chip">
                     <div Style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: @(s.Color + "20"); color: @s.Color; flex-shrink: 0;">
                         <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Small" />
                     </div>

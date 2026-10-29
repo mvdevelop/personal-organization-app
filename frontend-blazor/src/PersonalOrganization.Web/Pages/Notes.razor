@@ -6,14 +6,15 @@
 
 <PageTitle>Notas — Schedule</PageTitle>
 
-<div class="d-flex flex-column flex-sm-row justify-content-between align-start align-sm-center gap-4 mb-4">
-    <MudText Typo="Typo.h4">Minhas Notas</MudText>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="@(() => OpenCreateDialog())">
-        Nova Nota
-    </MudButton>
-</div>
+<PageHeader Title="Minhas notas" Description="Ideias, referências e pensamentos soltos — guardados para depois." Eyebrow="CADERNO">
+    <Actions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => OpenCreateDialog())">
+            Nova nota
+        </MudButton>
+    </Actions>
+</PageHeader>
 
 <!-- Search -->
 <MudTextField @bind-Value="_searchQuery"
@@ -59,10 +60,10 @@ else
         {
             <MudPaper Elevation="0"
                       Class="note-card d-flex flex-column"
-                      Style="@($"border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow: hidden; background-color: {(note.Color ?? "#ffffff")};")">
-                <div class="d-flex flex-column flex-grow-1 pa-4" Style="cursor: pointer;" @onclick="@(() => OpenEditDialog(note))">
-                    <MudText Typo="Typo.subtitle1" Class="font-weight-medium mb-2 text-truncate">@note.Title</MudText>
-                    <MudText Typo="Typo.body2" Class="flex-grow-1" Style="color: rgba(0,0,0,0.6); white-space: pre-wrap; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;">
+                      Style="@($"background-color: {(note.Color ?? "#ffffff")};")">
+                <div class="d-flex flex-column flex-grow-1 pa-4 note-body" @onclick="@(() => OpenEditDialog(note))">
+                    <MudText Typo="Typo.subtitle1" Class="note-title mb-2 text-truncate">@note.Title</MudText>
+                    <MudText Typo="Typo.body2" Class="flex-grow-1 note-excerpt">
                         @if (!string.IsNullOrEmpty(note.Content))
                         {
                             @note.Content
@@ -73,7 +74,7 @@ else
                         }
                     </MudText>
                 </div>
-                <div class="d-flex justify-content-end gap-1 pa-2" Style="border-top: 1px solid rgba(0,0,0,0.08);">
+                <div class="d-flex justify-content-end gap-1 pa-2 note-actions">
                     <MudTooltip Text="Editar">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default"
                                        OnClick="@(() => OpenEditDialog(note))" />

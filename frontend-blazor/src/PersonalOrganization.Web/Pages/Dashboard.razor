@@ -33,45 +33,33 @@ else
     </section>
 
     <!-- Quick Stats Row -->
-    <div class="d-flex gap-3 flex-wrap mb-6">
-        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
-                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
-            <div class="stat-icon" Style="background: rgba(59,130,246,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-                <MudIcon Icon="@Icons.Material.Filled.Checklist" Color="Color.Primary" />
-            </div>
+    <div class="stats-grid mb-6">
+        <MudPaper Elevation="0" Class="stat-card">
+            <span class="stat-icon tone-tasks"><MudIcon Icon="@Icons.Material.Filled.Checklist" /></span>
             <div>
-                <MudText Typo="Typo.h5" Color="Color.Primary">@(_data?.Tasks.Pending ?? 0)</MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">Tarefas pendentes</MudText>
+                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Tasks.Pending ?? 0)</MudText>
+                <MudText Typo="Typo.caption" Class="stat-label">Tarefas pendentes</MudText>
             </div>
         </MudPaper>
-        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
-                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
-            <div class="stat-icon" Style="background: rgba(249,115,22,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Style="color: #f97316;" />
-            </div>
+        <MudPaper Elevation="0" Class="stat-card">
+            <span class="stat-icon tone-habits"><MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" /></span>
             <div>
-                <MudText Typo="Typo.h5" Style="color: #f97316;">@(_data?.Habits.BestStreak ?? 0)</MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">Melhor streak</MudText>
+                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Habits.BestStreak ?? 0)</MudText>
+                <MudText Typo="Typo.caption" Class="stat-label">Melhor sequência</MudText>
             </div>
         </MudPaper>
-        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
-                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
-            <div class="stat-icon" Style="background: rgba(168,85,247,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #a855f7;" />
-            </div>
+        <MudPaper Elevation="0" Class="stat-card">
+            <span class="stat-icon tone-goals"><MudIcon Icon="@Icons.Material.Filled.Star" /></span>
             <div>
-                <MudText Typo="Typo.h5" Style="color: #a855f7;">@(_data?.Goals.Active ?? 0)</MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">Metas ativas</MudText>
+                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Goals.Active ?? 0)</MudText>
+                <MudText Typo="Typo.caption" Class="stat-label">Metas ativas</MudText>
             </div>
         </MudPaper>
-        <MudPaper Elevation="0" Class="stat-card d-flex align-center gap-3 pa-4"
-                  Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 160px; flex: 1;">
-            <div class="stat-icon" Style="background: rgba(34,197,94,0.1); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Style="color: #22c55e;" />
-            </div>
+        <MudPaper Elevation="0" Class="stat-card">
+            <span class="stat-icon tone-studies"><MudIcon Icon="@Icons.Material.Filled.MenuBook" /></span>
             <div>
-                <MudText Typo="Typo.h5" Style="color: #22c55e;">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">Horas de estudo</MudText>
+                <MudText Typo="Typo.h5" Class="stat-value">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
+                <MudText Typo="Typo.caption" Class="stat-label">Horas de estudo</MudText>
             </div>
         </MudPaper>
     </div>
@@ -85,12 +73,10 @@ else
             <div class="d-flex gap-4 flex-wrap">
                 <!-- Tasks Card -->
                 <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                          Style="min-width: 260px;">
                     <div class="d-flex align-center justify-content-between mb-3">
                         <div class="d-flex align-center gap-3">
-                            <div Style="background: rgba(59,130,246,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Primary" Size="Size.Medium" />
-                            </div>
+                            <span class="card-glyph tone-tasks"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" /></span>
                             <div>
                                 <MudText Typo="Typo.subtitle2">Tarefas</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Tasks.Completed ?? 0)/@(_data?.Tasks.Total ?? 0) concluídas</MudText>
@@ -148,12 +134,10 @@ else
 
                 <!-- Habits Card -->
                 <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                          Style="min-width: 260px;">
                     <div class="d-flex align-center justify-content-between mb-3">
                         <div class="d-flex align-center gap-3">
-                            <div Style="background: rgba(249,115,22,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" Style="color: #f97316;" />
-                            </div>
+                            <span class="card-glyph tone-habits"><MudIcon Icon="@Icons.Material.Filled.LocalFireDepartment" /></span>
                             <div>
                                 <MudText Typo="Typo.subtitle2">Hábitos</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Habits.TodayCheckIns ?? 0) check-ins hoje</MudText>
@@ -197,12 +181,10 @@ else
             <div class="d-flex gap-4 flex-wrap">
                 <!-- Goals Card -->
                 <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                          Style="min-width: 260px;">
                     <div class="d-flex align-center justify-content-between mb-3">
                         <div class="d-flex align-center gap-3">
-                            <div Style="background: rgba(168,85,247,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.Star" Style="color: #a855f7;" />
-                            </div>
+                            <span class="card-glyph tone-goals"><MudIcon Icon="@Icons.Material.Filled.Star" /></span>
                             <div>
                                 <MudText Typo="Typo.subtitle2">Metas</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Goals.Active ?? 0) ativas · @(_data?.Goals.Completed ?? 0) concluídas</MudText>
@@ -242,12 +224,10 @@ else
 
                 <!-- Notes Card -->
                 <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                          Style="min-width: 260px;">
                     <div class="d-flex align-center justify-content-between mb-3">
                         <div class="d-flex align-center gap-3">
-                            <div Style="background: rgba(236,72,153,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.NoteAlt" Style="color: #ec4899;" />
-                            </div>
+                            <span class="card-glyph tone-notes"><MudIcon Icon="@Icons.Material.Filled.NoteAlt" /></span>
                             <div>
                                 <MudText Typo="Typo.subtitle2">Notas</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Notes.Total ?? 0) notas criadas</MudText>
@@ -281,12 +261,10 @@ else
             <!-- Studies + AI Row -->
             <div class="d-flex gap-4 flex-wrap">
                 <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
+                          Style="min-width: 260px;">
                     <div class="d-flex align-center justify-content-between mb-3">
                         <div class="d-flex align-center gap-3">
-                            <div Style="background: rgba(34,197,94,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Style="color: #22c55e;" />
-                            </div>
+                            <span class="card-glyph tone-studies"><MudIcon Icon="@Icons.Material.Filled.MenuBook" /></span>
                             <div>
                                 <MudText Typo="Typo.subtitle2">Estudos</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">@(_data?.Studies.Subjects ?? 0) matérias</MudText>
@@ -294,23 +272,21 @@ else
                         </div>
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/studies" Color="Color.Default" />
                     </div>
-                    <div class="d-flex gap-3">
-                        <div class="flex-1 text-center pa-3" Style="background: rgba(34,197,94,0.08); border-radius: 12px;">
-                            <MudText Typo="Typo.h5" Style="color: #22c55e;">@(_data?.Studies.WeekSessions ?? 0)</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Sessões na semana</MudText>
+                    <div class="mini-metrics">
+                        <div class="mini-metric">
+                            <MudText Typo="Typo.h5" Class="mini-metric-value">@(_data?.Studies.WeekSessions ?? 0)</MudText>
+                            <MudText Typo="Typo.caption" Class="stat-label">Sessões na semana</MudText>
                         </div>
-                        <div class="flex-1 text-center pa-3" Style="background: rgba(6,182,212,0.08); border-radius: 12px;">
-                            <MudText Typo="Typo.h5" Style="color: #06b6d4;">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">Horas na semana</MudText>
+                        <div class="mini-metric">
+                            <MudText Typo="Typo.h5" Class="mini-metric-value">@(_data?.Studies.WeekStudyHours ?? 0)h</MudText>
+                            <MudText Typo="Typo.caption" Class="stat-label">Horas na semana</MudText>
                         </div>
                     </div>
                 </MudPaper>
 
                 <MudPaper Elevation="0" Class="dashboard-card pa-4 flex-1 d-flex align-center gap-3"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px; min-width: 260px;">
-                    <div Style="background: linear-gradient(135deg, #eab308, #f59e0b); border-radius: 12px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Default" Style="color: white;" />
-                    </div>
+                          Style="min-width: 260px;">
+                    <span class="card-glyph tone-ai"><MudIcon Icon="@Icons.Material.Filled.SmartToy" /></span>
                     <div>
                         <MudText Typo="Typo.subtitle2">Assistente IA</MudText>
                         <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Peça um resumo do seu dia ou sugestões</MudText>
@@ -326,8 +302,7 @@ else
         <!-- Right Column -->
         <div class="d-flex flex-column gap-4">
             <!-- Clock Widget -->
-            <MudPaper Elevation="0" Class="dashboard-card pa-4 text-center"
-                      Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px;">
+            <MudPaper Elevation="0" Class="dashboard-card clock-card pa-4 text-center">
                 <MudText Typo="Typo.h2" Style="font-size: 2.5rem; font-weight: 300; letter-spacing: 2px; font-variant-numeric: tabular-nums;">
                     @_currentTime.ToString("HH:mm")
                 </MudText>
@@ -337,12 +312,9 @@ else
             </MudPaper>
 
             <!-- Gamification Panel -->
-            <MudPaper Elevation="0" Class="dashboard-card pa-4"
-                      Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 16px;">
+            <MudPaper Elevation="0" Class="dashboard-card pa-4">
                 <div class="d-flex align-center gap-3 mb-3">
-                    <div Style="background: linear-gradient(135deg, #eab308, #f59e0b); border-radius: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Style="color: white;" />
-                    </div>
+                    <span class="stat-icon tone-reward"><MudIcon Icon="@Icons.Material.Filled.EmojiEvents" /></span>
                     <div>
                         <MudText Typo="Typo.subtitle2">Nível @(_gamification?.Level ?? 0)</MudText>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">

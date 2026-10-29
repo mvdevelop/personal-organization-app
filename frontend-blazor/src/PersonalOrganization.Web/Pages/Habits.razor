@@ -6,10 +6,10 @@
 
 <PageTitle>Hábitos — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Hábitos</MudText>
+<PageHeader Title="Hábitos" Description="Pequenas ações repetidas constroem o seu ritmo." Eyebrow="CONSISTÊNCIA" />
 
 <!-- Add habit form -->
-<MudPaper Elevation="0" Class="pa-4 mb-4" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+<MudPaper Elevation="0" Class="pa-4 mb-4 surface-card">
     <MudForm @ref="_addForm" @bind-IsValid="_addFormValid">
         <div class="d-flex gap-3 flex-wrap align-center">
             <MudTextField @bind-Value="_newTitle"
@@ -84,7 +84,7 @@ else if (_habits.Count == 0)
 else if (_viewMode == "week")
 {
     <!-- Weekly table -->
-    <MudPaper Elevation="0" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow-x: auto;">
+    <MudPaper Elevation="0" Class="surface-card table-shell">
         <table class="habits-table">
             <thead>
                 <tr>
@@ -112,7 +112,7 @@ else if (_viewMode == "week")
                 @foreach (var habit in _habits)
                 {
                     var streak = _streaks.FirstOrDefault(s => s.HabitId == habit.Id);
-                    <tr Style="border-top: 1px solid var(--mud-palette-table-lines);">
+                    <tr class="table-row">
                         <td class="px-4 py-3">
                             <div class="d-flex align-center gap-3">
                                 <div Style="width: 10px; height: 10px; border-radius: 50%; background-color: @(habit.Color ?? "#3b82f6"); flex-shrink: 0;"></div>
@@ -175,7 +175,7 @@ else if (_viewMode == "week")
 else
 {
     <!-- Monthly calendar -->
-    <MudPaper Elevation="0" Class="pa-4" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;">
+    <MudPaper Elevation="0" Class="pa-4 surface-card">
         <div class="month-grid">
             @foreach (var dayName in _weekdayNames)
             {

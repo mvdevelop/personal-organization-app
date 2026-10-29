@@ -6,15 +6,15 @@
 
 <PageTitle>Metas — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Metas</MudText>
-
-<!-- Add button -->
-<MudButton Variant="Variant.Filled" Color="Color.Primary"
-           StartIcon="@Icons.Material.Filled.Add"
-           OnClick="@(() => OpenCreateDialog())"
-           Class="mb-4">
-    Nova Meta
-</MudButton>
+<PageHeader Title="Metas" Description="Escolha um destino e acompanhe o progresso sem pressa." Eyebrow="DIREÇÃO">
+    <Actions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => OpenCreateDialog())">
+            Nova meta
+        </MudButton>
+    </Actions>
+</PageHeader>
 
 <!-- Loading -->
 @if (_loading && _goals.Count == 0)
@@ -39,9 +39,7 @@ else
         <div class="d-flex flex-column gap-3 mb-4">
             @foreach (var goal in _activeGoals)
             {
-                <MudPaper Elevation="0" Class="pa-4"
-                          Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px;"
-                          Hover="true">
+                <MudPaper Elevation="0" Class="pa-4 surface-card" Hover="true">
                     <div class="d-flex align-start justify-content-between gap-4">
                         <div class="flex-grow-1" Style="min-width: 0;">
                             <div class="d-flex align-center gap-2 mb-1">
@@ -94,8 +92,7 @@ else
         <div class="d-flex flex-column gap-2">
             @foreach (var goal in _completedGoals)
             {
-                <MudPaper Elevation="0" Class="pa-3 d-flex align-center gap-2"
-                          Style="border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; opacity: 0.75;">
+                <MudPaper Elevation="0" Class="pa-3 d-flex align-center gap-2 completed-goal">
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Medium" />
                     <MudText Typo="Typo.body1" Class="text-decoration-line-through mud-text-secondary">@goal.Title</MudText>
                 </MudPaper>

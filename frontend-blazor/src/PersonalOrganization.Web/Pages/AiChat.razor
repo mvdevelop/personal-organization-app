@@ -6,12 +6,11 @@
 
 <PageTitle>Assistente IA — Schedule</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Assistente IA</MudText>
+<PageHeader Title="Assistente IA" Description="Converse sobre o seu dia e transforme planos em próximos passos." Eyebrow="COMPANHEIRO" />
 
-<div class="ai-chat-container">
+<div class="ai-chat-container surface-card">
     <!-- Header -->
-    <div class="d-flex align-center justify-content-between pa-4"
-         Style="border-bottom: 1px solid var(--mud-palette-table-lines);">
+    <div class="d-flex align-center justify-content-between pa-4 ai-chat-header">
         <div class="d-flex align-center gap-2">
             <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Primary" />
             <MudText Typo="Typo.subtitle1" Class="font-weight-medium">Assistente IA</MudText>
@@ -99,7 +98,7 @@
     </div>
 
     <!-- Input area -->
-    <div class="pa-4" Style="border-top: 1px solid var(--mud-palette-table-lines);">
+    <div class="pa-4 ai-chat-footer">
         <div class="d-flex gap-2">
             <MudTextField @bind-Value="_inputText"
                           Placeholder="Digite sua mensagem..."

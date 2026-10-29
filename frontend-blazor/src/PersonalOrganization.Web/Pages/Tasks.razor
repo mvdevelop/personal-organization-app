@@ -88,12 +88,10 @@ else
     else
     {
         <!-- Task list -->
-        <MudPaper Class="pa-0" Elevation="0" Style="border: 1px solid var(--mud-palette-table-lines); border-radius: 12px; overflow: hidden;">
+        <MudPaper Class="pa-0 surface-card list-shell" Elevation="0">
             @foreach (var task in _filteredTasks)
             {
-                <MudPaper Class="d-flex align-center px-4 py-3"
-                          Elevation="0"
-                          Style="border-bottom: 1px solid var(--mud-palette-table-lines);">
+                <div class="d-flex align-center px-4 py-3 list-row">
                     <MudCheckBox T="bool" Checked="@task.Completed"
                                  CheckedChanged="@((bool v) => HandleToggle(task.Id))"
                                  Color="Color.Primary"
@@ -147,7 +145,7 @@ else
                                        Disabled="@(_deletingId == task.Id)"
                                        Title="Excluir" />
                     </div>
-                </MudPaper>
+                </div>
             }
         </MudPaper>
     }
