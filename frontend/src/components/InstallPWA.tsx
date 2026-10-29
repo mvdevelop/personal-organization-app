@@ -49,7 +49,7 @@ const InstallPWA: React.FC = () => {
       setDeferredPrompt(null)
     } else {
       // Fallback: show instructions
-      alert('Para instalar o Schedule:\n\n1. Abra o menu do navegador (⋮)\n2. Selecione "Adicionar à tela inicial"\n3. Confirme a instalação')
+      alert('Para instalar o Smart Agenda:\n\n1. Abra o menu do navegador (⋮)\n2. Selecione "Adicionar à tela inicial"\n3. Confirme a instalação')
       setShowBanner(false)
     }
   }, [deferredPrompt])
@@ -78,7 +78,7 @@ const InstallPWA: React.FC = () => {
           </div>
           <div className="flex-1 min-w-0 pr-4">
             <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-              Instalar Schedule
+              Instalar Smart Agenda
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
               Acesse rapidamente e organize sua vida de qualquer lugar!

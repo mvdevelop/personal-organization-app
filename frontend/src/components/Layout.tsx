@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import FloatingAIButton from './FloatingAIButton';
 import InstallPWA from './InstallPWA';
 import ThemeCustomizer from './ThemeCustomizer';
 import { useAppSelector } from '../hooks/redux';
+import toast from 'react-hot-toast';
 
 const Layout: React.FC = () => {
   const { sidebarCollapsed } = useAppSelector(state => state.userPreferences)
@@ -14,54 +14,53 @@ const Layout: React.FC = () => {
   const [themeCustomizerOpen, setThemeCustomizerOpen] = useState(false)
   const location = useLocation()
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileSidebarOpen(false)
   }, [location.pathname])
 
-  const handleMenuToggle = () => {
-    setMobileSidebarOpen(prev => !prev)
+  // Mobile: the collapse control doubles as "close drawer".
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileSidebarOpen(false)
+        setThemeCustomizerOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  const handlePlans = () => {
+    toast('O plano Smart Plus chega em breve. Continue organizando no plano gratuito.', {
+      icon: '✨',
+    })
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Mobile overlay with blur */}
+    <div className="sa-shell" data-collapsed={sidebarCollapsed ? 'true' : 'false'}>
       {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 lg:hidden bg-black/40 backdrop-blur-sm"
+        <button
+          type="button"
+          className="sa-scrim lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Fechar menu"
         />
       )}
 
-      {/* Sidebar */}
-      <div
-        className={`
-          fixed lg:static inset-y-0 left-0 z-30
-          transition-transform duration-300 ease-in-out
-          ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
-      >
-        <Sidebar collapsed={sidebarCollapsed} />
-      </div>
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        mobileOpen={mobileSidebarOpen}
+        onNavigate={() => setMobileSidebarOpen(false)}
+        onOpenPlans={handlePlans}
+      />
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="sa-main">
         <Header
-          onMenuToggle={handleMenuToggle}
+          onMenuToggle={() => setMobileSidebarOpen(prev => !prev)}
           onThemeSettings={() => setThemeCustomizerOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50/50 dark:bg-gray-900/50">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+        <main className="sa-page">
+          <Outlet />
         </main>
       </div>
 

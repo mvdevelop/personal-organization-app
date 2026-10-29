@@ -1,219 +1,312 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { useAuth } from '../hooks/useAuth';
 import { fetchDashboard } from '../store/slices/dashboardSlice';
-import { Link } from 'react-router-dom';
-import GamificationPanel from '../components/GamificationPanel';
-import WeatherWidget from '../components/WeatherWidget';
-import { ChartsWidget, MiniCalendar } from '../components/DashboardWidgets';
-import StatCard from '../components/ui/StatCard';
-import DashboardCard from '../components/ui/DashboardCard';
-import { motion } from 'framer-motion';
+import { fetchGamificationStats } from '../store/slices/gamificationSlice';
+import { fetchHabits, fetchLogs, fetchStreaks, createLog } from '../store/slices/habitsSlice';
+import { fetchTasks, toggleTask } from '../store/slices/tasksSlice';
+import GreetingHeader from '../components/dashboard/GreetingHeader';
+import AIOverview from '../components/dashboard/AIOverview';
+import MetricCard from '../components/dashboard/MetricCard';
+import TaskList, { type TaskRow } from '../components/dashboard/TaskList';
+import HabitList, { type HabitRow } from '../components/dashboard/HabitList';
+import GoalsCard, { type GoalRow } from '../components/dashboard/GoalsCard';
+import NotesCard from '../components/dashboard/NotesCard';
+import StudiesCard from '../components/dashboard/StudiesCard';
+import CalendarCard from '../components/dashboard/CalendarCard';
+import GamificationCard from '../components/dashboard/GamificationCard';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { DEMO_GOALS, DEMO_HABITS, DEMO_NOTE, DEMO_TASKS } from '../data/dashboardDemo';
 import {
-  ClipboardList, Flame, Trophy, GraduationCap,
-  StickyNote, AlertCircle, Sparkles,
-  ArrowRight, ListTodo, BrainCircuit,
+  ListChecks, Flame, Flag, MenuBook,
 } from 'lucide-react';
 
-const getAttentionSignals = (tasks: { overdue?: number } | undefined, habits: { total?: number; todayCheckIns?: number } | undefined) => ({
-  overdueTasks: tasks?.overdue ?? 0,
-  uncheckedHabits: Math.max(0, (habits?.total ?? 0) - (habits?.todayCheckIns ?? 0)),
+const DATE_FORMAT = new Intl.DateTimeFormat('pt-BR', {
+  weekday: 'long', day: '2-digit', month: 'short', year: 'numeric',
 })
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' })
+
+const formatDue = (value: string | null) => {
+  if (!value) return undefined
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return undefined
+  return SHORT_DATE_FORMAT.format(date)
+}
+
+const greetingFor = (hour: number) => {
+  if (hour < 12) return 'Bom dia'
+  if (hour < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
 
 const Dashboard: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { data, loading } = useAppSelector((s) => s.dashboard);
+  const dispatch = useAppDispatch()
+  const { user } = useAuth()
+  const { data, loading } = useAppSelector(s => s.dashboard)
+  const gamification = useAppSelector(s => s.gamification)
+  const habitState = useAppSelector(s => s.habits)
+  const taskState = useAppSelector(s => s.tasks)
+
+  const [demoTaskState, setDemoTaskState] = useState<Record<string, boolean>>({})
+  const [demoHabitState, setDemoHabitState] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    dispatch(fetchDashboard());
-  }, [dispatch]);
+    dispatch(fetchDashboard())
+    dispatch(fetchGamificationStats())
+    dispatch(fetchHabits())
+    dispatch(fetchStreaks())
+    dispatch(fetchTasks({ filter: 'all' }))
+    const today = new Date().toISOString().slice(0, 10)
+    dispatch(fetchLogs({ start: today, end: today }))
+  }, [dispatch])
 
-  if (loading && !data) {
-    return (
-      <LoadingSpinner size="lg" text="Carregando dashboard..." />
-    );
+  const firstName = user?.name?.split(' ')[0] ?? 'você'
+  const now = useMemo(() => new Date(), [])
+  const dateLabel = DATE_FORMAT.format(now).toUpperCase().replace('.', '')
+  const greeting = greetingFor(now.getHours())
+
+  // ----- Tasks -----
+  const { rows: taskRows, isDemo: tasksAreDemo } = useMemo(() => {
+    const recent = data?.tasks.recent ?? []
+    if (recent.length > 0) {
+      return {
+        isDemo: false,
+        rows: recent.slice(0, 3).map<TaskRow>(task => ({
+          id: task.id,
+          title: task.title,
+          category: task.priority === 'high' ? 'Alta' : task.priority === 'low' ? 'Baixa' : 'Média',
+          tagClass: task.priority === 'high' ? 'is-high' : task.priority === 'low' ? 'is-low' : 'is-medium',
+          due: formatDue(task.dueDate),
+          completed: task.completed,
+        })),
+      }
+    }
+
+    return {
+      isDemo: true,
+      rows: DEMO_TASKS.map<TaskRow>(task => ({
+        ...task,
+        completed: demoTaskState[task.id] ?? task.completed,
+      })),
+    }
+  }, [data, demoTaskState])
+
+  const handleToggleTask = useCallback(async (task: TaskRow) => {
+    if (task.isDemo || tasksAreDemo) {
+      setDemoTaskState(prev => ({ ...prev, [task.id]: !task.completed }))
+      return
+    }
+
+    try {
+      await dispatch(toggleTask(task.id)).unwrap()
+      dispatch(fetchDashboard())
+      toast.success(task.completed ? 'Tarefa reaberta.' : 'Tarefa concluída!')
+    } catch {
+      toast.error('Não foi possível atualizar a tarefa.')
+    }
+  }, [dispatch, tasksAreDemo])
+
+  const pendingTasks = data ? data.tasks.pending : taskRows.filter(t => !t.completed).length
+  const completedTasks = data ? data.tasks.completed : taskRows.filter(t => t.completed).length
+  const totalTasks = data?.tasks.total ?? taskRows.length
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+  // ----- Habits -----
+  const { rows: habitRows, isDemo: habitsAreDemo } = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10)
+
+    if (habitState.habits.length > 0) {
+      return {
+        isDemo: false,
+        rows: habitState.habits.map<HabitRow>(habit => {
+          const log = habitState.logs.find(l => l.habitId === habit.id && l.date.slice(0, 10) === today)
+          const streak = habitState.streaks.find(s => s.habitId === habit.id)
+          return {
+            id: habit.id,
+            title: habit.title,
+            description: habit.description || 'Hábito pessoal',
+            color: habit.color || '#7778F6',
+            streak: streak?.streak ?? 0,
+            checkedToday: log?.completed ?? false,
+          }
+        }),
+      }
+    }
+
+    return {
+      isDemo: true,
+      rows: DEMO_HABITS.map<HabitRow>(habit => ({
+        ...habit,
+        checkedToday: demoHabitState[habit.id] ?? habit.checkedToday,
+      })),
+    }
+  }, [habitState, demoHabitState])
+
+  const handleToggleHabit = useCallback(async (habit: HabitRow) => {
+    if (habit.isDemo || habitsAreDemo) {
+      setDemoHabitState(prev => ({ ...prev, [habit.id]: !habit.checkedToday }))
+      return
+    }
+
+    try {
+      await dispatch(createLog({
+        habitId: habit.id,
+        date: new Date().toISOString().slice(0, 10),
+        completed: !habit.checkedToday,
+      })).unwrap()
+      dispatch(fetchStreaks())
+      toast.success(habit.checkedToday ? 'Check-in removido.' : 'Check-in registrado!')
+    } catch {
+      toast.error('Não foi possível registrar o check-in.')
+    }
+  }, [dispatch, habitsAreDemo])
+
+  const bestStreak = habitRows.length > 0
+    ? Math.max(...habitRows.map(h => h.streak))
+    : data?.habits.bestStreak ?? 0
+
+  // ----- Goals / notes -----
+  const { rows: goalRows, isDemo: goalsAreDemo, activeGoals, completedGoals } = useMemo(() => {
+    const recent = data?.goals.recent ?? []
+
+    if (recent.length > 0) {
+      return {
+        isDemo: false,
+        activeGoals: data?.goals.active ?? recent.length,
+        completedGoals: data?.goals.completed ?? 0,
+        rows: recent.slice(0, 4).map<GoalRow>(goal => {
+          const percent = goal.targetValue && goal.targetValue > 0
+            ? Math.min(100, (goal.currentValue / goal.targetValue) * 100)
+            : 0
+          return {
+            title: goal.title,
+            icon: goal.type === 'purchase' ? 'monitor' : 'sparkles',
+            percent,
+          }
+        }),
+      }
+    }
+
+    return {
+      isDemo: true,
+      activeGoals: DEMO_GOALS.length,
+      completedGoals: 0,
+      rows: DEMO_GOALS,
+    }
+  }, [data])
+
+  const note = useMemo(() => {
+    const recent = data?.notes.recent?.[0]
+    if (!recent) return { note: DEMO_NOTE, isDemo: true }
+    const date = new Date(recent.updatedAt)
+    return {
+      isDemo: false,
+      note: {
+        title: recent.title,
+        date: Number.isNaN(date.getTime()) ? '' : SHORT_DATE_FORMAT.format(date),
+        category: 'Nota pessoal',
+        excerpt: 'Capture ideias importantes e encontre tudo em um só lugar.',
+      },
+    }
+  }, [data])
+
+  const nextTaskTitle = taskRows.find(t => !t.completed)?.title ?? null
+  const attentionSignals = (data?.tasks.overdue ?? 0) + (taskRows.filter(t => !t.completed).length)
+
+  if (loading && !data && taskState.loading === false && habitState.habits.length === 0) {
+    return <LoadingSpinner size="lg" text="Carregando seu painel..." />
   }
 
-  const t = data?.tasks;
-  const h = data?.habits;
-  const g = data?.goals;
-  const st = data?.studies;
-  const n = data?.notes;
-  const completionRate = t?.total ? Math.round((t.completed / t.total) * 100) : 0;
-  const attentionSignals = getAttentionSignals(t, h)
-  const attentionCount = attentionSignals.overdueTasks + attentionSignals.uncheckedHabits
-  const hasDashboardData = Boolean(data)
-  const nextTask = t?.recent?.find((task) => !task.completed);
-
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <WeatherWidget />
+    <div>
+      <GreetingHeader name={firstName} dateLabel={dateLabel} greeting={greeting} />
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-        <div>
-          <p className="dashboard-card__eyebrow">Painel de decisão</p>
-          <h1 className="page-header text-2xl sm:text-3xl">Seu foco para hoje</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Veja o que pede atenção e escolha o próximo passo.</p>
-        </div>
-        <span className="badge-retro self-start sm:self-auto">{!hasDashboardData ? 'Aguardando dados' : attentionCount ? `${attentionCount} sinais de atenção` : 'Tudo em dia'}</span>
+      <AIOverview attentionSignals={attentionSignals} nextTaskTitle={nextTaskTitle} />
+
+      <section className="metrics-grid" aria-label="Indicadores de produtividade">
+        <MetricCard
+          label="Tarefas pendentes"
+          value={pendingTasks}
+          pill={totalTasks > 0 ? `${completionRate}% concluídas` : 'Sem tarefas'}
+          tone="success"
+          note="Tudo em dia · excelente ritmo"
+          icon={ListChecks}
+        />
+        <MetricCard
+          label="Melhor streak"
+          value={bestStreak}
+          unit="dias"
+          pill="dias seguidos"
+          tone="warning"
+          note="Faça um check-in hoje"
+          icon={Flame}
+        />
+        <MetricCard
+          label="Metas ativas"
+          value={activeGoals}
+          pill={`${completedGoals} concluídas`}
+          tone="pink"
+          note="Continue progredindo"
+          icon={Flag}
+        />
+        <MetricCard
+          label="Horas de estudo"
+          value={data?.studies.weekStudyHours ?? 0}
+          unit="h"
+          pill="na semana"
+          tone="accent"
+          note="Que tal uma sessão curta?"
+          icon={MenuBook}
+        />
+      </section>
+
+      <div className="grid-2">
+        <TaskList tasks={taskRows} onToggle={handleToggleTask} isDemo={tasksAreDemo} />
+        <HabitList
+          habits={habitRows}
+          bestStreak={bestStreak}
+          onToggle={handleToggleHabit}
+          isDemo={habitsAreDemo}
+        />
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard icon={ListTodo} label="Tarefas pendentes" value={t?.pending ?? 0} subtitle={t?.total ? `${completionRate}% concluídas` : 'Comece adicionando uma'} status={t?.overdue ? 'attention' : 'neutral'} actionLabel={t?.overdue ? `${t.overdue} atrasadas` : undefined} />
-        <StatCard icon={Flame} label="Melhor streak" value={`${h?.bestStreak ?? 0}`} subtitle="dias seguidos" status={h?.todayCheckIns ? 'positive' : 'attention'} actionLabel={!h?.todayCheckIns && h?.total ? 'Faça um check-in' : undefined} />
-        <StatCard icon={Trophy} label="Metas ativas" value={`${g?.active ?? 0}`} subtitle={`${g?.completed ?? 0} concluídas`} status="positive" />
-        <StatCard icon={BrainCircuit} label="Horas de estudo" value={`${st?.weekStudyHours ?? 0}h`} subtitle={`${st?.weekSessions ?? 0} sessões na semana`} />
+      <div className="grid-3">
+        <GoalsCard
+          goals={goalRows}
+          active={activeGoals}
+          completed={completedGoals}
+          isDemo={goalsAreDemo}
+        />
+        <NotesCard note={note.note} total={data?.notes.total ?? 0} isDemo={note.isDemo} />
+        <StudiesCard
+          subjects={data?.studies.subjects ?? 0}
+          sessions={data?.studies.weekSessions ?? 0}
+          hours={data?.studies.weekStudyHours ?? 0}
+        />
       </div>
 
-      <DashboardCard title="Próxima ação" eyebrow="Recomendação" description={nextTask ? 'Retome o trabalho com maior impacto agora.' : 'Seu próximo passo aparece aqui quando houver uma tarefa.'} icon={<Sparkles className="w-5 h-5" />} href="/tasks" actionLabel="Abrir tarefas">
-        {nextTask ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg p-3" style={{ background: 'var(--bg-elevated)' }}>
-            <div className="min-w-0"><p className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{nextTask.title}</p><p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Prioridade {nextTask.priority}</p></div>
-            <Link to="/tasks" className="btn-outline rounded-md px-3 py-2 text-xs text-center">Continuar</Link>
-          </motion.div>
-        ) : <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Nenhuma tarefa pendente. Aproveite para revisar suas metas.</p>}
-      </DashboardCard>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Tasks + Habits */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Tasks Card */}
-            <DashboardCard title="Tarefas" description={t?.total ? `${t.completed}/${t.total} concluídas` : 'Organize seu próximo passo'} icon={<ClipboardList className="w-5 h-5" />} href="/tasks" actionLabel="Abrir tarefas">
-              <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-4 overflow-hidden" role="progressbar" aria-label="Progresso das tarefas" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionRate}>
-                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${completionRate}%` }} />
-              </div>
-              {t?.overdue ? (
-                <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-xs text-red-600 dark:text-red-400">
-                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-                  <span>{t.overdue} tarefa{t.overdue > 1 ? 's' : ''} atrasada{t.overdue > 1 ? 's' : ''}</span>
-                </div>
-              ) : t?.total === 0 ? (
-                <p className="font-body text-xs text-center py-6 text-gray-400">Nenhuma tarefa ainda</p>
-              ) : null}
-              <div className="space-y-2">
-                {t?.recent?.slice(0, 3).map((task) => (
-                  <div key={task.id} className="flex items-center gap-3 font-body text-sm">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : task.priority === 'high' ? 'bg-red-400' : task.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-300 dark:bg-gray-600'}`} aria-hidden="true" />
-                    <span className={`flex-1 truncate ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{task.title}</span>
-                    {task.dueDate && <span className="font-mono text-[11px] text-gray-400 dark:text-gray-500">{new Date(task.dueDate).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</span>}
-                  </div>
-                ))}
-              </div>
-            </DashboardCard>
-
-            {/* Habits Card */}
-            <DashboardCard title="Hábitos" description={`${h?.todayCheckIns ?? 0} check-ins hoje`} icon={<Flame className="w-5 h-5" />} href="/habits" actionLabel="Abrir hábitos">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1.5 font-body text-sm">
-                  <span className="font-display text-2xl font-bold text-orange-500">{h?.bestStreak ?? 0}</span>
-                  <span className="text-xs text-gray-500">🔥 max</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-body text-sm">
-                  <span className="font-display text-2xl font-bold text-gray-900 dark:text-white">{h?.total ?? 0}</span>
-                  <span className="text-xs text-gray-500">hábitos</span>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                {h?.streaks?.length ? h.streaks.slice(0, 4).map((s) => (
-                  <div key={s.title} className="flex items-center gap-2 font-body text-sm py-0.5">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: s.color || 'var(--color-primary)' }} aria-hidden="true" />
-                    <span className="flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{s.title}</span>
-                    <span className="font-mono text-xs text-orange-500">{s.streak}d</span>
-                  </div>
-                )) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhum hábito ainda</p>}
-              </div>
-            </DashboardCard>
-          </div>
-
-          <ChartsWidget tasks={t} habits={h} goals={g} studies={st} />
-
-          {/* Goals + Notes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <DashboardCard title="Metas" description={`${g?.active ?? 0} ativas · ${g?.completed ?? 0} concluídas`} icon={<Trophy className="w-5 h-5" />} href="/goals" actionLabel="Abrir metas">
-              <div className="space-y-3">
-                {g?.recent?.length ? g.recent.slice(0, 3).map((goal) => {
-                  const progress = goal.targetValue ? Math.min(100, Math.round((goal.currentValue / goal.targetValue) * 100)) : 0
-                  return <div key={goal.id} className="font-body text-sm">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="truncate text-xs font-medium text-gray-900 dark:text-white">{goal.title}</span>
-                      {goal.targetValue ? <span className="font-mono text-xs text-gray-400">{progress}%</span> : null}
-                    </div>
-                    {goal.targetValue ? <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden" role="progressbar" aria-label={`Progresso da meta ${goal.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
-                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
-                    </div> : null}
-                  </div>
-                }) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhuma meta ativa</p>}
-              </div>
-            </DashboardCard>
-
-            <DashboardCard title="Notas" description={`${n?.total ?? 0} notas criadas`} icon={<StickyNote className="w-5 h-5" />} href="/notes" actionLabel="Abrir notas">
-              <div className="space-y-2">
-                {n?.recent?.length ? n.recent.slice(0, 4).map((note) => (
-                  <div key={note.id} className="flex items-center gap-2 font-body text-sm py-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-pink-400 flex-shrink-0" aria-hidden="true" />
-                    <span className="flex-1 truncate text-xs text-gray-700 dark:text-gray-300">{note.title}</span>
-                    <span className="font-mono text-[11px] text-gray-400">{new Date(note.updatedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</span>
-                  </div>
-                )) : <p className="font-body text-xs text-center py-4 text-gray-400">Nenhuma nota ainda</p>}
-              </div>
-            </DashboardCard>
-          </div>
-
-          {/* Studies + AI */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="medal-ring !w-10 !h-10 !border-green-400 bg-green-50 dark:bg-green-900/20">
-                    <GraduationCap className="w-5 h-5 text-green-500" />
-                  </div>
-                  <div>
-                    <h2 className="font-display font-semibold text-sm text-gray-900 dark:text-white">Estudos</h2>
-                    <p className="font-body text-xs text-gray-500 dark:text-gray-400">{st?.subjects ?? 0} matérias</p>
-                  </div>
-                </div>
-                <Link to="/studies" className="text-gray-400 hover:text-primary transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center py-4 px-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                  <div className="font-display text-2xl font-bold text-green-500">{st?.weekSessions ?? 0}</div>
-                  <div className="font-ui text-[11px] text-gray-500 mt-1">Sessões na semana</div>
-                </div>
-                <div className="text-center py-4 px-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-xl">
-                  <div className="font-display text-2xl font-bold text-cyan-500">{st?.weekStudyHours ?? 0}h</div>
-                  <div className="font-ui text-[11px] text-gray-500 mt-1">Horas na semana</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="arch-decoration bg-white dark:bg-gray-800 rounded-xl shadow-warm border border-gray-200 dark:border-gray-700 p-5 flex items-center gap-4">
-              <div className="medal-ring !w-12 !h-12 !border-primary bg-gradient-to-br from-yellow-400 to-yellow-500">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="font-display font-semibold text-sm text-gray-900 dark:text-white">Assistente IA</h2>
-                <p className="font-body text-xs text-gray-500 mt-0.5">Peça um resumo do seu dia ou sugestões</p>
-                <Link to="/ai" className="inline-flex items-center gap-1 font-ui text-xs font-semibold text-primary hover:text-primary-hover mt-1.5 transition-colors">
-                  Abrir chat <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          <MiniCalendar tasks={data?.tasks as { recent?: { id: string; title: string; dueDate: string | null }[] } | undefined} />
-          <GamificationPanel />
-        </div>
+      <div className="grid-2">
+        <CalendarCard />
+        <GamificationCard
+          level={gamification.level}
+          currentXp={gamification.currentXp}
+          nextLevelXp={gamification.nextLevelXp}
+          progress={gamification.progress}
+          tasksCompleted={gamification.counters.tasksCompleted}
+          habitsCreated={gamification.counters.habitsCreated}
+          studySessions={gamification.counters.studySessions}
+          notesCreated={gamification.counters.notesCreated}
+          unlockedAchievements={gamification.achievements.filter(a => a.unlocked).map(a => a.slug)}
+          totalAchievements={gamification.achievements.length}
+        />
       </div>
+
+      <footer className="dash-foot">
+        Smart Agenda · Um dia mais leve começa com clareza.
+      </footer>
     </div>
-  );
-};
+  )
+}
 
 export default Dashboard

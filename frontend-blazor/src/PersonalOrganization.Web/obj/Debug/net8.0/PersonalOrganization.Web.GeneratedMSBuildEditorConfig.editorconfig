@@ -3,72 +3,85 @@ build_property.MudDebugAnalyzer =
 build_property.MudAllowedAttributePattern = 
 build_property.MudIllegalParameters = 
 build_property.TargetFramework = net8.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = 
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = false
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = browser
 build_property.RootNamespace = PersonalOrganization.Web
 build_property.RootNamespace = PersonalOrganization.Web
-build_property.ProjectDir = /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/
+build_property.ProjectDir = C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web
+build_property.MSBuildProjectDirectory = C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web
 build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/App.razor]
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/RedirectIfAuthenticated.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9SZWRpcmVjdElmQXV0aGVudGljYXRlZC5yYXpvcg==
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/Dashboard/MetricCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEYXNoYm9hcmRcTWV0cmljQ2FyZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/RedirectToLogin.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9SZWRpcmVjdFRvTG9naW4ucmF6b3I=
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/PageHeader.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlSGVhZGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = TGF5b3V0L01haW5MYXlvdXQucmF6b3I=
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/RedirectIfAuthenticated.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWRpcmVjdElmQXV0aGVudGljYXRlZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/AiChat.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWlDaGF0LnJhem9y
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Components/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWRpcmVjdFRvTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Auth/Login.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQXV0aC9Mb2dpbi5yYXpvcg==
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Dashboard.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRGFzaGJvYXJkLnJhem9y
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/AiChat.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWlDaGF0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Goals.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvR29hbHMucmF6b3I=
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Auth/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFxMb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Habits.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSGFiaXRzLnJhem9y
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGFzaGJvYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Notes.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTm90ZXMucmF6b3I=
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Goals.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR29hbHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Studies.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU3R1ZGllcy5yYXpvcg==
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Habits.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGFiaXRzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Tasks.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvVGFza3MucmF6b3I=
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Notes.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/vinicius10011/Programming/working-on/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/_Imports.razor]
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Studies.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3R1ZGllcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/Pages/Tasks.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGFza3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/marco/Programming/work-projects/personal-organization-app/frontend-blazor/src/PersonalOrganization.Web/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 

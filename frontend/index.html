@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -8,16 +8,30 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=Space+Grotesk:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <meta name="theme-color" content="#3b82f6" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#111318" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Schedule" />
-    <meta name="description" content="Sua super agenda inteligente para tarefas, hábitos, metas, estudos e notas" />
-    <meta name="application-name" content="Schedule" />
-    <meta name="msapplication-TileColor" content="#3b82f6" />
-    <title>Schedule</title>
+    <meta name="apple-mobile-web-app-title" content="Smart Agenda" />
+    <meta name="description" content="Sua agenda inteligente para tarefas, hábitos, metas, estudos e notas" />
+    <meta name="application-name" content="Smart Agenda" />
+    <meta name="msapplication-TileColor" content="#111318" />
+    <title>Smart Agenda</title>
+    <script>
+      // Apply the stored theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var saved = localStorage.getItem('userPreferences');
+          var theme = saved ? JSON.parse(saved).theme : 'dark';
+          if (theme !== 'light') document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

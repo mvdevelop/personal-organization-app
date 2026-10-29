@@ -1050,3 +1050,11 @@
 C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.dll
 C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\refint\PersonalOrganization.Web.dll
 C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.pdb
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.csproj.AssemblyReference.cache
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.AssemblyInfoInputs.cache
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.AssemblyInfo.cs
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.csproj.CoreCompileInputs.cache
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\marco\Programming\work-projects\personal-organization-app\frontend-blazor\src\PersonalOrganization.Web\obj\Debug\net8.0\PersonalOrganization.Web.sourcelink.json

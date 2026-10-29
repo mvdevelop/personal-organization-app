@@ -1,116 +1,102 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Gauge, ClipboardList, StickyNote,
-  Zap, Trophy, GraduationCap, Brain,
-  ChevronLeft, ChevronRight,
+  LayoutDashboard, ListChecks, NotebookPen, Flame,
+  Flag, GraduationCap, Sparkles,
+  PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useAppDispatch } from '../hooks/redux';
 import { toggleSidebar } from '../store/slices/userPreferencesSlice';
-import LogoIcon from './LogoIcon';
+import AppMark from './AppMark';
 
 interface SidebarProps {
   collapsed: boolean
+  mobileOpen?: boolean
+  onNavigate?: () => void
+  onOpenPlans?: () => void
 }
 
-const ALL_NAV = [
-  { path: '/', icon: Gauge, label: 'Dashboard' },
-  { path: '/tasks', icon: ClipboardList, label: 'Tarefas' },
-  { path: '/notes', icon: StickyNote, label: 'Notas' },
-  { path: '/habits', icon: Zap, label: 'Hábitos' },
-  { path: '/goals', icon: Trophy, label: 'Metas' },
+const NAV_ITEMS = [
+  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/tasks', icon: ListChecks, label: 'Tarefas' },
+  { path: '/notes', icon: NotebookPen, label: 'Notas' },
+  { path: '/habits', icon: Flame, label: 'Hábitos' },
+  { path: '/goals', icon: Flag, label: 'Metas' },
   { path: '/studies', icon: GraduationCap, label: 'Estudos' },
-  { path: '/ai', icon: Brain, label: 'Assistente IA' },
+  { path: '/ai', icon: Sparkles, label: 'Assistente IA' },
 ]
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, mobileOpen, onNavigate, onOpenPlans }) => {
   const dispatch = useAppDispatch()
   const { user } = useAuth()
 
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-4 py-2.5 transition-all duration-150 text-sm ${
-      isActive
-        ? 'text-primary font-semibold'
-        : 'text-gray-500 dark:text-gray-400 hover:text-primary'
-    } ${collapsed ? 'justify-center px-0' : ''}`
-
-  const iconClass = "w-5 h-5 flex-shrink-0"
-
-  const getInitials = (name?: string) => {
-    if (!name) return '?'
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-  }
+  const initial = (user?.name?.trim()?.[0] ?? 'V').toUpperCase()
 
   return (
-    <aside className="h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col w-full shadow-warm-md">
-      {/* Logo */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-700/50">
-        {collapsed ? (
-          <h1 className="text-xl font-bold text-center text-primary" title="Schedule">
-            <LogoIcon className="mx-auto" size={28} />
-          </h1>
-        ) : (
-          <h1 className="font-display text-xl font-bold flex items-center gap-2 px-1 text-primary tracking-wide">
-            <LogoIcon size={28} />
-            <span>Schedule</span>
-          </h1>
-        )}
-      </div>
+    <aside
+      className={`sa-sidebar ${collapsed ? 'is-collapsed' : ''} ${mobileOpen ? 'is-mobile-open' : ''}`}
+      aria-label="Navegação principal"
+    >
+      <div className="sa-sidebar-inner">
+        <NavLink to="/" className="sa-brand" onClick={onNavigate} aria-label="Smart Agenda — início">
+          <span className="sa-logo" aria-hidden="true">
+            <AppMark size={32} />
+          </span>
+          <span className="sa-brand-text">
+            <span className="sa-brand-name">Smart Agenda</span>
+            <span className="sa-brand-tag">YOUR DAY, IN SYNC</span>
+          </span>
+        </NavLink>
 
-      {/* User Avatar */}
-      {!collapsed && user && (
-        <div className="px-4 pt-4 pb-2 flex items-center gap-3">
-          <div className="medal-ring !w-9 !h-9 !border-primary bg-primary-light">
-            <span className="font-ui text-xs font-bold text-primary">{getInitials(user.name)}</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-ui text-sm font-medium truncate text-gray-900 dark:text-white">
-              {user.name}
-            </p>
-            <p className="font-body text-xs truncate text-gray-400 dark:text-gray-500">
-              {user.email}
-            </p>
-          </div>
+        <div className="sa-profile" title={user?.email}>
+          <span className="sa-avatar" aria-hidden="true">{initial}</span>
+          <span className="sa-profile-text">
+            <span className="sa-profile-name">{user?.name ?? 'Visitante'}</span>
+            <span className="sa-profile-mail">{user?.email ?? 'sem sessão'}</span>
+          </span>
         </div>
-      )}
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-3">
-        {ALL_NAV.map((item, idx) => (
-          <React.Fragment key={item.path}>
-            {idx === 6 && !collapsed && (
-              <div className="divider-diamond my-3 px-1" />
-            )}
+        <nav className="sa-nav" aria-label="Seções">
+          {NAV_ITEMS.map(({ path, icon: Icon, label }) => (
             <NavLink
-              to={item.path}
-              className={linkClass}
-              end={item.path === '/'}
-              title={collapsed ? item.label : undefined}
+              key={path}
+              to={path}
+              end={path === '/'}
+              onClick={onNavigate}
+              title={collapsed ? label : undefined}
+              className={({ isActive }) => `sa-nav-link ${isActive ? 'active' : ''}`}
             >
-              <item.icon className={iconClass} />
-              {!collapsed && <span>{item.label}</span>}
+              <Icon aria-hidden="true" />
+              <span className="sa-nav-label">{label}</span>
             </NavLink>
-          </React.Fragment>
-        ))}
-      </nav>
+          ))}
+        </nav>
 
-      {/* Collapse toggle */}
-      <div className="border-t border-gray-100 dark:border-gray-700/50 py-2 px-3">
-        <button
-          onClick={() => dispatch(toggleSidebar())}
-          className="flex items-center gap-3 w-full px-4 py-2.5 transition-colors duration-150 text-sm text-gray-500 dark:text-gray-400 hover:text-primary cursor-pointer"
-          title={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
-        >
-          {collapsed ? (
-            <ChevronRight className="w-5 h-5 mx-auto" />
-          ) : (
-            <>
-              <ChevronLeft className="w-5 h-5 flex-shrink-0" />
-              <span>Recolher</span>
-            </>
-          )}
-        </button>
+        <div className="sa-sidebar-foot">
+          <div className="sa-promo">
+            <span className="sa-promo-icon" aria-hidden="true">
+              <Sparkles style={{ width: 15, height: 15 }} />
+            </span>
+            <span className="sa-promo-title">Um novo nível de foco</span>
+            <span className="sa-promo-text">
+              Desbloqueie todo o potencial da sua rotina com o Smart Plus.
+            </span>
+            <button type="button" className="sa-promo-btn" onClick={onOpenPlans}>
+              Conhecer planos
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="sa-collapse"
+            onClick={() => dispatch(toggleSidebar())}
+            aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+          >
+            {collapsed ? <PanelLeftOpen size={16} aria-hidden="true" /> : <PanelLeftClose size={16} aria-hidden="true" />}
+            <span className="sa-collapse-label">Recolher menu</span>
+          </button>
+        </div>
       </div>
     </aside>
   )

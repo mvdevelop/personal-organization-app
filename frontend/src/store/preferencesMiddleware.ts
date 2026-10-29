@@ -1,70 +1,30 @@
 import type { Middleware } from '@reduxjs/toolkit';
-import { COLOR_THEMES, FONT_OPTIONS } from '../theme/themes';
 import {
-  toggleTheme, setTheme, setColorTheme, setFont,
+  toggleTheme, setTheme, toggleSidebar, setSidebarCollapsed,
 } from './slices/userPreferencesSlice';
 import type { UserPreferences } from './slices/userPreferencesSlice';
 
+const STORAGE_KEY = 'userPreferences'
+
 /** Apply a theme mode (light/dark) to the DOM */
 function applyThemeMode(mode: 'light' | 'dark') {
-  if (mode === 'dark') {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
+  const root = document.documentElement
+  root.classList.toggle('dark', mode === 'dark')
+  root.style.colorScheme = mode
+
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) meta.setAttribute('content', mode === 'dark' ? '#111318' : '#f6f7fb')
 }
 
 /** Save preferences to localStorage */
 function savePreferences(state: UserPreferences) {
   try {
-    localStorage.setItem('userPreferences', JSON.stringify({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       theme: state.theme,
       sidebarCollapsed: state.sidebarCollapsed,
-      colorTheme: state.colorTheme,
-      font: state.font,
     }))
   } catch {
     // ignore storage errors
-  }
-}
-
-/** Load a Google Font if specified */
-function loadGoogleFont(googleFont?: string) {
-  if (!googleFont) return
-  const id = 'google-font-load'
-  if (document.getElementById(id)) return
-  const link = document.createElement('link')
-  link.id = id
-  link.rel = 'stylesheet'
-  link.href = `https://fonts.googleapis.com/css2?family=${googleFont}&display=swap`
-  document.head.appendChild(link)
-}
-
-/** Apply font family to the document */
-function applyFont(fontName: string) {
-  const fontOption = FONT_OPTIONS.find(f => f.name === fontName)
-  if (fontOption) {
-    document.documentElement.style.fontFamily = fontOption.fontFamily
-    loadGoogleFont(fontOption.googleFont)
-  }
-}
-
-/** Apply color theme CSS variables to :root based on the TypeScript theme config */
-function applyColorTheme(themeName: string) {
-  const theme = COLOR_THEMES.find(t => t.name === themeName) || COLOR_THEMES[0]
-  const root = document.documentElement
-  for (const [key, value] of Object.entries(theme.colors)) {
-    // Set --color-{key} for backward compat with existing theme.css classes
-    root.style.setProperty(`--color-${key}`, value)
-    // Also set the bare token name for the new retro design system
-    // (e.g. --gold, --bg-base, --border)
-    const bareKey = key.replace(/-/g, '-') // already kebab-case
-    root.style.setProperty(`--${bareKey}`, value)
-    // Handle mapped tokens
-    if (key === 'gold') root.style.setProperty('--border-gold', value)
-    if (key === 'bg-base') root.style.setProperty('--bg-base', value)
-    if (key === 'bg-surface') root.style.setProperty('--bg-surface', value)
-    if (key === 'bg-elevated') root.style.setProperty('--bg-elevated', value)
   }
 }
 
@@ -72,8 +32,8 @@ function applyColorTheme(themeName: string) {
 const EFFECTS: Record<string, (state: UserPreferences) => void> = {
   [toggleTheme.type]: (s) => { applyThemeMode(s.theme) },
   [setTheme.type]: (s) => { applyThemeMode(s.theme) },
-  [setColorTheme.type]: (s) => { applyColorTheme(s.colorTheme) },
-  [setFont.type]: (s) => { applyFont(s.font) },
+  [toggleSidebar.type]: () => {},
+  [setSidebarCollapsed.type]: () => {},
 }
 
 const EFFECT_TYPES = new Set(Object.keys(EFFECTS))
@@ -100,11 +60,8 @@ export const preferencesMiddleware: Middleware = (storeApi) => (next) => (action
 
 /**
  * Initialize preferences on app load.
- * Call once from main.tsx after the store is created.
+ * Call once from store/index.ts after the store is created.
  */
 export function initPreferences(store: { getState: () => { userPreferences: UserPreferences } }) {
-  const prefs = store.getState().userPreferences
-  applyThemeMode(prefs.theme)
-  applyColorTheme(prefs.colorTheme)
-  applyFont(prefs.font)
+  applyThemeMode(store.getState().userPreferences.theme)
 }

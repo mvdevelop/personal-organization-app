@@ -1,26 +1,30 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+export type ThemeMode = 'light' | 'dark'
+
 export interface UserPreferences {
-  theme: 'light' | 'dark'
+  theme: ThemeMode
   sidebarCollapsed: boolean
-  colorTheme: string
-  font: string
 }
 
+const STORAGE_KEY = 'userPreferences'
+
 function loadPreferences(): UserPreferences {
+  const defaults: UserPreferences = {
+    theme: 'dark',
+    sidebarCollapsed: false,
+  }
+
   try {
-    const saved = localStorage.getItem('userPreferences')
-    if (saved) {
-      return JSON.parse(saved)
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (!saved) return defaults
+    const parsed = JSON.parse(saved) as Partial<UserPreferences>
+    return {
+      theme: parsed.theme === 'light' ? 'light' : 'dark',
+      sidebarCollapsed: Boolean(parsed.sidebarCollapsed),
     }
   } catch {
-    // ignore parse errors
-  }
-  return {
-    theme: 'light',
-    sidebarCollapsed: false,
-    colorTheme: 'default',
-    font: 'system',
+    return defaults
   }
 }
 
@@ -33,20 +37,17 @@ const userPreferencesSlice = createSlice({
     toggleTheme: (state) => {
       state.theme = state.theme === 'light' ? 'dark' : 'light'
     },
+    setTheme: (state, action: PayloadAction<ThemeMode>) => {
+      state.theme = action.payload
+    },
     toggleSidebar: (state) => {
       state.sidebarCollapsed = !state.sidebarCollapsed
     },
-    setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
-      state.theme = action.payload
-    },
-    setColorTheme: (state, action: PayloadAction<string>) => {
-      state.colorTheme = action.payload
-    },
-    setFont: (state, action: PayloadAction<string>) => {
-      state.font = action.payload
+    setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
+      state.sidebarCollapsed = action.payload
     },
   },
 })
 
-export const { toggleTheme, toggleSidebar, setTheme, setColorTheme, setFont } = userPreferencesSlice.actions
+export const { toggleTheme, setTheme, toggleSidebar, setSidebarCollapsed } = userPreferencesSlice.actions
 export default userPreferencesSlice.reducer

@@ -1,11 +1,13 @@
-import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
-  Menu, Sun, Moon, LogOut, Palette,
+  Menu, Sun, Moon, LogOut, Search, Bell, ChevronRight, Palette,
 } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
+import AppMark from './AppMark';
 
 interface HeaderProps {
   onMenuToggle: () => void
@@ -20,6 +22,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/goals': 'Metas',
   '/studies': 'Estudos',
   '/ai': 'Assistente IA',
+  '/calendar': 'Calendário',
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
@@ -27,92 +30,93 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
   const dispatch = useAppDispatch()
   const { theme } = useAppSelector(state => state.userPreferences)
   const location = useLocation()
+  const [notificationsRead, setNotificationsRead] = useState(false)
 
   if (!isSignedIn) return null
 
-  const currentLabel = ROUTE_LABELS[location.pathname] || ''
+  const currentLabel = ROUTE_LABELS[location.pathname] ?? ''
+  const initial = (user?.name?.trim()?.[0] ?? 'V').toUpperCase()
 
-  const getInitials = (name?: string) => {
-    if (!name) return '?'
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const handleSearch = () => {
+    toast('Pesquisa global chega com a próxima atualização. Use a busca dentro de cada seção.', {
+      icon: '🔎',
+    })
+  }
+
+  const handleNotifications = () => {
+    setNotificationsRead(true)
+    toast.success('Tudo em ordem por aqui — nenhuma novidade pendente.')
   }
 
   return (
-    <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-3.5">
-        {/* Left: hamburger + breadcrumb */}
-        <div className="flex items-center gap-3 min-w-0">
-          {/* Mobile hamburger */}
-          <button
-            onClick={onMenuToggle}
-            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
-            title="Menu"
-          >
-            <Menu className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
+    <header className="sa-topbar">
+      <button
+        type="button"
+        onClick={onMenuToggle}
+        className="sa-icon-btn sa-menu-btn"
+        aria-label="Abrir menu de navegação"
+      >
+        <Menu />
+      </button>
 
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-body text-sm text-gray-400 dark:text-gray-500 font-medium">
-              Schedule
-            </span>
-            {currentLabel && (
-              <>
-                <span className="font-serif-alt text-xs text-primary">◆</span>
-                <span className="font-body text-sm font-semibold text-gray-900 dark:text-white truncate">
-                  {currentLabel}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
+      <nav className="sa-crumbs" aria-label="Você está em">
+        <span className="sa-topbar-brand">
+          <AppMark size={22} />
+          Smart Agenda
+        </span>
+        <ChevronRight aria-hidden="true" />
+        <strong>{currentLabel || 'Dashboard'}</strong>
+      </nav>
 
-        {/* Right: actions */}
-        <div className="flex items-center gap-1 sm:gap-2 ml-auto">
-          {/* Theme customizer */}
-          <button
-            onClick={onThemeSettings}
-            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            title="Personalizar tema"
-          >
-            <Palette className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          </button>
+      <div className="sa-topbar-spacer" />
 
-          {/* Theme toggle */}
-          <button
-            onClick={() => dispatch(toggleTheme())}
-            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            title="Alternar modo"
-          >
-            {theme === 'light' ? (
-              <Moon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            ) : (
-              <Sun className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            )}
-          </button>
+      <button type="button" className="sa-icon-btn" onClick={handleSearch} aria-label="Pesquisar" title="Pesquisar">
+        <Search />
+      </button>
 
-          {/* User info */}
-          {user && (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg">
-              <div className="medal-ring !w-6 !h-6 !border-gray-300 dark:!border-gray-600 bg-white dark:bg-gray-600">
-                <span className="font-ui text-[10px] font-bold text-gray-500 dark:text-gray-300">
-                  {getInitials(user.name)}
-                </span>
-              </div>
-              <span className="font-body text-sm text-gray-700 dark:text-gray-300">{user.name}</span>
-            </div>
-          )}
+      <button type="button" className="sa-icon-btn" onClick={handleNotifications} aria-label="Notificações" title="Notificações">
+        <Bell />
+        {!notificationsRead && <span className="sa-notif-dot" aria-hidden="true" />}
+      </button>
 
-          {/* Sign out */}
-          <button
-            onClick={signOut}
-            className="cursor-pointer p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-400 dark:text-gray-500"
-            title="Sair"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      {onThemeSettings && (
+        <button type="button" className="sa-icon-btn" onClick={onThemeSettings} aria-label="Ajustes de aparência" title="Aparência">
+          <Palette />
+        </button>
+      )}
+
+      <button
+        type="button"
+        className="sa-icon-btn"
+        onClick={() => dispatch(toggleTheme())}
+        aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+        title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+      >
+        {theme === 'dark' ? <Sun /> : <Moon />}
+      </button>
+
+      <span className="sa-plan">Plano gratuito</span>
+
+      <button
+        type="button"
+        className="sa-user"
+        onClick={() => toast(`${user?.name ?? 'Você'} · ${user?.email ?? ''} · Plano gratuito`, { icon: '👤' })}
+        aria-label={`Conta de ${user?.name ?? 'usuário'}`}
+        title={user?.email}
+      >
+        <span className="sa-avatar" aria-hidden="true">{initial}</span>
+        <span className="sa-user-name">{user?.name?.split(' ')[0] ?? 'Você'}</span>
+      </button>
+
+      <button
+        type="button"
+        className="sa-icon-btn"
+        onClick={signOut}
+        aria-label="Sair da conta"
+        title="Sair"
+      >
+        <LogOut />
+      </button>
     </header>
   )
 }

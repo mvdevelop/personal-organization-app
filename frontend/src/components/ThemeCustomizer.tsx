@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { setColorTheme, setFont } from '../store/slices/userPreferencesSlice';
-import { COLOR_THEMES, FONT_OPTIONS } from '../theme/themes';
-import { Palette, Type, X, Check } from 'lucide-react';
+import { setTheme, setSidebarCollapsed } from '../store/slices/userPreferencesSlice';
+import { Palette, X, Check, Sun, Moon, PanelLeft } from 'lucide-react';
 
 interface ThemeCustomizerProps {
   onClose: () => void
@@ -10,114 +9,99 @@ interface ThemeCustomizerProps {
 
 const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ onClose }) => {
   const dispatch = useAppDispatch()
-  const { colorTheme: activeColor, font: activeFont } = useAppSelector(s => s.userPreferences)
-  const [previewColor, setPreviewColor] = useState(activeColor)
+  const { theme, sidebarCollapsed } = useAppSelector(s => s.userPreferences)
 
-  const handleColorChange = (name: string) => {
-    setPreviewColor(name)
-    dispatch(setColorTheme(name))
-  }
-
-  const handleFontChange = (name: string) => {
-    dispatch(setFont(name))
-  }
+  const themes = [
+    { value: 'dark' as const, label: 'Escuro', hint: 'Recomendado', icon: Moon },
+    { value: 'light' as const, label: 'Claro', hint: 'Ambiente iluminado', icon: Sun },
+  ]
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(6, 8, 12, 0.6)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="appearance-title"
     >
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Palette className="w-5 h-5" />
-            Personalizar Tema
+      <div className="sa-card w-full max-w-md" style={{ padding: 0 }}>
+        <div
+          className="flex items-center justify-between p-5"
+          style={{ borderBottom: '1px solid var(--sa-border)' }}
+        >
+          <h2 id="appearance-title" className="sa-card-title">
+            <span className="sa-glyph is-accent"><Palette /></span>
+            Aparência
           </h2>
-          <button onClick={onClose} className="cursor-pointer p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400">
-            <X className="w-5 h-5" />
+          <button type="button" onClick={onClose} className="sa-icon-btn" aria-label="Fechar aparência">
+            <X />
           </button>
         </div>
 
         <div className="p-5 space-y-6">
-          {/* Color Themes */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-              <Palette className="w-4 h-4" /> Paleta de Cores
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
-              {COLOR_THEMES.map((t) => (
-                <button
-                  key={t.name}
-                  onClick={() => handleColorChange(t.name)}
-                  className={`cursor-pointer relative p-3 rounded-xl border-2 transition-all text-center ${
-                    previewColor === t.name
-                      ? 'border-blue-500 shadow-md'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <div className="flex gap-1 justify-center mb-2">
-                    <div className="w-5 h-5 rounded-full" style={{ backgroundColor: t.colors.primary }} />
-                    <div className="w-5 h-5 rounded-full" style={{ backgroundColor: t.colors.accent }} />
-                  </div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{t.label}</span>
-                  {previewColor === t.name && (
-                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Live Preview */}
-          <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-600 space-y-2">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Prévia</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Primary:</span>
-              <div className="w-6 h-6 rounded" style={{ backgroundColor: `var(--color-primary)` }} />
-              <div className="w-6 h-6 rounded" style={{ backgroundColor: `var(--color-primary-light)` }} />
-            </div>
-            <div className="flex gap-2">
-              <span className="px-3 py-1.5 text-xs text-white rounded-lg" style={{ backgroundColor: `var(--color-primary)` }}>
-                Botão Primary
-              </span>
-              <span className="px-3 py-1.5 text-xs text-white rounded-lg" style={{ backgroundColor: `var(--color-accent)` }}>
-                Botão Accent
-              </span>
-            </div>
-          </div>
-
-          {/* Fonts */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-              <Type className="w-4 h-4" /> Fonte
-            </h3>
-            <div className="space-y-2">
-              {FONT_OPTIONS.map((f) => (
-                <button
-                  key={f.name}
-                  onClick={() => handleFontChange(f.name)}
-                  className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${
-                    activeFont === f.name
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <div className="flex-1 text-left">
-                    <span className="block text-sm font-medium text-gray-900 dark:text-white" style={{ fontFamily: f.fontFamily }}>
-                      {f.label}
+          <section>
+            <h3 className="label-retro mb-3 block">Tema</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {themes.map(({ value, label, hint, icon: Icon }) => {
+                const selected = theme === value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => dispatch(setTheme(value))}
+                    aria-pressed={selected}
+                    className="flex flex-col gap-2 rounded-xl p-3 text-left transition-colors"
+                    style={{
+                      border: `1px solid ${selected ? 'var(--sa-accent-line)' : 'var(--sa-border)'}`,
+                      background: selected ? 'var(--sa-accent-soft)' : 'var(--sa-raised)',
+                    }}
+                  >
+                    <span className="flex items-center justify-between">
+                      <Icon
+                        className="h-4 w-4"
+                        style={{ color: selected ? 'var(--sa-accent)' : 'var(--sa-text-3)' }}
+                        aria-hidden="true"
+                      />
+                      {selected && <Check className="h-4 w-4" style={{ color: 'var(--sa-accent)' }} aria-hidden="true" />}
                     </span>
-                    <span className="block text-xs text-gray-500 mt-0.5" style={{ fontFamily: f.fontFamily }}>
-                      The quick brown fox jumps over the lazy dog
-                    </span>
-                  </div>
-                  {activeFont === f.name && (
-                    <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                  )}
-                </button>
-              ))}
+                    <span style={{ color: 'var(--sa-text)', fontWeight: 600, fontSize: '0.82rem' }}>{label}</span>
+                    <span style={{ color: 'var(--sa-text-3)', fontSize: '0.68rem' }}>{hint}</span>
+                  </button>
+                )
+              })}
             </div>
-          </div>
+          </section>
+
+          <section>
+            <h3 className="label-retro mb-3 block">Navegação</h3>
+            <button
+              type="button"
+              onClick={() => dispatch(setSidebarCollapsed(!sidebarCollapsed))}
+              aria-pressed={sidebarCollapsed}
+              className="flex w-full items-center justify-between rounded-xl p-3 transition-colors"
+              style={{ border: '1px solid var(--sa-border)', background: 'var(--sa-raised)' }}
+            >
+              <span className="flex items-center gap-2" style={{ color: 'var(--sa-text)', fontSize: '0.82rem' }}>
+                <PanelLeft className="h-4 w-4" style={{ color: 'var(--sa-text-3)' }} aria-hidden="true" />
+                Menu lateral recolhido
+              </span>
+              <span
+                aria-hidden="true"
+                className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+                style={{ background: sidebarCollapsed ? 'var(--sa-accent)' : 'var(--sa-border-strong)' }}
+              >
+                <span
+                  className="inline-block h-4 w-4 rounded-full bg-white transition-transform"
+                  style={{ transform: `translateX(${sidebarCollapsed ? 18 : 2}px)` }}
+                />
+              </span>
+            </button>
+          </section>
+
+          <p style={{ color: 'var(--sa-text-3)', fontSize: '0.68rem', margin: 0 }}>
+            Suas preferências ficam salvas neste navegador.
+          </p>
         </div>
       </div>
     </div>

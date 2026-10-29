@@ -1,63 +1,43 @@
-/* ===== Theme Utility Classes ===== */
-/* CSS variables are set dynamically by preferenceMiddleware from themes.ts */
+/* ===== Theme utility classes =====
+   Color values come from the Smart Agenda tokens in base.css.
+   The dynamic color-theme customizer is retired in favor of the
+   product palette, but these aliases stay for existing components. */
 
-:root {
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-primary-light: #eff6ff;
-  --color-primary-dark: #1d4ed8;
-  --color-accent: #8b5cf6;
-  --color-accent-hover: #7c3aed;
-  --color-sidebar: #3b82f6;
-  --color-sidebar-hover: #2563eb;
-}
+.bg-primary { background-color: var(--sa-accent); }
+.bg-primary-hover:hover { background-color: var(--sa-accent-2); }
+.bg-primary-light { background-color: var(--sa-accent-soft); }
+.text-primary { color: var(--sa-accent); }
+.text-primary-hover:hover { color: var(--sa-accent-2); }
+.border-primary { border-color: var(--sa-accent); }
+.hover\:bg-primary-hover:hover { background-color: var(--sa-accent-2); }
+.ring-primary { --tw-ring-color: var(--sa-accent); }
 
-/* Primary */
-.bg-primary { background-color: var(--color-primary); }
-.bg-primary-hover:hover { background-color: var(--color-primary-hover); }
-.bg-primary-light { background-color: var(--color-primary-light); }
-.text-primary { color: var(--color-primary); }
-.text-primary-hover:hover { color: var(--color-primary-hover); }
-.border-primary { border-color: var(--color-primary); }
-.hover\:bg-primary-hover:hover { background-color: var(--color-primary-hover); }
-.ring-primary { --tw-ring-color: var(--color-primary); }
-
-.dark .bg-primary-light { background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); }
-
-/* Button with primary background */
 .btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: var(--sa-accent);
+  color: #fff;
   padding: 0.5rem 1rem;
-  transition: background-color 0.2s;
   cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
 }
+
 .btn-primary:hover {
-  background-color: var(--color-primary-hover);
+  background-color: var(--sa-accent-2);
 }
+
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* Accent */
-.bg-accent { background-color: var(--color-accent); }
-.text-accent { color: var(--color-accent); }
-.border-accent { border-color: var(--color-accent); }
+.bg-accent { background-color: var(--sa-pink); }
+.text-accent { color: var(--sa-pink); }
+.border-accent { border-color: var(--sa-pink); }
 
-/* ===== Nova camada de tokens do sistema retro ===== */
+.bg-gold { background-color: var(--sa-accent); }
+.bg-gold-dark { background-color: var(--sa-accent-2); }
 
-/* Gold */
-.bg-gold { background-color: var(--gold); }
-.bg-gold-dark { background-color: var(--gold-dark); }
-
-/* Surfaces (map from theme colors) */
-.bg-base { background-color: var(--color-bg-base, var(--bg-base)); }
-.bg-surface { background-color: var(--color-bg-surface, var(--bg-surface)); }
-.bg-elevated { background-color: var(--color-bg-elevated, var(--bg-elevated)); }
-
-/* Texts from retro system */
-[class*="text-"] {
-  --text-color-inherit: inherit;
-}
+.bg-base { background-color: var(--sa-bg); }
+.bg-surface { background-color: var(--sa-card); }
+.bg-elevated { background-color: var(--sa-raised); }

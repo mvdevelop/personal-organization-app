@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight } from 'lucide-react';
 import { ApiClientError } from '../services/api';
-import LogoIcon from '../components/LogoIcon';
+import AppMark from '../components/AppMark';
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
@@ -45,54 +45,46 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
-      {/* Decorative arch background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.03] dark:opacity-[0.05]">
-        <svg className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]" viewBox="0 0 800 400" fill="none">
-          <path d="M0 400 Q200 0 400 0 Q600 0 800 400" stroke="currentColor" strokeWidth="2" className="text-primary" />
-          <path d="M50 400 Q200 50 400 50 Q600 50 750 400" stroke="currentColor" strokeWidth="1" className="text-primary" opacity="0.5" />
-          <path d="M150 400 Q250 120 400 120 Q550 120 650 400" stroke="currentColor" strokeWidth="0.5" className="text-primary" opacity="0.3" />
-        </svg>
-      </div>
-
-      <div className="relative w-full max-w-md animate-fade-in bg-white dark:bg-gray-800 shadow-warm-lg arch-decoration"
-        style={{
-          border: '1px solid var(--color-primary-light)',
-        }}
-      >
-        {/* Logo + Title */}
-        <div className="pt-8 pb-4 text-center">
-          <div className="medal-ring !w-16 !h-16 !border-primary mx-auto mb-3 bg-primary-light">
-            <LogoIcon size={32} />
+    <div className="auth-shell">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <AppMark size={44} />
+          <div>
+            <h1 className="auth-title">
+              {isSignUp ? 'Comece seu espaço' : 'Bem-vindo de volta'}
+            </h1>
+            <p className="auth-sub">Organize o que importa, um dia de cada vez.</p>
           </div>
-          <h1 className="font-display text-2xl font-bold text-primary">
-            Schedule
-          </h1>
-          <p className="font-body text-sm mt-1 text-gray-500 dark:text-gray-400">
-            {isSignUp ? 'Crie sua conta' : 'Entre na sua conta'}
-          </p>
         </div>
 
-        <div className="divider-diamond px-8 mb-6" />
-
-        {/* Error */}
         {error && (
-          <div className="mx-8 mb-4 p-3 flex items-center gap-2 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <div
+            role="alert"
+            className="mb-4 flex items-center gap-2 rounded-lg p-3"
+            style={{
+              border: '1px solid rgba(227, 109, 109, 0.4)',
+              background: 'rgba(227, 109, 109, 0.1)',
+              color: 'var(--danger)',
+              fontSize: '0.8rem',
+            }}
+          >
+            <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
             <div>
-              <label className="label-retro mb-1.5 block">Nome</label>
+              <label className="label-retro mb-1.5 block" htmlFor="auth-name">Nome</label>
               <input
+                id="auth-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="input-retro w-full px-4 py-2.5"
                 placeholder="Seu nome"
+                autoComplete="name"
                 required
                 minLength={2}
               />
@@ -100,52 +92,48 @@ const Login: React.FC = () => {
           )}
 
           <div>
-            <label className="label-retro mb-1.5 block">Email</label>
+            <label className="label-retro mb-1.5 block" htmlFor="auth-email">Email</label>
             <input
+              id="auth-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="input-retro w-full px-4 py-2.5"
               placeholder="seu@email.com"
+              autoComplete="email"
               required
             />
           </div>
 
           <div>
-            <label className="label-retro mb-1.5 block">Senha</label>
+            <label className="label-retro mb-1.5 block" htmlFor="auth-password">Senha</label>
             <input
+              id="auth-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input-retro w-full px-4 py-2.5"
               placeholder="Mínimo 6 caracteres"
+              autoComplete={isSignUp ? 'new-password' : 'current-password'}
               required
               minLength={6}
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-gold w-full py-2.5 mt-2"
-          >
-            {loading ? 'Aguarde...' : isSignUp ? 'Criar Conta' : 'Entrar'}
+          <button type="submit" disabled={loading} className="btn-gold w-full py-2.5">
+            <span className="inline-flex items-center justify-center gap-2">
+              {loading ? 'Aguarde...' : isSignUp ? 'Criar conta' : 'Entrar'}
+              {!loading && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
+            </span>
           </button>
         </form>
 
-        <div className="text-center pb-8">
-          <button
-            onClick={switchMode}
-            className="font-ui text-sm text-primary hover:text-primary-hover transition-colors cursor-pointer"
-          >
-            {isSignUp
-              ? 'Já tem conta? Faça login'
-              : 'Não tem conta? Cadastre-se'}
+        <div className="auth-foot">
+          <span>{isSignUp ? 'Já tem conta?' : 'Não tem conta?'}</span>
+          <button type="button" onClick={switchMode} className="text-primary hover:text-primary-hover cursor-pointer">
+            {isSignUp ? 'Faça login' : 'Cadastre-se'}
           </button>
         </div>
-
-        {/* Bottom accent line */}
-        <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30" />
       </div>
     </div>
   )
