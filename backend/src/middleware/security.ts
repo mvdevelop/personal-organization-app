@@ -45,7 +45,9 @@ const advancedRateLimit = rateLimit({
     });
   },
   // Implementar backoff exponencial para exceeds
-  keyGenerator: (req) => req.ip || req.connection.remoteAddress,
+  keyGenerator: (req): string => {
+    return (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
+  },
   // Custom score de risco para identificação de bots
   skipSuccessfulRequests: true, // Contabilizar apenas falhas
 });
@@ -64,9 +66,9 @@ export const authRateLimiter = rateLimit({
     lockoutDuration: '1 hora',
   },
   skipSuccessfulRequests: true, // Apenas contar falhas
-  keyGenerator: (req) => {
+  keyGenerator: (req): string => {
     // Rate limit baseado em IP + email/username para melhor precisão
-    const ip = req.ip || req.connection.remoteAddress;
+    const ip = (req as any).ip || (req as any).connection?.remoteAddress || 'unknown';
     const body = req.body as any;
 
     if (body?.email) {

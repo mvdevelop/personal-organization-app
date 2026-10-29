@@ -17,6 +17,8 @@ Legenda: `[x]` concluído · `[~]` em andamento · `[ ]` pendente
 - Cantos 14–18 px, bordas discretas, sombras suaves, Inter, Lucide como ícones.
 - Tema claro funcional com os mesmos tokens; preferência persistida em `localStorage`.
 
+---
+
 ## 2. Frontends
 
 O repositório tem dois frontends. A UI Smart Agenda foi primeiro prototipada no

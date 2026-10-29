@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
-import { validationResult, body, param, query } from 'express-validator';
+import { validationResult } from 'express-validator';
 import { AppError } from './errorHandler.js';
 
 /**
@@ -20,19 +20,23 @@ export const validate = (validations: any[]) => {
     // Verificar resultados de validação
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const formattedErrors = errors.array().map(error => ({
+      const formattedErrors = errors.array().map((error: any) => ({
         field: error.path,
         message: error.msg,
         value: error.value,
         location: error.location,
       }));
 
-      throw new AppError('Dados de entrada inválidos', 400, {
-        validationErrors: formattedErrors,
-        requestBody: req.body,
-        requestQuery: req.query,
-        requestParams: req.params,
-      });
+      throw new AppError(
+        'Dados de entrada inválidos',
+        400,
+        JSON.stringify({
+          validationErrors: formattedErrors,
+          requestBody: req.body,
+          requestQuery: req.query,
+          requestParams: req.params,
+        }),
+      );
     }
 
     // Sanitizar entradas após validação bem-sucedida
