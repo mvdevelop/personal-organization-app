@@ -5,6 +5,7 @@ export interface PageHeaderProps {
   icon?: LucideIcon
   title: string
   subtitle?: string
+  description?: string
   children?: React.ReactNode
   className?: string
 }
@@ -13,6 +14,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon: Icon,
   title,
   subtitle,
+  description,
   children,
   className = '',
 }) => {
@@ -26,10 +28,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         )}
         <div>
           <h1 className="page-header text-2xl sm:text-3xl">{title}</h1>
-          {subtitle && (
+          {(subtitle || description) && (
             <div className="flex items-center gap-2 mt-1">
               <span className="divider-diamond text-xs">
-                <span className="text-secondary font-body font-normal">{subtitle}</span>
+                <span className="text-secondary font-body font-normal">{subtitle || description}</span>
               </span>
             </div>
           )}

@@ -9,9 +9,11 @@ interface TaskModalProps {
   onSave: (task: { title: string; description?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string | null }) => void
   editingTask?: Task | null
   saving?: boolean
+  loading?: boolean
 }
 
-const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, editingTask, saving }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, editingTask, saving, loading }) => {
+  const isSaving = saving || loading
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
@@ -95,9 +97,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, editingT
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button variant="ghost" onClick={onClose} className="flex-1">Cancelar</Button>
-          <Button variant="gold" type="submit" disabled={saving} className="flex-1">
-            {saving ? 'Salvando...' : editingTask ? 'Atualizar' : 'Criar'}
+          <Button variant="ghost" onClick={onClose} className="flex-1" disabled={isSaving}>Cancelar</Button>
+          <Button variant="gold" type="submit" disabled={isSaving} className="flex-1">
+            {isSaving ? 'Salvando...' : editingTask ? 'Atualizar' : 'Criar'}
           </Button>
         </div>
       </form>

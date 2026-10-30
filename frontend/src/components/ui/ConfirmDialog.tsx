@@ -12,6 +12,9 @@ export interface ConfirmDialogProps {
   confirmText?: string
   cancelText?: string
   variant?: 'danger' | 'warning' | 'default'
+  onCancel?: () => void
+  loading?: boolean
+  isDestructive?: boolean
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -23,14 +26,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   variant = 'default',
+  onCancel,
+  loading = false,
+  isDestructive = false,
 }) => {
+  const handleClose = () => {
+    onCancel?.()
+    onClose()
+  }
+
   const handleConfirm = () => {
     onConfirm()
     onClose()
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} decorated={false}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={title} decorated={false}>
       <div className="p-5 space-y-4">
         <div className="flex items-start gap-3">
           <div className={`icon-medal !w-10 !h-10 flex-shrink-0 ${
@@ -45,12 +56,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </p>
         </div>
         <div className="flex justify-end gap-3 pt-2">
-          <Button variant="ghost" onClick={onClose}>{cancelText}</Button>
+          <Button variant="ghost" onClick={handleClose} disabled={loading}>{cancelText}</Button>
           <Button
-            variant={variant === 'danger' ? 'danger' : 'gold'}
+            variant={isDestructive || variant === 'danger' ? 'danger' : 'gold'}
             onClick={handleConfirm}
+            disabled={loading}
           >
-            {confirmText}
+            {loading ? 'Aguarde...' : confirmText}
           </Button>
         </div>
       </div>

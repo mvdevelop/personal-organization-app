@@ -167,19 +167,19 @@ export async function chatWithAI(
   const allMessages = [systemMessage, ...messages];
 
   if (config.providerType === 'openrouter') {
-    return chatWithOpenRouter(config, allMessages);
+    return { ...await chatWithOpenRouter(config, allMessages), provider: config.providerType };
   }
 
   if (config.providerType === 'openai') {
-    return chatWithOpenAI(config, allMessages);
+    return { ...await chatWithOpenAI(config, allMessages), provider: config.providerType };
   }
 
   if (config.providerType === 'anthropic') {
-    return chatWithAnthropic(config, allMessages);
+    return { ...await chatWithAnthropic(config, allMessages), provider: config.providerType };
   }
 
   if (config.providerType === 'google') {
-    return chatWithGoogle(config, allMessages);
+    return { ...await chatWithGoogle(config, allMessages), provider: config.providerType };
   }
 
   throw new Error(`Provedor não suportado: ${config.providerType}`);

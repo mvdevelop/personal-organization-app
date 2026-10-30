@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
-import { validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 import { AppError } from './errorHandler.js';
 
 /**
@@ -93,43 +93,43 @@ export const commonValidations = {
   nonEmptyString: (field: string, min: number = 1, max: number = 255) =>
     body(field)
       .trim()
-      .notEmpty({ errorMessage: `${field} é obrigatório` })
-      .isLength({ min, max }, { errorMessage: `${field} deve ter entre ${min} e ${max} caracteres` }),
+      .notEmpty().withMessage(`${field} é obrigatório`)
+      .isLength({ min, max }).withMessage(`${field} deve ter entre ${min} e ${max} caracteres`),
 
   // Email válido
   validEmail: body('email')
     .trim()
-    .isEmail({ errorMessage: 'Email inválido' })
+    .isEmail().withMessage('Email inválido')
     .normalizeEmail(),
 
   // Slug seguro
   safeSlug: body('slug')
     .trim()
-    .matches(/^[a-zA-Z0-9-]+$/, 'Slug deve conter apenas letras, números e hífens')
-    .isLength({ min: 2, max: 100 }, { errorMessage: 'Slug deve ter entre 2 e 100 caracteres' }),
+    .matches(/^[a-zA-Z0-9-]+$/).withMessage('Slug deve conter apenas letras, números e hífens')
+    .isLength({ min: 2, max: 100 }).withMessage('Slug deve ter entre 2 e 100 caracteres'),
 
   // Cor hexadecimal válida
   validHexColor: (field: string = 'color') =>
     body(field)
-      .matches(/^#[0-9a-fA-F]{6}$/, 'Cor deve ser um hex válido (ex: #3b82f6)'),
+      .matches(/^#[0-9a-fA-F]{6}$/).withMessage('Cor deve ser um hex válido (ex: #3b82f6)'),
 
   // Data ISO valida
   validDate: (field: string) =>
     body(field)
-      .isISO8601({ strict: true }, { errorMessage: `${field} deve ser uma data ISO válida` })
+      .isISO8601({ strict: true }).withMessage(`${field} deve ser uma data ISO válida`)
       .toDate(),
 
   // Enum validado
   validEnum: (field: string, values: string[]) =>
     body(field)
-      .isIn(values, { errorMessage: `Valor deve ser um de: ${values.join(', ')}` }),
+      .isIn(values).withMessage(`Valor deve ser um de: ${values.join(', ')}`),
 
   // URL segura
   safeUrl: (field: string) =>
     body(field)
       .trim()
-      .isURL({ require_tld: false }, { errorMessage: `${field} deve ser uma URL válida` })
-      .custom(value => {
+      .isURL({ require_tld: false }).withMessage(`${field} deve ser uma URL válida`)
+      .custom((value: string) => {
         // Prevenir URLs maliciosas
         if (value.startsWith('javascript:')) {
           throw new Error('URLs javascript: não são permitidas');
@@ -144,7 +144,7 @@ export const commonValidations = {
   // Número positivo
   positiveNumber: (field: string) =>
     body(field)
-      .isFloat({ min: 0 }, { errorMessage: `${field} deve ser um número positivo` })
+      .isFloat({ min: 0 }).withMessage(`${field} deve ser um número positivo`)
       .toFloat(),
 
   // Consulta de data/opções segura

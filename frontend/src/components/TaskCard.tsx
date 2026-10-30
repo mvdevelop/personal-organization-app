@@ -11,9 +11,12 @@ interface TaskCardProps {
   onDelete: (id: string) => void
   onEdit: (task: Task) => void
   deleting?: boolean
+  priorityIcon?: React.ReactNode
+  priorityColor?: string
+  priorityLabel?: string
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit, deleting }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit, deleting, priorityIcon, priorityColor, priorityLabel }) => {
   const priorityBadge = {
     low: 'border-green-300 text-green-600 dark:border-green-700 dark:text-green-400',
     medium: 'border-yellow-300 text-yellow-600 dark:border-yellow-700 dark:text-yellow-400',
@@ -61,8 +64,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit, d
             </p>
           )}
           <div className="flex items-center gap-3 mt-2">
-            <span className={`font-ui text-[11px] px-2 py-0.5 border rounded ${priorityBadge[task.priority]}`}>
-              {task.priority === 'low' ? 'Baixa' : task.priority === 'medium' ? 'Média' : 'Alta'}
+            <span className={`font-ui text-[11px] px-2 py-0.5 border rounded ${priorityColor || priorityBadge[task.priority]}`}>
+              {priorityIcon}
+              {priorityLabel || (task.priority === 'low' ? 'Baixa' : task.priority === 'medium' ? 'Média' : 'Alta')}
             </span>
             {task.dueDate && (
               <span className="font-mono text-xs text-gray-400 dark:text-gray-500">
