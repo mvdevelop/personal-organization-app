@@ -15,7 +15,7 @@ const Notes: React.FC = () => {
   const dispatch = useAppDispatch();
   const { notes, loading, error } = useAppSelector(state => state.notes);
   const [, setIsModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [saving] = useState(false);
 
   useEffect(() => {
     dispatch(fetchNotes());
@@ -65,7 +65,7 @@ const Notes: React.FC = () => {
           </div>
         </div>
       ),
-      { duration: Infinity, close: false },
+      { duration: Infinity },
     );
   };
 

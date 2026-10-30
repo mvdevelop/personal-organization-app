@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchTasks, createTask, updateTask, deleteTask, toggleTask, setFilter, setSearchQuery, clearError, type Task, type CreateTaskInput, type UpdateTaskInput } from '../store/slices/tasksSlice';
+import { fetchTasks, createTask, updateTask, deleteTask, toggleTask, setFilter, clearError, type Task, type CreateTaskInput, type UpdateTaskInput } from '../store/slices/tasksSlice';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
 import PageHeader from '../components/ui/PageHeader';
-import SearchInput from '../components/ui/SearchInput';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { Plus, ClipboardList, ListTodo, Filter, Search, Calendar, CheckSquare, Clock } from 'lucide-react';
+import { Plus, ClipboardList } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Tasks: React.FC = () => {
@@ -20,7 +19,6 @@ const Tasks: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; taskId: string | null }>({ isOpen: false, taskId: null });
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
     dispatch(fetchTasks({ filter, search: searchQuery || undefined }));
@@ -115,44 +113,11 @@ const Tasks: React.FC = () => {
     setDeletingId(null);
   };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'high': return <Clock className="w-4 h-4" />;
-      case 'medium': return <ListTodo className="w-4 h-4" />;
-      case 'low': return <CheckSquare className="w-4 h-4" />;
-      default: return null;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-    }
-  };
-
-  const getPriorityLabel = (priority: string) => {
-    const labels = {
-      high: 'Alta',
-      medium: 'Média',
-      low: 'Baixa',
-    };
-    return labels[priority as keyof typeof labels] || priority;
-  };
-
-  const getStatusColor = (completed: boolean) => {
-    return completed
-      ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
-      : 'bg-white dark:bg-gray-800';
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <PageHeader
         title="Minhas Tarefas"
-        description="Organize o que você precisa mover hoje, em um só lugar."
+        subtitle="Organize o que você precisa mover hoje, em um só lugar."
         className="mb-6"
       >
         <div className="flex flex-wrap gap-2">
@@ -185,7 +150,7 @@ const Tasks: React.FC = () => {
               Ativas
             </Button>
             <Button
-              variant={filter === 'completed' ? 'primary' : 'outline'}
+              variant={filter === 'completed' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => dispatch(setFilter('completed'))}
               disabled={saving}
@@ -236,10 +201,6 @@ const Tasks: React.FC = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               deleting={deletingId === task.id}
-              priorityIcon={getPriorityIcon(task.priority)}
-              priorityColor={getPriorityColor(task.priority)}
-              priorityLabel={getPriorityLabel(task.priority)}
-              statusColor={getStatusColor(task.completed)}
             />
           ))}
         </div>
@@ -253,19 +214,17 @@ const Tasks: React.FC = () => {
         }}
         onSave={handleSaveTask}
         editingTask={editingTask}
-        loading={saving}
+        saving={saving}
       />
 
       <ConfirmDialog
         isOpen={deleteConfirm.isOpen}
+        onClose={cancelDelete}
         title="Excluir Tarefa"
         message="Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita."
         onConfirm={confirmDelete}
-        onCancel={cancelDelete}
         confirmText="Excluir"
         cancelText="Cancelar"
-        isDestructive
-        loading={saving}
       />
     </div>
   );
