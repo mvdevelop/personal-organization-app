@@ -22,6 +22,7 @@ const ROUTE_LABELS: Record<string, string> = {
   '/goals': 'Metas',
   '/studies': 'Estudos',
   '/ai': 'Assistente IA',
+  '/settings': 'Configurações',
   '/calendar': 'Calendário',
 }
 

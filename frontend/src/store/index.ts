@@ -8,6 +8,7 @@ import habitsReducer from './slices/habitsSlice';
 import goalsReducer from './slices/goalsSlice';
 import studiesReducer from './slices/studiesSlice';
 import aiReducer from './slices/aiSlice';
+import aiSettingsReducer from './slices/aiSettingsSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import gamificationReducer from './slices/gamificationSlice';
 import { preferencesMiddleware, initPreferences } from './preferencesMiddleware';
@@ -24,6 +25,7 @@ export const store = configureStore({
     goals: goalsReducer,
     studies: studiesReducer,
     ai: aiReducer,
+    aiSettings: aiSettingsReducer,
     dashboard: dashboardReducer,
     gamification: gamificationReducer,
   },

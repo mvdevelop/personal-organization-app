@@ -12,6 +12,8 @@ interface AIChatState {
   loading: boolean
   error: string | null
   tokensUsed: number
+  lastProvider: string | null
+  pendingActions: any[] | null
 }
 
 const initialState: AIChatState = {
@@ -19,12 +21,14 @@ const initialState: AIChatState = {
   loading: false,
   error: null,
   tokensUsed: 0,
+  lastProvider: null,
+  pendingActions: null,
 }
 
 export const sendMessage = createAsyncThunk(
   'ai/sendMessage',
   async (message: string) => {
-    return api.post<{ response: string; tokensUsed: number }>('/api/ai/chat', { message })
+    return api.post<{ response: string; tokensUsed: number; provider: string; actions: any[] }>('/api/ai/chat', { message })
   },
 )
 
@@ -69,6 +73,8 @@ const aiSlice = createSlice({
     builder.addCase(sendMessage.fulfilled, (state, action) => {
       state.loading = false
       state.tokensUsed += action.payload.tokensUsed
+      state.lastProvider = action.payload.provider || null
+      state.pendingActions = action.payload.actions?.length ? action.payload.actions : null
     })
     builder.addCase(sendMessage.rejected, (state, action) => {
       state.loading = false

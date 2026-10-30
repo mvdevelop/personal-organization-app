@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, ListChecks, NotebookPen, Flame,
   Flag, GraduationCap, Sparkles,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, Settings,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useAppDispatch } from '../hooks/redux';
@@ -25,6 +25,7 @@ const NAV_ITEMS = [
   { path: '/goals', icon: Flag, label: 'Metas' },
   { path: '/studies', icon: GraduationCap, label: 'Estudos' },
   { path: '/ai', icon: Sparkles, label: 'Assistente IA' },
+  { path: '/settings', icon: Settings, label: 'Configurações' },
 ]
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, mobileOpen, onNavigate, onOpenPlans }) => {

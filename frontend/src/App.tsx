@@ -9,6 +9,7 @@ import Habits from './pages/Habits';
 import Goals from './pages/Goals';
 import Studies from './pages/Studies';
 import AIAssistantPage from './pages/AIAssistantPage';
+import Settings from './pages/Settings';
 import Login from './pages/Login';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
@@ -61,6 +62,7 @@ function App() {
           <Route path="studies" element={<Studies />} />
           <Route path="ai" element={<AIAssistantPage />} />
           <Route path="calendar" element={<Calendar />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

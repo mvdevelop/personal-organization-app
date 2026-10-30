@@ -94,4 +94,10 @@ router.delete('/ai/history', authMiddleware, aiController.clearHistory);
 router.get('/ai/daily-briefing', authMiddleware, aiController.dailyBriefing);
 router.get('/ai/suggest-tasks', authMiddleware, aiController.suggestTasksEndpoint);
 
+// ===== AI Settings =====
+router.get('/ai/settings', authMiddleware, aiController.getAISettings);
+router.post('/ai/settings/provider', authMiddleware, aiController.createOrUpdateProvider);
+router.delete('/ai/settings/provider/:type', authMiddleware, aiController.deleteProvider);
+router.post('/ai/settings/test-connection', authMiddleware, aiController.testConnection);
+
 export default router;
