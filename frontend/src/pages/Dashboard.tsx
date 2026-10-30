@@ -19,7 +19,7 @@ import GamificationCard from '../components/dashboard/GamificationCard';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { DEMO_GOALS, DEMO_HABITS, DEMO_NOTE, DEMO_TASKS } from '../data/dashboardDemo';
 import {
-  ListChecks, Flame, Flag, MenuBook,
+  ListChecks, Flame, Flag, Notebook,
 } from 'lucide-react';
 
 const DATE_FORMAT = new Intl.DateTimeFormat('pt-BR', {
@@ -257,7 +257,7 @@ const Dashboard: React.FC = () => {
           pill="na semana"
           tone="accent"
           note="Que tal uma sessão curta?"
-          icon={MenuBook}
+          icon={Notebook}
         />
       </section>
 

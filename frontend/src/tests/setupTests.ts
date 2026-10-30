@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
+import 'vi';
 
 // Limpar componentes após cada teste
 afterEach(() => {
