@@ -1,7 +1,7 @@
 import React from 'react';
 import toast from 'react-hot-toast';
 import {
-  Trophy, Award, ListChecks, Flame, Repeat2, BookOpen, NotebookPen, Lock,
+  Trophy, Award, ListChecks, Repeat2, BookOpen, NotebookPen, Lock,
 } from 'lucide-react';
 
 const TIER_LABELS = [

@@ -30,7 +30,7 @@ jobs:
         run: semgrep scan --config p/ci --error --sarif --output semgrep.sarif
 
       - name: Upload Semgrep report
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: semgrep.sarif
@@ -107,7 +107,7 @@ jobs:
             -a || test -f zap-report.html
 
       - name: Upload ZAP report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: zap-report
@@ -116,7 +116,7 @@ jobs:
             zap-report.json
 
       - name: Upload ZAP SARIF when available
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always() && hashFiles('zap-report.sarif') != ''
         with:
           sarif_file: zap-report.sarif

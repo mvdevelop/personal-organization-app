@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchNotes, createNote, deleteNote, type Note, type CreateNoteInput } from '../store/slices/notesSlice';
+import { fetchNotes, deleteNote, type Note } from '../store/slices/notesSlice';
 import NoteCard from '../components/NoteCard';
 import PageHeader from '../components/ui/PageHeader';
 import SearchInput from '../components/ui/SearchInput';
@@ -8,14 +8,13 @@ import Button from '../components/ui/Button';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { StickyNote, Plus, Trash2, Search } from 'lucide-react';
+import { StickyNote, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Notes: React.FC = () => {
   const dispatch = useAppDispatch();
   const { notes, loading, error } = useAppSelector(state => state.notes);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -28,46 +27,46 @@ const Notes: React.FC = () => {
     }
   }, [error]);
 
-  const handleSaveNote = async (noteData: CreateNoteInput) => {
-    setSaving(true);
-    try {
-      if (editingNote) {
-        // update note
-        setIsModalOpen(false);
-        setEditingNote(null);
-      } else {
-        await dispatch(createNote(noteData)).unwrap();
-        toast.success('Nota criada!');
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Não foi possível criar a nota');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleEdit = (note: Note) => {
-    setEditingNote(note);
-    setIsModalOpen(true);
+  const handleEdit = (_note: Note) => {
+    console.log('Edit not implemented for notes');
   };
 
   const handleDelete = (id: string) => {
-    toast
-      .fire({
-        title: 'Excluir nota?',
-        text: 'Essa ação não pode ser desfeita.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#e53e3e',
-        cancelButtonColor: '#363636',
-        confirmButtonText: 'Excluir',
-        cancelButtonText: 'Cancelar',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          dispatch(deleteNote(id)).unwrap();
-          toast.success('Nota removida!');
-        }
-      });
+    toast(
+      t => (
+        <div className="flex items-start gap-3">
+          <div className="text-xl" role="img" aria-label="pergunta">❓</div>
+          <div>
+            <strong>Excluir nota?</strong>
+            <p>Essa ação não pode ser desfeita.</p>
+          </div>
+          <div className="flex gap-2 ml-auto shrink-0">
+            <button
+              className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-medium"
+              onClick={() => toast.dismiss(t.id)}
+            >
+              Cancelar
+            </button>
+            <button
+              className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-sm font-medium"
+              onClick={async () => {
+                try {
+                  await dispatch(deleteNote(id)).unwrap();
+                  toast.success('Nota removida!');
+                } catch {
+                  toast.error('Não foi possível remover a nota.');
+                } finally {
+                  toast.dismiss(t.id);
+                }
+              }}
+            >
+              Excluir
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity, close: false },
+    );
   };
 
   if (loading && notes.length === 0) {
@@ -85,20 +84,11 @@ const Notes: React.FC = () => {
     </div>;
   }
 
-  const emptyNote = {
-    title: '',
-    content: '',
-    category: '',
-    updatedAt: new Date().toISOString(),
-  };
-
-  const notePreview = notes.length > 0 ? notes[0] : emptyNote;
-
   return (
     <div className="max-w-6xl mx-auto">
       <PageHeader
         title="Minhas Notas"
-        description="Ideias, referências e pensamentos soltos — guardados para depois."
+        subtitle="Ideias, referências e pensamentos soltos — guardados para depois."
         className="mb-6"
       >
         <div className="flex flex-wrap gap-2">
@@ -114,9 +104,9 @@ const Notes: React.FC = () => {
           </Button>
 
           <SearchInput
+            value=""
+            onChange={() => {}}
             placeholder="Buscar notas..."
-            onChangeValue={undefined}
-            // search logic handled inline
           />
         </div>
       </PageHeader>
@@ -151,6 +141,7 @@ const Notes: React.FC = () => {
 
       <ConfirmDialog
         isOpen={false}
+        onClose={() => {}}
         title="Excluir Nota"
         message="Tem certeza que deseja excluir esta nota?"
         onConfirm={() => toast.success('Nota removida!')}

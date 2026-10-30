@@ -169,7 +169,7 @@ const Tasks: React.FC = () => {
 
           <div className="flex items-center gap-1 ml-auto">
             <Button
-              variant={filter === 'all' ? 'primary' : 'outline'}
+              variant={filter === 'all' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => dispatch(setFilter('all'))}
               disabled={saving}
@@ -177,7 +177,7 @@ const Tasks: React.FC = () => {
               Todas
             </Button>
             <Button
-              variant={filter === 'active' ? 'primary' : 'outline'}
+              variant={filter === 'active' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => dispatch(setFilter('active'))}
               disabled={saving}

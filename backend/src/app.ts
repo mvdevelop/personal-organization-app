@@ -1,5 +1,5 @@
-import express from 'express';
-import cors from 'cors';
+import express, { Request, Response, NextFunction } from 'express';
+import cors, { CorsOptions } from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -34,8 +34,8 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
-app.use(cors({
-  origin: (origin, callback) => {
+const corsOptions: CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (curl, mobile apps, server-to-server)
     if (!origin || env.corsOrigins.includes(origin) || env.corsOrigins.includes('*')) {
       callback(null, true);
@@ -50,11 +50,13 @@ app.use(cors({
     }
   },
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
 
 // HSTS — enforce HTTPS in production (only over TLS)
 if (env.nodeEnv === 'production') {
-  app.use((req, res, next) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     next();
   });
@@ -103,7 +105,7 @@ if (env.nodeEnv !== 'production') {
 }
 
 // Root — status do backend (mounted at /api by Vercel)
-app.get('/', (_req, res) => {
+app.get('/', (_req: Request, res: Response) => {
   res.json({
     message: '🚀 Backend do Personal Organization está rodando!',
     version: '1.0.0',
@@ -113,7 +115,7 @@ app.get('/', (_req, res) => {
 });
 
 // Health check (also under /api from Vercel)
-app.get('/health', (_req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
