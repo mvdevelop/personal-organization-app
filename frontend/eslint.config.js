@@ -22,6 +22,10 @@ export default defineConfig([
     rules: {
       // Syncing props to state for editable modals is a valid pattern
       'react-hooks/set-state-in-effect': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
 ])

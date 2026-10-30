@@ -28,7 +28,7 @@ const Notes: React.FC = () => {
   }, [error]);
 
   const handleEdit = (_note: Note) => {
-    console.log('Edit not implemented for notes');
+    // Note editor modal not yet implemented
   };
 
   const handleDelete = (id: string) => {

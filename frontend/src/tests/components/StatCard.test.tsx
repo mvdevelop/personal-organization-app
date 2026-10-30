@@ -55,7 +55,7 @@ describe('StatCard Component', () => {
   });
 
   it('should apply custom color when provided', () => {
-    const { container } = render(<StatCard {...defaultProps} color="#ef4444" />);
+    render(<StatCard {...defaultProps} color="#ef4444" />);
     const valueElement = screen.getByText('5');
     expect(valueElement).toHaveStyle({ color: '#ef4444' });
   });
