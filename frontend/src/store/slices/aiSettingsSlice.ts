@@ -9,6 +9,9 @@ export interface AIProviderConfig {
   isEnabled: boolean
   isDefault: boolean
   apiKey: string // masked for display
+  lastConnectionTestAt?: string | null
+  lastConnectionTestSuccess?: boolean | null
+  lastConnectionTestError?: string | null
 }
 
 export interface AISettingsState {

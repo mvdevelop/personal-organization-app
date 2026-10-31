@@ -28,7 +28,7 @@ const PROVIDER_OPTIONS = [
 ]
 
 const DEFAULT_MODELS: Record<string, string> = {
-  openrouter: 'gpt-4o-mini',
+  openrouter: 'openai/gpt-4o-mini',
   openai: 'gpt-4o-mini',
   anthropic: 'claude-3-5-sonnet-20241022',
   google: 'gemini-1.5-flash',
@@ -162,6 +162,12 @@ const Settings: React.FC = () => {
                           Padrão
                         </span>
                       )}
+                      {provider.lastConnectionTestSuccess === true && (
+                        <span className="ml-2 text-xs text-success">Conectado</span>
+                      )}
+                      {provider.lastConnectionTestSuccess === false && (
+                        <span className="ml-2 text-xs text-danger">Falha no teste</span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -171,6 +177,16 @@ const Settings: React.FC = () => {
                   </span>
                   <Button variant="ghost" size="sm" onClick={() => handleEdit(provider)}>
                     Editar
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dispatch(saveProviderConfig({
+                      type: provider.type,
+                      isEnabled: !provider.isEnabled,
+                    })).unwrap().then(() => toast.success(provider.isEnabled ? 'Provedor desativado' : 'Provedor ativado')).catch(() => toast.error('Erro ao alterar status'))}
+                  >
+                    {provider.isEnabled ? 'Desativar' : 'Ativar'}
                   </Button>
                   <Button variant="danger" size="sm" onClick={() => handleDelete(provider.type)}>
                     Remover

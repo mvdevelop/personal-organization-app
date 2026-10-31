@@ -11,6 +11,9 @@ export interface IAIProvider extends Document {
     model: string
     isEnabled: boolean
     isDefault: boolean
+    lastConnectionTestAt?: Date
+    lastConnectionTestSuccess?: boolean
+    lastConnectionTestError?: string
   }[]
   // Configurable system context for the AI — editable by user
   systemPrompt?: string
@@ -43,7 +46,7 @@ const aiProviderSchema = new Schema<IAIProvider>(
         },
         model: {
           type: String,
-          default: 'gpt-4o-mini',
+          default: 'openai/gpt-4o-mini',
         },
         isEnabled: {
           type: Boolean,
@@ -52,6 +55,12 @@ const aiProviderSchema = new Schema<IAIProvider>(
         isDefault: {
           type: Boolean,
           default: false,
+        },
+        lastConnectionTestAt: Date,
+        lastConnectionTestSuccess: Boolean,
+        lastConnectionTestError: {
+          type: String,
+          maxlength: 500,
         },
       },
     ],

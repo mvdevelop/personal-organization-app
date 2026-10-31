@@ -54,5 +54,5 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim()),
   openRouterKey: process.env.OPENROUTER_API_KEY || '',
-  openRouterModel: process.env.OPENROUTER_MODEL || 'gpt-4o-mini',
+  openRouterModel: process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
 };

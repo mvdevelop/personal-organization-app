@@ -21,3 +21,22 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Muitas tentativas de login. Aguarde 15 minutos.' },
 });
+
+/**
+ * AI limiter — protects provider-backed operations from accidental or abusive usage.
+ */
+export const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Limite de requisições de IA atingido. Tente novamente em instantes.' },
+});
+
+export const aiConnectionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Muitos testes de conexão. Aguarde alguns minutos.' },
+});

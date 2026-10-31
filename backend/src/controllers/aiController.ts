@@ -196,8 +196,13 @@ export async function clearHistory(req: Request, res: Response, next: NextFuncti
 
 export async function dailyBriefing(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const context = await buildUserContext(req.user!.userId);
-    const briefing = await generateDailyBriefing(req.user!.userId);
+    const userId = req.user!.userId;
+    const config = await getUserAIConfig(userId);
+    if (!config) {
+      throw new AppError('Nenhum provedor de IA configurado. Configure uma API Key nas configurações.', 400);
+    }
+
+    const briefing = await generateDailyBriefing(userId);
     res.json({ briefing });
   } catch (error) {
     next(error);
@@ -236,6 +241,9 @@ export async function getAISettings(req: Request, res: Response, next: NextFunct
       model: p.model,
       isEnabled: p.isEnabled,
       isDefault: p.isDefault,
+      lastConnectionTestAt: p.lastConnectionTestAt || null,
+      lastConnectionTestSuccess: p.lastConnectionTestSuccess ?? null,
+      lastConnectionTestError: p.lastConnectionTestError || null,
       apiKey: p.apiKey ? maskApiKey(decrypt(p.apiKey)) : '',
     }));
 
@@ -274,7 +282,7 @@ export async function createOrUpdateProvider(
     if (keyChanged && apiKey) {
       const testResult = await testProviderConnection(type, apiKey, model);
       if (!testResult.success) {
-        throw new AppError(`Falha na conexão: ${testResult.error || 'Erro desconhecido'}`, 400);
+        throw new AppError(`Falha na conexão: ${sanitizeProviderError(testResult.error)}`, 400);
       }
     }
 
@@ -286,10 +294,16 @@ export async function createOrUpdateProvider(
 
     if (existingProviderIndex >= 0) {
       // Update existing
-      if (apiKey) doc.providers[existingProviderIndex].apiKey = encrypt(apiKey);
-      doc.providers[existingProviderIndex].model = model || getDefaultModel(type);
-      doc.providers[existingProviderIndex].isEnabled = isEnabled ?? true;
-      doc.providers[existingProviderIndex].isDefault = isDefault ?? false;
+      const provider = doc.providers[existingProviderIndex];
+      if (apiKey) {
+        provider.apiKey = encrypt(apiKey);
+        provider.lastConnectionTestAt = new Date();
+        provider.lastConnectionTestSuccess = true;
+        provider.lastConnectionTestError = undefined;
+      }
+      provider.model = model || provider.model || getDefaultModel(type);
+      provider.isEnabled = isEnabled ?? provider.isEnabled;
+      provider.isDefault = isDefault ?? provider.isDefault;
     } else {
       // Add new provider
       doc.providers.push({
@@ -319,14 +333,18 @@ export async function createOrUpdateProvider(
     // Clear cache
     setCache(cacheKey(userId, 'ai-config'), { config: null }, 0);
 
+    const savedProvider = doc.providers.find(provider => provider.type === type)!;
     res.json({
       message: 'Configuração salva com sucesso',
       provider: {
-        type,
-        model: model || getDefaultModel(type),
-        isEnabled,
-        isDefault,
-        apiKey: maskApiKey(apiKey || (existingProvider ? decrypt(existingProvider.apiKey) : '')),
+        type: savedProvider.type,
+        model: savedProvider.model,
+        isEnabled: savedProvider.isEnabled,
+        isDefault: savedProvider.isDefault,
+        lastConnectionTestAt: savedProvider.lastConnectionTestAt || null,
+        lastConnectionTestSuccess: savedProvider.lastConnectionTestSuccess ?? null,
+        lastConnectionTestError: savedProvider.lastConnectionTestError || null,
+        apiKey: maskApiKey(decrypt(savedProvider.apiKey)),
       },
     });
   } catch (error) {
@@ -358,21 +376,34 @@ export async function deleteProvider(req: Request, res: Response, next: NextFunc
 
 export async function testConnection(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { type, apiKey, model } = req.body;
-    if (!type || !apiKey) {
-      throw new AppError('Tipo de provedor e API Key são obrigatórios', 400);
+    const parsed = aiConnectionTestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Dados para teste de conexão inválidos', 400, parsed.error.flatten());
     }
 
+    const { type, apiKey, model } = parsed.data;
     const result = await testProviderConnection(type, apiKey, model);
-    res.json(result);
+    res.json({
+      success: result.success,
+      model: result.model,
+      error: result.success ? undefined : sanitizeProviderError(result.error),
+    });
   } catch (error) {
     next(error);
   }
 }
 
+function sanitizeProviderError(error?: string): string {
+  if (!error) return 'Erro desconhecido do provedor';
+  return error
+    .replace(/Bearer\s+[^\s)]+/gi, 'Bearer [redacted]')
+    .replace(/([?&](?:key|api_key|token)=)[^&\s]+/gi, '$1[redacted]')
+    .slice(0, 500);
+}
+
 function getDefaultModel(providerType: AIProviderType): string {
   switch (providerType) {
-    case 'openrouter': return 'gpt-4o-mini';
+    case 'openrouter': return 'openai/gpt-4o-mini';
     case 'openai': return 'gpt-4o-mini';
     case 'anthropic': return 'claude-3-5-sonnet-20241022';
     case 'google': return 'gemini-1.5-flash';

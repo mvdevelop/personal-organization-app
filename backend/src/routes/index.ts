@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
+import { authLimiter, aiLimiter, aiConnectionLimiter } from '../middleware/rateLimiter.js';
 import { csrfTokenHandler } from '../middleware/csrfProtection.js';
 import * as authController from '../controllers/authController.js';
 import * as taskController from '../controllers/taskController.js';
@@ -88,7 +88,7 @@ router.post('/gamification/recalculate', authMiddleware, gamificationController.
 router.get('/gamification/achievements', authMiddleware, gamificationController.getAchievements);
 
 // ===== AI =====
-router.post('/ai/chat', authMiddleware, aiController.chat);
+router.post('/ai/chat', authMiddleware, aiLimiter, aiController.chat);
 router.get('/ai/history', authMiddleware, aiController.getHistory);
 router.delete('/ai/history', authMiddleware, aiController.clearHistory);
 router.get('/ai/daily-briefing', authMiddleware, aiController.dailyBriefing);
@@ -98,6 +98,6 @@ router.get('/ai/suggest-tasks', authMiddleware, aiController.suggestTasksEndpoin
 router.get('/ai/settings', authMiddleware, aiController.getAISettings);
 router.post('/ai/settings/provider', authMiddleware, aiController.createOrUpdateProvider);
 router.delete('/ai/settings/provider/:type', authMiddleware, aiController.deleteProvider);
-router.post('/ai/settings/test-connection', authMiddleware, aiController.testConnection);
+router.post('/ai/settings/test-connection', authMiddleware, aiConnectionLimiter, aiController.testConnection);
 
 export default router;
