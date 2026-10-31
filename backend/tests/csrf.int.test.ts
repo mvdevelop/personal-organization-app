@@ -25,7 +25,8 @@ describe('CSRF Protection', () => {
       // Get CSRF token
       const csrfRes = await request(app).get('/api/csrf-token');
       token = csrfRes.body.csrfToken;
-      cookies = csrfRes.headers['set-cookie'] || [];
+      const setCookie = csrfRes.headers['set-cookie'];
+      cookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
 
       // Create user and get auth token
       const res = await request(app)

@@ -3,7 +3,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthProvider } from '../../context/AuthContext';
 import { api } from '../../services/api';
-import { act } from '@testing-library/react';
 import type { Mock } from 'vitest';
 
 const mockedApi = api as { get: Mock; post: Mock };
@@ -28,8 +27,8 @@ const TestComponent: React.FC = () => {
       <span data-testid="isLoaded">{isLoaded ? 'true' : 'false'}</span>
       <span data-testid="user-name">{user?.name || 'null'}</span>
       <span data-testid="user-email">{user?.email || 'null'}</span>
-      <button onClick={() => signIn('test@example.com', 'password')}>Sign In</button>
-      <button onClick={() => signUp('Test User', 'test@example.com', 'password')}>Sign Up</button>
+      <button onClick={() => { void signIn('test@example.com', 'password').catch(() => undefined) }}>Sign In</button>
+      <button onClick={() => { void signUp('Test User', 'test@example.com', 'password').catch(() => undefined) }}>Sign Up</button>
       <button onClick={() => signOut()}>Sign Out</button>
     </div>
   );
@@ -154,9 +153,7 @@ describe('useAuth Hook', () => {
     renderWithProvider(<TestComponent />);
 
     const signInButton = screen.getByText('Sign In');
-    await act(async () => {
-      fireEvent.click(signInButton);
-    });
+    fireEvent.click(signInButton);
 
     await waitFor(() => {
       expect(screen.getByTestId('isSignedIn')).toHaveTextContent('false');

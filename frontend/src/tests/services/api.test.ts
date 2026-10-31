@@ -208,7 +208,7 @@ describe('API Client', () => {
 
       await api.delete('/api/tasks/1');
 
-      const [, options] = mockFetch.mock.calls[0];
+      const [, options] = mockFetch.mock.calls[1];
       expect(options.method).toBe('DELETE');
     });
   });

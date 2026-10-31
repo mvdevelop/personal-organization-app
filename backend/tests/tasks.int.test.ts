@@ -5,7 +5,23 @@ import { Task } from '../src/models/Task';
 import jwt from 'jsonwebtoken';
 import { env } from '../src/config/env';
 
+let csrfTokenValue = '';
+let csrfCookies: string[] = [];
+
+async function loadCsrfToken(): Promise<void> {
+  const response = await request(app).get('/api/csrf-token');
+  const setCookie = response.headers['set-cookie'];
+  csrfTokenValue = response.body.csrfToken as string;
+  csrfCookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
+}
+
 describe('Task Controller', () => {
+  beforeEach(async () => {
+    await loadCsrfToken();
+  });
+
+
+
   let authToken: string;
   let userId: string;
 
@@ -107,6 +123,8 @@ describe('Task Controller', () => {
     it('should create a new task', async () => {
       const res = await request(app)
         .post('/api/tasks')
+        .set('Cookie', csrfCookies)
+        .set('x-csrf-token', csrfTokenValue)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           title: 'New Task',
@@ -124,6 +142,8 @@ describe('Task Controller', () => {
     it('should reject task without title', async () => {
       const res = await request(app)
         .post('/api/tasks')
+        .set('Cookie', csrfCookies)
+        .set('x-csrf-token', csrfTokenValue)
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           description: 'No title',
@@ -157,6 +177,8 @@ describe('Task Controller', () => {
       // User 2 tries to update user 1's task
       const res = await request(app)
         .put(`/api/tasks/${task._id}`)
+        .set('Cookie', csrfCookies)
+        .set('x-csrf-token', csrfTokenValue)
         .set('Authorization', `Bearer ${token2}`)
         .send({ title: 'Hacked' });
 

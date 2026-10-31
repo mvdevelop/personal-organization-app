@@ -4,11 +4,29 @@ import { User } from '../src/models/User';
 import jwt from 'jsonwebtoken';
 import { env } from '../src/config/env';
 
+let csrfTokenValue = '';
+let csrfCookies: string[] = [];
+
+async function loadCsrfToken(): Promise<void> {
+  const response = await request(app).get('/api/csrf-token');
+  const setCookie = response.headers['set-cookie'];
+  csrfTokenValue = response.body.csrfToken as string;
+  csrfCookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
+}
+
+function csrfPost(path: string) {
+  return request(app).post(path).set('Cookie', csrfCookies).set('x-csrf-token', csrfTokenValue);
+}
+
 describe('Auth Controller', () => {
+  beforeEach(async () => {
+    await loadCsrfToken();
+  });
+
+
   describe('POST /api/auth/register', () => {
     it('should register a new user successfully', async () => {
-      const res = await request(app)
-        .post('/api/auth/register')
+      const res = await csrfPost('/api/auth/register')
         .send({
           name: 'Test User',
           email: 'test@example.com',
@@ -23,8 +41,7 @@ describe('Auth Controller', () => {
     });
 
     it('should reject registration with invalid email', async () => {
-      const res = await request(app)
-        .post('/api/auth/register')
+      const res = await csrfPost('/api/auth/register')
         .send({
           name: 'Test User',
           email: 'not-an-email',
@@ -36,8 +53,7 @@ describe('Auth Controller', () => {
     });
 
     it('should reject registration with short password', async () => {
-      const res = await request(app)
-        .post('/api/auth/register')
+      const res = await csrfPost('/api/auth/register')
         .send({
           name: 'Test User',
           email: 'test@example.com',
@@ -57,8 +73,7 @@ describe('Auth Controller', () => {
       });
 
       // Try to register with same email
-      const res = await request(app)
-        .post('/api/auth/register')
+      const res = await csrfPost('/api/auth/register')
         .send({
           name: 'Another User',
           email: 'existing@example.com',
@@ -81,8 +96,7 @@ describe('Auth Controller', () => {
     });
 
     it('should login with valid credentials', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
+      const res = await csrfPost('/api/auth/login')
         .send({
           email: 'login@example.com',
           password: 'password123',
@@ -95,8 +109,7 @@ describe('Auth Controller', () => {
     });
 
     it('should reject login with wrong password', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
+      const res = await csrfPost('/api/auth/login')
         .send({
           email: 'login@example.com',
           password: 'wrongpassword',
@@ -107,8 +120,7 @@ describe('Auth Controller', () => {
     });
 
     it('should reject login for non-existent user', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
+      const res = await csrfPost('/api/auth/login')
         .send({
           email: 'nonexistent@example.com',
           password: 'password123',
@@ -121,8 +133,7 @@ describe('Auth Controller', () => {
   describe('GET /api/auth/me', () => {
     it('should return user data when authenticated', async () => {
       // Register and get token
-      const registerRes = await request(app)
-        .post('/api/auth/register')
+      const registerRes = await csrfPost('/api/auth/register')
         .send({
           name: 'Auth User',
           email: 'auth@example.com',

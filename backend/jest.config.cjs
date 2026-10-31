@@ -4,8 +4,7 @@ module.exports = {
   testEnvironment: 'node',
   rootDir: '.',
   roots: ['<rootDir>/tests'],
-  // Only run unit tests by default; integration tests require "--testPathPattern int"
-  testMatch: ['**/?(*.)+(spec|test).ts', '!**/?(*.)+(int.test).ts'],
+  testMatch: ['**/?(*.)+(spec|test).ts'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: 'tsconfig.test.json',
