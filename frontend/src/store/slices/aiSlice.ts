@@ -1,10 +1,25 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { api } from '../../services/api';
+
+export type AIActionType = 'create_task' | 'create_habit' | 'create_note' | 'create_goal' | 'update_task' | 'generic'
+
+export interface AIAction {
+  type: AIActionType
+  data?: Record<string, unknown>
+  description: string
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   timestamp: string
+}
+
+interface AIChatResponse {
+  response: string
+  tokensUsed: number
+  provider: string
+  actions: AIAction[]
 }
 
 interface AIChatState {
@@ -13,7 +28,7 @@ interface AIChatState {
   error: string | null
   tokensUsed: number
   lastProvider: string | null
-  pendingActions: any[] | null
+  pendingActions: AIAction[] | null
 }
 
 const initialState: AIChatState = {
@@ -27,16 +42,12 @@ const initialState: AIChatState = {
 
 export const sendMessage = createAsyncThunk(
   'ai/sendMessage',
-  async (message: string) => {
-    return api.post<{ response: string; tokensUsed: number; provider: string; actions: any[] }>('/api/ai/chat', { message })
-  },
+  async (message: string) => api.post<AIChatResponse>('/api/ai/chat', { message }),
 )
 
 export const fetchHistory = createAsyncThunk(
   'ai/fetchHistory',
-  async () => {
-    return api.get<{ messages: ChatMessage[] }>('/api/ai/history')
-  },
+  async () => api.get<{ messages: ChatMessage[] }>('/api/ai/history'),
 )
 
 export const clearHistory = createAsyncThunk(
@@ -48,23 +59,19 @@ export const clearHistory = createAsyncThunk(
 
 export const fetchDailyBriefing = createAsyncThunk(
   'ai/fetchDailyBriefing',
-  async () => {
-    return api.get<{ briefing: string }>('/api/ai/daily-briefing')
-  },
+  async () => api.get<{ briefing: string }>('/api/ai/daily-briefing'),
 )
 
 export const fetchSuggestions = createAsyncThunk(
   'ai/fetchSuggestions',
-  async () => {
-    return api.get<{ suggestions: string }>('/api/ai/suggest-tasks')
-  },
+  async () => api.get<{ suggestions: string }>('/api/ai/suggest-tasks'),
 )
 
 const aiSlice = createSlice({
   name: 'ai',
   initialState,
   reducers: {
-    addMessage: (state, action) => {
+    addMessage: (state, action: PayloadAction<ChatMessage>) => {
       state.messages.push(action.payload)
     },
   },

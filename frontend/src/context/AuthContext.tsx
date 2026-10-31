@@ -1,9 +1,10 @@
 import React, { useState, useEffect, type ReactNode } from 'react';
-import { AuthContext } from './authContext';
+import { AuthContext } from './AuthContextValue';
 import type { User } from './authTypes';
 import { api, setAuthToken } from '../services/api';
 
-export type { AuthContextType } from './authContext';
+export type { AuthContextType } from './AuthContextValue';
+export { AuthContext } from './AuthContextValue';
 export type { User } from './authTypes';
 
 

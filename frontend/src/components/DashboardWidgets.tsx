@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { buildConsistencyData, buildProgressData, buildWorkloadData } from '../utils/dashboardData';
 import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 import { BarChart, Bar, Cell, Legend, LineChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -25,24 +26,6 @@ const COLORS = {
   accent: '#8b5cf6',
   cyan: '#14b8a6',
 }
-
-export const buildWorkloadData = (tasks?: DashboardTasks, goals?: DashboardGoals, studies?: DashboardStudies, habits?: DashboardHabits) => [
-  { name: 'Tarefas', pendentes: tasks?.pending ?? 0, atrasadas: tasks?.overdue ?? 0 },
-  { name: 'Metas', ativas: goals?.active ?? 0, concluídas: goals?.completed ?? 0 },
-  { name: 'Estudos', sessões: studies?.weekSessions ?? 0, horas: studies?.weekStudyHours ?? 0 },
-  { name: 'Hábitos', total: habits?.total ?? 0, hoje: habits?.todayCheckIns ?? 0 },
-]
-
-export const buildProgressData = (tasks?: DashboardTasks, goals?: DashboardGoals) => [
-  { name: 'Tarefas', concluído: tasks?.completed ?? 0, restante: tasks?.pending ?? 0 },
-  { name: 'Metas', concluído: goals?.completed ?? 0, restante: goals?.active ?? 0 },
-]
-
-export const buildConsistencyData = (tasks?: DashboardTasks, habits?: DashboardHabits, studies?: DashboardStudies) => [
-  { name: 'Hoje', valor: tasks?.today ?? 0 },
-  { name: 'Check-ins', valor: habits?.todayCheckIns ?? 0 },
-  { name: 'Sessões', valor: studies?.weekSessions ?? 0 },
-]
 
 const viewOptions: { key: ChartView; icon: React.FC<{ className?: string }>; label: string; question: string }[] = [
   { key: 'workload', icon: BarChart3, label: 'Carga', question: 'Onde está concentrado o trabalho?' },
@@ -92,7 +75,11 @@ const ChartsWidget: React.FC<ChartsWidgetProps> = ({ tasks, habits, goals, studi
 interface CalWidgetProps { tasks?: { recent?: { id: string; title: string; dueDate: string | null }[] } }
 
 const MiniCalendar: React.FC<CalWidgetProps> = ({ tasks }) => {
-  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const today = useMemo(() => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    return date
+  }, [])
   const [viewDate, setViewDate] = useState(new Date(today))
   const dueDateKeys = useMemo(() => new Set(
     (tasks?.recent ?? []).flatMap((task) => {

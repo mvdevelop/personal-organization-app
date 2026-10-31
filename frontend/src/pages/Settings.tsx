@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchAISettings, saveProviderConfig, deleteProvider, testProviderConnection, clearTestConnection } from '../store/slices/aiSettingsSlice';
+import {
+  fetchAISettings,
+  saveProviderConfig,
+  deleteProvider,
+  testProviderConnection,
+  clearTestConnection,
+  type AIProviderConfig,
+  type AIProviderType,
+} from '../store/slices/aiSettingsSlice';
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback
+}
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -26,7 +38,7 @@ const Settings: React.FC = () => {
   const dispatch = useAppDispatch()
   const { providers, loading, error, testConnectionResult } = useAppSelector(s => s.aiSettings)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [editingProvider, setEditingProvider] = useState(null)
+  const [editingProvider, setEditingProvider] = useState<AIProviderType | null>(null)
   const [formData, setFormData] = useState({
     type: 'openrouter' as string,
     apiKey: '',
@@ -44,7 +56,7 @@ const Settings: React.FC = () => {
     dispatch(clearTestConnection())
   }
 
-  const handleEdit = (provider: any) => {
+  const handleEdit = (provider: AIProviderConfig) => {
     setEditingProvider(provider.type)
     setFormData({ type: provider.type, apiKey: '', model: provider.model })
     setShowAddModal(true)
@@ -54,7 +66,7 @@ const Settings: React.FC = () => {
   const handleDelete = async (type: string) => {
     if (!confirm('Remover este provedor de IA? Suas chaves serão excluídas.')) return
     try {
-      await dispatch(deleteProvider(type as any)).unwrap()
+      await dispatch(deleteProvider(type as AIProviderType)).unwrap()
       toast.success('Provedor removido')
     } catch {
       toast.error('Erro ao remover provedor')
@@ -69,7 +81,7 @@ const Settings: React.FC = () => {
 
     try {
       const result = await dispatch(testProviderConnection({
-        type: formData.type as any,
+        type: formData.type as AIProviderType,
         apiKey: formData.apiKey,
         model: formData.model,
       })).unwrap()
@@ -79,8 +91,8 @@ const Settings: React.FC = () => {
       } else {
         toast.error(`Falha: ${result.error}`)
       }
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao testar conexão')
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Erro ao testar conexão'))
     }
   }
 
@@ -94,7 +106,7 @@ const Settings: React.FC = () => {
 
     try {
       await dispatch(saveProviderConfig({
-        type: formData.type as any,
+        type: formData.type as AIProviderType,
         apiKey: formData.apiKey,
         model: formData.model,
         isDefault: providers.length === 0 || !editingProvider,
@@ -103,8 +115,8 @@ const Settings: React.FC = () => {
       toast.success(editingProvider ? 'Provedor atualizado' : 'Provedor salvo')
       setShowAddModal(false)
       setFormData({ type: 'openrouter', apiKey: '', model: '' })
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao salvar')
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Erro ao salvar'))
     }
   }
 

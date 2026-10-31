@@ -1,4 +1,4 @@
-import { api, ApiClientError, setAuthToken, getAuthToken } from '../../services/api';
+import { api, ApiClientError, setAuthToken, getAuthToken, resetCsrfToken } from '../../services/api';
 
 // Mock do fetch global
 const mockFetch = vi.fn();
@@ -7,6 +7,7 @@ global.fetch = mockFetch as unknown as typeof fetch;
 describe('API Client', () => {
   beforeEach(() => {
     mockFetch.mockReset();
+    resetCsrfToken();
     // Garantir que sessionStorage esteja limpo e funcional
     const store: Record<string, string> = {};
     Object.defineProperty(window, 'sessionStorage', {
@@ -74,10 +75,16 @@ describe('API Client', () => {
     });
 
     it('should handle 204 No Content response', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'csrf-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+        });
 
       const result = await api.delete('/api/tasks/1');
       expect(result).toBeUndefined();
@@ -119,16 +126,22 @@ describe('API Client', () => {
   describe('POST requests', () => {
     it('should make POST request with JSON body', async () => {
       const mockData = { id: '1', title: 'New Task' };
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 201,
-        json: async () => mockData,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'csrf-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          json: async () => mockData,
+        });
 
       const result = await api.post('/api/tasks', { title: 'New Task' });
       expect(result).toEqual(mockData);
 
-      const [, options] = mockFetch.mock.calls[0];
+      const [, options] = mockFetch.mock.calls[1];
       expect(options.method).toBe('POST');
       expect(options.body).toBe(JSON.stringify({ title: 'New Task' }));
     });
@@ -137,16 +150,22 @@ describe('API Client', () => {
   describe('PUT requests', () => {
     it('should make PUT request with JSON body', async () => {
       const mockData = { id: '1', title: 'Updated' };
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => mockData,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'csrf-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => mockData,
+        });
 
       const result = await api.put('/api/tasks/1', { title: 'Updated' });
       expect(result).toEqual(mockData);
 
-      const [, options] = mockFetch.mock.calls[0];
+      const [, options] = mockFetch.mock.calls[1];
       expect(options.method).toBe('PUT');
     });
   });
@@ -154,26 +173,38 @@ describe('API Client', () => {
   describe('PATCH requests', () => {
     it('should make PATCH request', async () => {
       const mockData = { id: '1', completed: true };
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => mockData,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'csrf-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => mockData,
+        });
 
       const result = await api.patch('/api/tasks/1/toggle');
       expect(result).toEqual(mockData);
 
-      const [, options] = mockFetch.mock.calls[0];
+      const [, options] = mockFetch.mock.calls[1];
       expect(options.method).toBe('PATCH');
     });
   });
 
   describe('DELETE requests', () => {
     it('should make DELETE request', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 204,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({ csrfToken: 'csrf-token' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+        });
 
       await api.delete('/api/tasks/1');
 

@@ -3,6 +3,10 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { useAuth } from '../../hooks/useAuth';
 import { AuthProvider } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { act } from '@testing-library/react';
+import type { Mock } from 'vitest';
+
+const mockedApi = api as { get: Mock; post: Mock };
 
 // Mock do API client
 vi.mock('../../services/api', () => ({
@@ -48,7 +52,7 @@ describe('useAuth Hook', () => {
   });
 
   it('should set isLoaded to true after session check', async () => {
-    (api.get as jest.Mock).mockResolvedValueOnce({ id: '1', name: 'Test User', email: 'test@example.com' });
+    mockedApi.get.mockResolvedValueOnce({ id: '1', name: 'Test User', email: 'test@example.com' });
     renderWithProvider(<TestComponent />);
 
     await waitFor(() => {
@@ -57,7 +61,7 @@ describe('useAuth Hook', () => {
   });
 
   it('should set isSignedIn to true when session is valid', async () => {
-    (api.get as jest.Mock).mockResolvedValueOnce({ id: '1', name: 'Test User', email: 'test@example.com' });
+    mockedApi.get.mockResolvedValueOnce({ id: '1', name: 'Test User', email: 'test@example.com' });
     renderWithProvider(<TestComponent />);
 
     await waitFor(() => {
@@ -67,7 +71,7 @@ describe('useAuth Hook', () => {
   });
 
   it('should remain isSignedIn false when session is invalid', async () => {
-    (api.get as jest.Mock).mockRejectedValueOnce(new Error('Unauthorized'));
+    mockedApi.get.mockRejectedValueOnce(new Error('Unauthorized'));
     renderWithProvider(<TestComponent />);
 
     await waitFor(() => {
@@ -79,7 +83,7 @@ describe('useAuth Hook', () => {
   it('should sign in with correct credentials', async () => {
     const mockUser = { id: '1', name: 'Test User', email: 'test@example.com' };
     const mockToken = 'mock-jwt-token';
-    (api.post as jest.Mock).mockResolvedValueOnce({ user: mockUser, token: mockToken });
+    mockedApi.post.mockResolvedValueOnce({ user: mockUser, token: mockToken });
 
     renderWithProvider(<TestComponent />);
 
@@ -101,7 +105,7 @@ describe('useAuth Hook', () => {
   it('should sign up with correct data', async () => {
     const mockUser = { id: '1', name: 'Test User', email: 'test@example.com' };
     const mockToken = 'mock-jwt-token';
-    (api.post as jest.Mock).mockResolvedValueOnce({ user: mockUser, token: mockToken });
+    mockedApi.post.mockResolvedValueOnce({ user: mockUser, token: mockToken });
 
     renderWithProvider(<TestComponent />);
 
@@ -119,7 +123,7 @@ describe('useAuth Hook', () => {
 
   it('should sign out by clearing token and user', async () => {
     // Primeiro, faça login
-    (api.post as jest.Mock).mockResolvedValueOnce({
+    mockedApi.post.mockResolvedValueOnce({
       user: { id: '1', name: 'Test User', email: 'test@example.com' },
       token: 'mock-jwt-token',
     });
@@ -134,7 +138,7 @@ describe('useAuth Hook', () => {
     });
 
     // Realiza logout
-    (api.post as jest.Mock).mockResolvedValueOnce({ message: 'Logout realizado com sucesso' });
+    mockedApi.post.mockResolvedValueOnce({ message: 'Logout realizado com sucesso' });
     const signOutButton = screen.getByText('Sign Out');
     fireEvent.click(signOutButton);
 
@@ -145,12 +149,14 @@ describe('useAuth Hook', () => {
   });
 
   it('should handle sign in error gracefully', async () => {
-    (api.post as jest.Mock).mockRejectedValueOnce(new Error('Credenciais inválidas'));
+    mockedApi.post.mockRejectedValueOnce(new Error('Credenciais inválidas'));
 
     renderWithProvider(<TestComponent />);
 
     const signInButton = screen.getByText('Sign In');
-    fireEvent.click(signInButton);
+    await act(async () => {
+      fireEvent.click(signInButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId('isSignedIn')).toHaveTextContent('false');

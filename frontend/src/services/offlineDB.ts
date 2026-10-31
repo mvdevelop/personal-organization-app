@@ -70,7 +70,7 @@ export async function saveToStore<T extends { _id: string }>(
 /**
  * Load data from the offline store.
  */
-export async function loadFromStore<T = any>(storeName: StoreName): Promise<T[]> {
+export async function loadFromStore<T = unknown>(storeName: StoreName): Promise<T[]> {
   const db = await openDB()
   return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, 'readonly')
