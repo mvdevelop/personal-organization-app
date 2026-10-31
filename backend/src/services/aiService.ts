@@ -321,27 +321,6 @@ async function chatWithGoogle(
   // Google expects system instruction separately
   const systemInstruction = systemMsg?.content || '';
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents: chatMessages,
-        generationConfig: {
-          maxOutputTokens: config.maxTokens,
-          temperature: config.temperature,
-        },
-      }),
-      // API key goes in the URL for Google
-      ...{
-        // Append API key to URL
-      },
-    },
-  );
-
-  // Actually, Google uses the key in the URL
   const fullResponse = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`,
     {
@@ -385,8 +364,7 @@ export async function generateDailyBriefing(userId: string): Promise<string> {
 
   const context = await buildLegacyContext(userId);
   const { response } = await chatWithAI(userId, [
-    { role: 'system', content: `Contexto:\n${context}` },
-    { role: 'user', content: 'Gere um resumo matinal do meu dia com base no meu contexto. Seja breve e motivacional.' },
+    { role: 'user', content: `Gere um resumo matinal do meu dia com base neste contexto. Seja breve e motivacional.\n\nContexto:\n${context}` },
   ]);
   return response;
 }
@@ -400,7 +378,19 @@ export async function suggestTasks(userId: string): Promise<string> {
 
 // Legacy context builder (for backward compat with daily briefing)
 async function buildLegacyContext(userId: string): Promise<string> {
-  // This is moved from aiController.ts for backward compatibility
-  // In the new architecture, context is built by the controller
-  return `Usuário ${userId} solicitou um breveing de dia.`;
+  const [tasks, habits, goals, subjects] = await Promise.all([
+    import('../models/Task.js').then(({ Task }) => Task.find({ userId }).sort({ createdAt: -1 }).limit(10)),
+    import('../models/Habit.js').then(({ Habit }) => Habit.find({ userId }).limit(10)),
+    import('../models/Goal.js').then(({ Goal }) => Goal.find({ userId, status: 'active' }).limit(10)),
+    import('../models/Subject.js').then(({ Subject }) => Subject.find({ userId }).limit(10)),
+  ]);
+
+  const pendingTasks = tasks.filter(task => !task.completed);
+  return [
+    `Tarefas pendentes: ${pendingTasks.length}`,
+    `Tarefas recentes: ${tasks.map(task => task.title).join(', ') || 'nenhuma'}`,
+    `Hábitos cadastrados: ${habits.length}`,
+    `Metas ativas: ${goals.length}`,
+    `Matérias de estudo: ${subjects.length}`,
+  ].join('\n');
 }

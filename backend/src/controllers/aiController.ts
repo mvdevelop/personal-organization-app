@@ -18,6 +18,7 @@ import {
 import { AppError } from '../middleware/errorHandler.js';
 import { getCached, setCache, cacheKey } from '../utils/cache.js';
 import { maskApiKey } from '../models/AIProvider.js';
+import { aiConnectionTestSchema, aiProviderInputSchema } from '../validators/aiValidator.js';
 
 /**
  * Build user context string from all modules.
@@ -217,7 +218,7 @@ export async function suggestTasksEndpoint(req: Request, res: Response, next: Ne
 export async function getAISettings(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const doc = await AIProvider.findOne({ userId }).select('-providers.apiKey');
+    const doc = await AIProvider.findOne({ userId }).select('+providers.apiKey');
 
     if (!doc) {
       res.json({
@@ -256,19 +257,26 @@ export async function createOrUpdateProvider(
 ): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const { type, apiKey, model, isEnabled, isDefault, maxTokens, temperature, systemPrompt } = req.body;
-
-    if (!type || !apiKey) {
-      throw new AppError('Tipo de provedor e API Key são obrigatórios', 400);
+    const parsed = aiProviderInputSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Dados de configuração de IA inválidos', 400, parsed.error.flatten());
     }
 
-    // Test the connection before saving
-    const testResult = await testProviderConnection(type, apiKey, model);
-    if (!testResult.success) {
-      throw new AppError(`Falha na conexão: ${testResult.error || 'Erro desconhecido'}`, 400);
+    const { type, apiKey, model, isEnabled, isDefault, maxTokens, temperature, systemPrompt } = parsed.data;
+    let doc = await AIProvider.findOne({ userId }).select('+providers.apiKey');
+    const existingProvider = doc?.providers.find(provider => provider.type === type);
+    const keyChanged = Boolean(apiKey);
+
+    if (!existingProvider && !apiKey) {
+      throw new AppError('API Key é obrigatória para adicionar um provedor', 400);
     }
 
-    let doc = await AIProvider.findOne({ userId });
+    if (keyChanged && apiKey) {
+      const testResult = await testProviderConnection(type, apiKey, model);
+      if (!testResult.success) {
+        throw new AppError(`Falha na conexão: ${testResult.error || 'Erro desconhecido'}`, 400);
+      }
+    }
 
     if (!doc) {
       doc = await AIProvider.create({ userId });
@@ -278,7 +286,7 @@ export async function createOrUpdateProvider(
 
     if (existingProviderIndex >= 0) {
       // Update existing
-      doc.providers[existingProviderIndex].apiKey = encrypt(apiKey);
+      if (apiKey) doc.providers[existingProviderIndex].apiKey = encrypt(apiKey);
       doc.providers[existingProviderIndex].model = model || getDefaultModel(type);
       doc.providers[existingProviderIndex].isEnabled = isEnabled ?? true;
       doc.providers[existingProviderIndex].isDefault = isDefault ?? false;
@@ -286,7 +294,7 @@ export async function createOrUpdateProvider(
       // Add new provider
       doc.providers.push({
         type,
-        apiKey: encrypt(apiKey),
+        apiKey: encrypt(apiKey as string),
         model: model || getDefaultModel(type),
         isEnabled: isEnabled ?? true,
         isDefault: isDefault ?? false,
@@ -318,7 +326,7 @@ export async function createOrUpdateProvider(
         model: model || getDefaultModel(type),
         isEnabled,
         isDefault,
-        apiKey: maskApiKey(apiKey),
+        apiKey: maskApiKey(apiKey || (existingProvider ? decrypt(existingProvider.apiKey) : '')),
       },
     });
   } catch (error) {

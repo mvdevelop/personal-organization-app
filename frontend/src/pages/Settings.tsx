@@ -99,8 +99,8 @@ const Settings: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.apiKey.trim()) {
-      toast.error('API Key é obrigatória')
+    if (!editingProvider && !formData.apiKey.trim()) {
+      toast.error('API Key é obrigatória para adicionar um provedor')
       return
     }
 
@@ -268,7 +268,7 @@ const Settings: React.FC = () => {
               variant="gold"
               type="submit"
               className="flex-1"
-              disabled={!formData.apiKey}
+              disabled={!editingProvider && !formData.apiKey}
             >
               {editingProvider ? 'Atualizar' : 'Salvar'}
             </Button>

@@ -46,9 +46,13 @@ export const saveProviderConfig = createAsyncThunk(
   'aiSettings/saveProvider',
   async (data: {
     type: AIProviderType
-    apiKey: string
-    model: string
-    isDefault: boolean
+    apiKey?: string
+    model?: string
+    isEnabled?: boolean
+    isDefault?: boolean
+    maxTokens?: number
+    temperature?: number
+    systemPrompt?: string
   }) => {
     return api.post<{ message: string; provider: AIProviderConfig }>(
       '/api/ai/settings/provider',
