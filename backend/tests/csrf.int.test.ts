@@ -26,11 +26,14 @@ describe('CSRF Protection', () => {
       const csrfRes = await request(app).get('/api/csrf-token');
       token = csrfRes.body.csrfToken;
       const setCookie = csrfRes.headers['set-cookie'];
-      cookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
+      const rawCookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
+      cookies = rawCookies.map(cookie => cookie.split(';')[0]);
 
       // Create user and get auth token
       const res = await request(app)
         .post('/api/auth/register')
+        .set('Cookie', cookies)
+        .set('x-csrf-token', token)
         .send({
           name: 'Test User',
           email: 'csrf@example.com',

@@ -1,12 +1,12 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
-let mongoServer: MongoMemoryServer;
-
 process.env.JWT_SECRET = 'test-secret-key-for-jest-min-32-chars';
 process.env.JWT_EXPIRES_IN = '1h';
 process.env.NODE_ENV = 'test';
 process.env.CORS_ORIGIN = 'http://localhost:5173';
+
+let mongoServer: MongoMemoryServer;
 
 jest.setTimeout(30000);
 

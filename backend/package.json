@@ -13,7 +13,8 @@
     "start": "node dist/server.js",
     "vercel-build": "tsc",
     "lint": "npx tsc --noEmit",
-    "test": "jest --coverage",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --coverage --runInBand",
     "test:watch": "jest --watch",
     "test:ci": "jest --coverage --ci",
     "audit": "npm audit --audit-level=moderate"

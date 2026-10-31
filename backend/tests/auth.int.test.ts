@@ -11,7 +11,8 @@ async function loadCsrfToken(): Promise<void> {
   const response = await request(app).get('/api/csrf-token');
   const setCookie = response.headers['set-cookie'];
   csrfTokenValue = response.body.csrfToken as string;
-  csrfCookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
+  const cookies = typeof setCookie === 'string' ? [setCookie] : setCookie || [];
+  csrfCookies = cookies.map(cookie => cookie.split(';')[0]);
 }
 
 function csrfPost(path: string) {

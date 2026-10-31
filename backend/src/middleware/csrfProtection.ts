@@ -57,7 +57,9 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     // Ensure CSRF cookie exists for initial GET requests
     if (!req.cookies?.[CSRF_COOKIE_NAME]) {
-      setCsrfToken(req, res);
+      const token = setCsrfToken(req, res);
+      req.cookies = req.cookies || {};
+      req.cookies[CSRF_COOKIE_NAME] = token;
     }
     next();
     return;
@@ -84,7 +86,7 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
  * making POST/PUT/DELETE/PATCH requests.
  */
 export function csrfTokenHandler(req: Request, res: Response) {
-  const token = setCsrfToken(req, res);
+  const token = req.cookies?.[CSRF_COOKIE_NAME] || setCsrfToken(req, res);
   res.json({ csrfToken: token });
 }
 
