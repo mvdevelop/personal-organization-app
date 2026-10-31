@@ -1,5 +1,10 @@
-const rawBase = import.meta.env.VITE_API_URL || '';
-const API_BASE = rawBase.replace(/\/+$/, '');
+const rawBase = import.meta.env.VITE_API_URL || ''
+const API_BASE = rawBase.replace(/\/+$/, '')
+const CSRF_ENDPOINT = '/api/csrf-token'
+const CSRF_HEADER = 'x-csrf-token'
+const TOKEN_KEY = 'auth_token'
+
+let csrfToken: string | null = null
 
 interface ApiError {
   status: number
@@ -23,10 +28,6 @@ export interface ApiOptions {
   signal?: AbortSignal
 }
 
-// Token storage: sessionStorage (survives F5, cleared on tab close)
-// For same-origin (Vercel), httpOnly cookie handles auth automatically.
-const TOKEN_KEY = 'auth_token'
-
 export function setAuthToken(token: string | null): void {
   if (token) {
     sessionStorage.setItem(TOKEN_KEY, token)
@@ -39,49 +40,92 @@ export function getAuthToken(): string | null {
   return sessionStorage.getItem(TOKEN_KEY)
 }
 
+export function resetCsrfToken(): void {
+  csrfToken = null
+}
+
+function isMutation(method: string | undefined): boolean {
+  return method !== undefined && !['GET', 'HEAD', 'OPTIONS'].includes(method)
+}
+
+async function getCsrfToken(): Promise<string> {
+  if (csrfToken) return csrfToken
+
+  const response = await fetch(`${API_BASE}${CSRF_ENDPOINT}`, {
+    method: 'GET',
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new ApiClientError({
+      status: response.status,
+      message: 'Não foi possível obter o token CSRF',
+    })
+  }
+
+  const body = await response.json() as { csrfToken?: string }
+  if (!body.csrfToken) {
+    throw new ApiClientError({ status: response.status, message: 'Token CSRF ausente' })
+  }
+
+  csrfToken = body.csrfToken
+  return csrfToken
+}
+
+async function parseError(response: Response): Promise<{ error?: string; code?: string; details?: unknown }> {
+  try {
+    return await response.json() as { error?: string; code?: string; details?: unknown }
+  } catch {
+    return { error: 'Erro inesperado do servidor' }
+  }
+}
+
+async function readResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) return undefined as T
+  return response.json() as Promise<T>
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestInit & ApiOptions = {},
+  retryCsrf = true,
 ): Promise<T> {
+  const method = options.method?.toUpperCase()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
   }
 
-  // Send session token as Authorization header (works cross-origin for local dev)
   const token = getAuthToken()
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
+  if (token) headers.Authorization = `Bearer ${token}`
+  if (isMutation(method)) headers[CSRF_HEADER] = await getCsrfToken()
 
   const { signal, ...fetchOptions } = options
-
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...fetchOptions,
     headers,
     signal,
-    credentials: 'include', // httpOnly cookie as fallback for Vercel-to-Vercel
+    credentials: 'include',
   })
 
-  if (!response.ok) {
-    let body: { error?: string; details?: unknown }
-    try {
-      body = await response.json()
-    } catch {
-      body = { error: 'Erro inesperado do servidor' }
-    }
-    throw new ApiClientError({
-      status: response.status,
-      message: body.error || `HTTP ${response.status}`,
-      details: body.details,
-    })
+  if (response.ok) return readResponse<T>(response)
+
+  const body = await parseError(response)
+  if (
+    isMutation(method) &&
+    retryCsrf &&
+    response.status === 403 &&
+    body.code === 'CSRF_FAILURE'
+  ) {
+    resetCsrfToken()
+    return request(endpoint, options, false)
   }
 
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  return response.json() as Promise<T>
+  throw new ApiClientError({
+    status: response.status,
+    message: body.error || `HTTP ${response.status}`,
+    details: body.details,
+  })
 }
 
 export const api = {

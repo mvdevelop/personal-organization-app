@@ -1,27 +1,16 @@
-import React, { createContext, useState, useEffect, type ReactNode } from 'react';
+import React, { useState, useEffect, type ReactNode } from 'react';
+import { AuthContext } from './authContext';
+import type { User } from './authTypes';
 import { api, setAuthToken } from '../services/api';
 
-export interface User {
-  id: string
-  name: string
-  email: string
-}
+export type { AuthContextType } from './authContext';
+export type { User } from './authTypes';
 
-export interface AuthContextType {
-  user: User | null
-  isSignedIn: boolean
-  isLoaded: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (name: string, email: string, password: string) => Promise<void>
-  signOut: () => void
-}
 
 interface AuthResponse {
   user: User
   token: string
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -48,7 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       email,
       password,
     })
-    // Store token in memory (not localStorage — XSS-safe) for cross-origin API calls
+    // Store the token in session storage for cross-origin API calls.
     setAuthToken(token)
     setUser(user)
   }
@@ -89,4 +78,3 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   )
 }
 
-export { AuthContext }
