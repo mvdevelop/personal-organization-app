@@ -2,6 +2,10 @@ import { Response } from 'express';
 import { env } from '../config/env.js';
 
 const COOKIE_NAME = 'auth_token';
+const crossOriginCookieOptions = {
+  secure: env.useCrossOriginCookies,
+  sameSite: (env.useCrossOriginCookies ? 'none' : 'lax') as 'none' | 'lax',
+};
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days (matches JWT_EXPIRES_IN)
 
 /**
@@ -11,8 +15,7 @@ const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days (matches JWT_EXPIRES_I
 export function setAuthCookie(res: Response, token: string): void {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: env.nodeEnv === 'production',
-    sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+    ...crossOriginCookieOptions,
     maxAge: COOKIE_MAX_AGE,
     path: '/',
   });
@@ -24,8 +27,7 @@ export function setAuthCookie(res: Response, token: string): void {
 export function clearAuthCookie(res: Response): void {
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    secure: env.nodeEnv === 'production',
-    sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+    ...crossOriginCookieOptions,
     path: '/',
   });
 }

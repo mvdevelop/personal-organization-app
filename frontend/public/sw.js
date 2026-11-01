@@ -51,7 +51,15 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/@react-refresh')) return;
   if (url.pathname.startsWith('/src/')) return;
 
-  // API calls — Network First with fallback to cache
+  // Authentication and CSRF responses must never be served from a cache.
+  // A cached CSRF token can no longer match the browser cookie and causes
+  // every login/register request to fail with CSRF_FAILURE.
+  if (url.pathname === '/api/csrf-token' || url.pathname.startsWith('/api/auth/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Other API calls — Network First with fallback to cache
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirstAPI(request));
     return;

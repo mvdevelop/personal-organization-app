@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
+import { env } from '../config/env.js';
 
 /**
  * CSRF Protection using double-submit cookie pattern.
@@ -23,9 +24,6 @@ import crypto from 'crypto';
 const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 
-// Secret for signing CSRF cookies (separate from JWT_SECRET)
-const CSRF_COOKIE_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'dev-csrf-secret';
-
 /**
  * Generate a CSRF token and set it as a cookie.
  * The cookie is NOT httpOnly (frontend JS needs to read it to send in header).
@@ -36,8 +34,8 @@ export function setCsrfToken(req: Request, res: Response): string {
   // Set cookie with signed value
   res.cookie(CSRF_COOKIE_NAME, token, {
     httpOnly: false,  // MUST be readable by JS for double-submit pattern
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: env.useCrossOriginCookies,
+    sameSite: env.useCrossOriginCookies ? 'none' : 'lax',
     path: '/',
     maxAge: 3600000, // 1 hour
   });
