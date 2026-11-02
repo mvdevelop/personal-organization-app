@@ -11,10 +11,13 @@ import {
   incrementRetry,
   removeSyncItem,
   type SyncQueueItem,
+  MAX_RETRIES,
 } from './syncQueue'
 
 export { enqueueSync, getSyncQueue, incrementRetry, removeSyncItem }
 export type { SyncQueueItem }
+
+const RETRY_BACKOFF_MS = 1000
 
 const DB_NAME = 'SmartAgendaOffline'
 const DB_VERSION = 1
@@ -90,7 +93,6 @@ export async function loadFromStore<T = unknown>(storeName: StoreName): Promise<
     request.onerror = () => reject(request.error)
   })
 }
-
 
 function getRetryDelay(retryCount: number): number {
   return RETRY_BACKOFF_MS * 2 ** Math.max(0, retryCount - 1)

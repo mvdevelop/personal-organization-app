@@ -484,6 +484,50 @@
   white-space: nowrap;
 }
 
+.sa-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sa-text-3);
+  font-size: 0.66rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sa-sync-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sa-sync-status-success {
+  color: var(--sa-success);
+}
+
+button.sa-sync-status {
+  border-color: var(--sa-border);
+  cursor: pointer;
+}
+
+button.sa-sync-status:hover:not(:disabled) {
+  border-color: var(--sa-border-strong);
+  background: var(--sa-raised);
+  color: var(--sa-text);
+}
+
+button.sa-sync-status:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.sa-sync-status-error {
+  color: var(--sa-danger);
+}
+
 .sa-user {
   display: flex;
   align-items: center;
