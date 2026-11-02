@@ -84,8 +84,6 @@ Quando aplicável, sugira ações que o usuário pode tomar no app.`,
   { timestamps: true },
 );
 
-aiProviderSchema.index({ userId: 1 });
-
 // Ensure only one default provider per user
 aiProviderSchema.pre('save', function (next) {
   if (this.isModified('providers') && this.providers.some(p => p.isDefault)) {

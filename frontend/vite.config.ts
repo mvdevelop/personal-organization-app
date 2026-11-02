@@ -17,7 +17,7 @@ export default defineConfig({
     strictPort: false,
     proxy: {
       '/api': {
-        target: 'https://personal-organization-backend.vercel.app',
+        target: process.env.VITE_DEV_API_PROXY || 'http://localhost:3001',
         changeOrigin: true,
         secure: true,
       },

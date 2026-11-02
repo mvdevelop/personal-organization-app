@@ -5,42 +5,34 @@
 ⚠️ **If you discover a security vulnerability, do NOT open an issue.**
 Please email the maintainer directly.
 
-## Known Security Issues (as of 2026-09-19)
+## Security status
 
-### 1. Exposed MongoDB Atlas Credentials in Git History (CRITICAL)
+### 1. Exposed MongoDB Atlas credentials in Git history (CRITICAL)
 
-**Status:** Credentials rotated. Git history needs cleanup.
+**Status:** The exposed password was rotated, but the historical commit still
+contains the old `backend/.env` contents. A coordinated history rewrite is still
+required before treating the repository history as clean.
 
-Commit `8a45402` contained `backend/.env` with a live MongoDB Atlas connection string:
-- Database user: `hyushinelliot_db_user`
-- Password: `uhx1gArtsA4Ne17P` (ROTATED)
-- Cluster: `cluster0.3fobfrm.mongodb.net`
+Do not run a history rewrite or force-push without agreement from repository
+maintainers and collaborators. The operation must be coordinated because it
+changes every affected commit and invalidates existing clones. When authorized,
+use a reviewed `git filter-repo` procedure, rotate any still-valid secrets, and
+notify all downstream clones before updating the remote.
 
-The `.env` file was removed from tracking in commit `9e84d41`, but the credentials
-remain in the git history.
-
-**Action required:** The MongoDB Atlas password has been rotated. The git history
-needs to be cleaned using `git filter-repo`:
-
-```bash
-# Run from repository root
-pip install git-filter-repo
-git filter-repo --path backend/.env --invert-paths --force
-git push --force-with-lease origin main
-```
-
-**CVSS:** 9.1 (Critical) — CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N
 **CWE-798:** Use of Hard-coded Credentials
 
-### 2. CSP Disabled (CRITICAL)
+### 2. Content Security Policy
 
-Helmet is configured with `contentSecurityPolicy: false` in `app.ts`.
-See CSP fix in the security hardening PR.
+**Status:** Implemented. `backend/src/app.ts` configures Helmet with an explicit
+CSP and restrictive security headers. Review the directives whenever a new
+frontend or third-party integration is introduced.
 
-### 3. CSRF Protection Missing (CRITICAL)
+### 3. CSRF protection
 
-The API uses httpOnly cookies with `SameSite=None` in production but lacks
-CSRF token protection. See CSRF fix implementation.
+**Status:** Implemented. State-changing API requests are protected by the
+double-submit cookie middleware in `backend/src/middleware/csrfProtection.ts`.
+The frontend obtains `/api/csrf-token` and sends the token in `x-csrf-token`.
+Keep this protection enabled for cookie-authenticated requests.
 
 ## Security Best Practices
 
@@ -49,3 +41,19 @@ CSRF token protection. See CSRF fix implementation.
 3. **Use strong passwords** — bcrypt with 12 rounds for user passwords
 4. **Validate all input** — Zod schemas on all endpoints
 5. **Scope all queries** — Always filter by `userId`
+6. **Do not store secrets in browser storage** — API keys and bearer tokens must
+   not be copied into IndexedDB, localStorage, cache storage, or service-worker
+   queues
+7. **Verify security changes with tests** — run the backend integration and
+   middleware suites before deployment
+
+## Verification commands
+
+```bash
+npm run lint --workspace=backend
+npm test --workspace=backend
+```
+
+The Vercel project settings and the GitHub remote history cannot be verified
+from this repository alone; confirm branch, root directory, environment
+variables, and deployment logs in their respective services.

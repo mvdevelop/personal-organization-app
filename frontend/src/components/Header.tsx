@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { toggleTheme } from '../store/slices/userPreferencesSlice';
 import AppMark from './AppMark';
+import SyncStatus from './SyncStatus';
 
 interface HeaderProps {
   onMenuToggle: () => void
@@ -95,6 +96,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle, onThemeSettings }) => {
       >
         {theme === 'dark' ? <Sun /> : <Moon />}
       </button>
+
+      <SyncStatus />
 
       <span className="sa-plan">Plano gratuito</span>
 

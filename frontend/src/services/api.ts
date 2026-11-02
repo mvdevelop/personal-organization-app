@@ -129,6 +129,9 @@ async function request<T>(
 }
 
 export const api = {
+  request: <T>(endpoint: string, options?: RequestInit & ApiOptions) =>
+    request<T>(endpoint, options),
+
   get: <T>(endpoint: string, opts?: ApiOptions) =>
     request<T>(endpoint, { method: 'GET', ...opts }),
 
