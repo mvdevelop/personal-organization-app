@@ -16,6 +16,7 @@ const Studies = lazy(() => import('./pages/Studies'));
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'));
 const Settings = lazy(() => import('./pages/Settings'));
 const SmartLifeOS = lazy(() => import('./pages/SmartLifeOS'));
+const SmartLifeOSFocus = lazy(() => import('./pages/SmartLifeOSFocus'));
 
 const Calendar = () => (
   <div className="text-center py-12">
@@ -69,6 +70,7 @@ function App() {
           <Route path="calendar" element={<Calendar />} />
           <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><Settings /></Suspense>} />
           <Route path="smart-os" element={<Suspense fallback={<LoadingFallback />}><SmartLifeOS /></Suspense>} />
+          <Route path="smart-os/focus/:sessionId" element={<Suspense fallback={<LoadingFallback />}><SmartLifeOSFocus /></Suspense>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
