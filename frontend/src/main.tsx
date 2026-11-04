@@ -6,10 +6,12 @@ import { AuthProvider } from './context/AuthContext';
 import App from './App';
 import './index.css';
 import { initOfflineSync } from './services/offlineDB.js';
+import { initSyncManager } from './services/syncManager.js';
 
-// Initialize offline sync before SW registration
+// Initialize offline database and sync manager before SW registration
 if (typeof window !== 'undefined') {
   initOfflineSync();
+  initSyncManager();
 }
 
 // Service Worker — cache offline em produção
