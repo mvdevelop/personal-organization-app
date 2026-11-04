@@ -19,6 +19,34 @@ if ('serviceWorker' in navigator) {
       try {
         const reg = await navigator.serviceWorker.register('/sw.js');
         console.log('✅ SW registered:', reg.scope);
+
+        // Listen for updates to the service worker
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener('statechange', () => {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
+              // New SW installed and old one still controlling the page
+              // Notify user to reload
+              const event = new CustomEvent('sw-update-available', {
+                detail: { registration: reg },
+              });
+              window.dispatchEvent(event);
+              console.log('📦 New SW version available');
+            }
+          });
+        });
+
+        // Check for updates every hour
+        setInterval(() => {
+          reg.update().catch(() => {
+            // Silent fail if update check fails
+          });
+        }, 60 * 60 * 1000);
       } catch (err) {
         console.log('⚠️ SW registration failed:', err);
       }
@@ -32,6 +60,14 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+// Track online/offline state
+window.addEventListener('online', () => {
+  window.dispatchEvent(new CustomEvent('app-online-state-changed', { detail: { online: true } }));
+});
+window.addEventListener('offline', () => {
+  window.dispatchEvent(new CustomEvent('app-online-state-changed', { detail: { online: false } }));
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

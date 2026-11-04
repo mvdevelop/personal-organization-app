@@ -6,6 +6,7 @@ import FloatingAIButton from './FloatingAIButton';
 import NativeBottomNav from './NativeBottomNav';
 import InstallPWA from './InstallPWA';
 import ThemeCustomizer from './ThemeCustomizer';
+import PWAStatusNotifier from './PWAStatusNotifier';
 import { useAppSelector } from '../hooks/redux';
 import toast from 'react-hot-toast';
 
@@ -68,6 +69,7 @@ const Layout: React.FC = () => {
       <FloatingAIButton />
       <InstallPWA />
       <NativeBottomNav />
+      <PWAStatusNotifier />
 
       {themeCustomizerOpen && (
         <ThemeCustomizer onClose={() => setThemeCustomizerOpen(false)} />

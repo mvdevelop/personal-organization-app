@@ -240,3 +240,138 @@ button, a, input, textarea, select {
   opacity: 0.6;
   pointer-events: none;
 }
+
+/* ============================================================
+   PWA & Mobile — Safe areas and responsive refinements
+   ============================================================ */
+
+/* Support notch/dynamic island on iOS and Android */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  .sa-page {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Bottom action areas respect safe area */
+  .floating-action-area,
+  .sa-bottom-nav {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Modals respect safe areas */
+  .modal-content {
+    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem);
+  }
+}
+
+/* Mobile minimum touch target size (48x48px) */
+@media (max-width: 768px) {
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  a[role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px 16px;
+  }
+
+  /* Larger tap targets for form inputs */
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px;
+  }
+
+  /* Improve checkbox/radio on mobile */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+    cursor: pointer;
+  }
+
+  /* Compact header on mobile */
+  .sa-topbar {
+    padding: 12px 16px;
+    min-height: 56px;
+  }
+
+  /* Responsive sidebar */
+  .sa-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 40;
+    transition: transform 0.3s ease;
+  }
+
+  .sa-sidebar[data-mobile-hidden="true"] {
+    transform: translateX(-100%);
+  }
+
+  /* Drawer scrim respects notch */
+  .sa-scrim {
+    z-index: 39;
+  }
+
+  /* Main content on mobile */
+  .sa-main {
+    margin-left: 0;
+  }
+
+  /* Notifications position above bottom nav */
+  [role="status"],
+  [role="dialog"] {
+    bottom: 80px;
+    max-width: calc(100vw - 32px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Landscape orientation refinements */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .sa-topbar {
+    min-height: 48px;
+    padding: 8px 12px;
+  }
+
+  .sa-page {
+    padding: 12px;
+  }
+}
+
+/* Prevent horizontal scroll on narrow screens */
+@media (max-width: 480px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  main {
+    overflow-x: hidden;
+  }
+
+  /* Constrain modal width */
+  .modal {
+    max-width: calc(100vw - 16px);
+  }
+}
+
+/* High DPI displays (2x and above) */
+@media (min-resolution: 192dpi) {
+  /* Borders are less visible on high DPI, use slightly thicker ones */
+  border {
+    border-width: 1.5px;
+  }
+}
+
