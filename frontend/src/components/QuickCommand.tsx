@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Command, X } from 'lucide-react';
+import { createFocusTrap } from '../utils/a11y';
 
 interface CommandItem {
   id: string;
@@ -42,6 +43,8 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cleanupFocusTrap = useRef<(() => void) | null>(null);
 
   const commands: CommandItem[] = [
     {
@@ -147,7 +150,16 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
       inputRef.current?.focus();
       setQuery('');
       setSelectedIndex(0);
+
+      // Setup focus trap
+      if (containerRef.current) {
+        cleanupFocusTrap.current = createFocusTrap(containerRef.current);
+      }
     }
+
+    return () => {
+      cleanupFocusTrap.current?.();
+    };
   }, [isOpen]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -181,15 +193,20 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
     <div
       className="fixed inset-0 z-[1000] flex items-start justify-center pt-16"
       onClick={onClose}
+      role="presentation"
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" style={{ backdropFilter: 'blur(4px)' }} />
 
       {/* Modal */}
       <div
+        ref={containerRef}
         className="relative w-full max-w-md rounded-lg shadow-lg"
         style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="qc-title"
+        aria-describedby="qc-desc"
       >
         {/* Search Input */}
         <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
