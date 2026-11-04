@@ -1,8 +1,9 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import SplashScreen from './components/SplashScreen';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -46,36 +47,63 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 }
 
 function App() {
+  const { isLoaded } = useAuth();
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const prefs = localStorage.getItem('userPreferences');
+    if (prefs) {
+      const theme = JSON.parse(prefs).theme;
+      setIsDark(theme !== 'light');
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const prefs = localStorage.getItem('userPreferences');
+      if (prefs) {
+        const theme = JSON.parse(prefs).theme;
+        setIsDark(theme !== 'light');
+      }
+    };
+
+    window.addEventListener('storage', handleThemeChange);
+    return () => window.removeEventListener('storage', handleThemeChange);
+  }, []);
+
   return (
-    <BrowserRouter>
-      <Toaster position="top-right" />
-      <Routes>
-        <Route path="/sign-in" element={<Login />} />
+    <>
+      <SplashScreen isVisible={!isLoaded} isDark={isDark} />
+      <BrowserRouter>
+        <Toaster position="top-right" />
+        <Routes>
+          <Route path="/sign-in" element={<Login />} />
 
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Suspense fallback={<LoadingFallback />}><Dashboard /></Suspense>} />
-          <Route path="tasks" element={<Suspense fallback={<LoadingFallback />}><Tasks /></Suspense>} />
-          <Route path="notes" element={<Suspense fallback={<LoadingFallback />}><Notes /></Suspense>} />
-          <Route path="habits" element={<Suspense fallback={<LoadingFallback />}><Habits /></Suspense>} />
-          <Route path="goals" element={<Suspense fallback={<LoadingFallback />}><Goals /></Suspense>} />
-          <Route path="studies" element={<Suspense fallback={<LoadingFallback />}><Studies /></Suspense>} />
-          <Route path="ai" element={<Suspense fallback={<LoadingFallback />}><AIAssistantPage /></Suspense>} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><Settings /></Suspense>} />
-          <Route path="smart-os" element={<Suspense fallback={<LoadingFallback />}><SmartLifeOS /></Suspense>} />
-          <Route path="smart-os/focus/:sessionId" element={<Suspense fallback={<LoadingFallback />}><SmartLifeOSFocus /></Suspense>} />
-        </Route>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Suspense fallback={<LoadingFallback />}><Dashboard /></Suspense>} />
+            <Route path="tasks" element={<Suspense fallback={<LoadingFallback />}><Tasks /></Suspense>} />
+            <Route path="notes" element={<Suspense fallback={<LoadingFallback />}><Notes /></Suspense>} />
+            <Route path="habits" element={<Suspense fallback={<LoadingFallback />}><Habits /></Suspense>} />
+            <Route path="goals" element={<Suspense fallback={<LoadingFallback />}><Goals /></Suspense>} />
+            <Route path="studies" element={<Suspense fallback={<LoadingFallback />}><Studies /></Suspense>} />
+            <Route path="ai" element={<Suspense fallback={<LoadingFallback />}><AIAssistantPage /></Suspense>} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><Settings /></Suspense>} />
+            <Route path="smart-os" element={<Suspense fallback={<LoadingFallback />}><SmartLifeOS /></Suspense>} />
+            <Route path="smart-os/focus/:sessionId" element={<Suspense fallback={<LoadingFallback />}><SmartLifeOSFocus /></Suspense>} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   )
 }
 
