@@ -12,6 +12,7 @@ import * as studyController from '../controllers/studyController.js';
 import * as aiController from '../controllers/aiController.js';
 import * as dashboardController from '../controllers/dashboardController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
+import * as smartLifeOSController from '../controllers/smartLifeOSController.js';
 
 const router = Router();
 
@@ -102,5 +103,14 @@ router.get('/ai/settings', authMiddleware, aiController.getAISettings);
 router.post('/ai/settings/provider', authMiddleware, aiController.createOrUpdateProvider);
 router.delete('/ai/settings/provider/:type', authMiddleware, aiController.deleteProvider);
 router.post('/ai/settings/test-connection', authMiddleware, aiConnectionLimiter, aiController.testConnection);
+
+// ===== Smart Life OS =====
+router.post('/smart-os/attention-signals', authMiddleware, smartLifeOSController.getAttentionSignals);
+router.post('/smart-os/next-action', authMiddleware, smartLifeOSController.getNextAction);
+router.get('/smart-os/daily-plan', authMiddleware, smartLifeOSController.getDailyPlan);
+router.patch('/smart-os/daily-plan/:planId/action/:actionSequence', authMiddleware, smartLifeOSController.updatePlanAction);
+router.post('/smart-os/focus-session/start', authMiddleware, smartLifeOSController.startFocusSession);
+router.post('/smart-os/focus-session/:sessionId/complete', authMiddleware, smartLifeOSController.completeFocusSession);
+router.get('/smart-os/focus-history', authMiddleware, smartLifeOSController.getFocusHistory);
 
 export default router;
