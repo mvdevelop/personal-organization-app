@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Pause, X, Check, Volume2, VolumeX } from 'lucide-react';
 import { api } from '../services/api';
@@ -28,7 +28,7 @@ const SmartLifeOSFocus: React.FC = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const playSound = () => {
+  const playSound = useCallback(() => {
     if (!soundEnabled) return;
 
     // Create a simple beep using Web Audio API
@@ -48,7 +48,7 @@ const SmartLifeOSFocus: React.FC = () => {
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
-  };
+  }, [soundEnabled]);
 
   // Initialize session
   useEffect(() => {
@@ -92,7 +92,7 @@ const SmartLifeOSFocus: React.FC = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, isPaused, soundEnabled]);
+  }, [isRunning, isPaused, playSound]);
 
   const playSound = () => {
     if (!soundEnabled) return;
