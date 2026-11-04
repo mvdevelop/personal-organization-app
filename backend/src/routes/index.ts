@@ -3,6 +3,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { authLimiter, aiLimiter, aiConnectionLimiter } from '../middleware/rateLimiter.js';
 import { csrfTokenHandler } from '../middleware/csrfProtection.js';
 import * as authController from '../controllers/authController.js';
+import * as userController from '../controllers/userController.js';
 import * as taskController from '../controllers/taskController.js';
 import * as noteController from '../controllers/noteController.js';
 import * as domainController from '../controllers/domainController.js';
@@ -35,6 +36,11 @@ router.post('/auth/register', authLimiter, authController.register);
 router.post('/auth/login', authLimiter, authController.login);
 router.post('/auth/logout', authController.logout);
 router.get('/auth/me', authMiddleware, authController.me);
+
+// ===== User (Privacy & Data) =====
+router.get('/user/profile', authMiddleware, userController.getUserProfile);
+router.get('/user/export', authMiddleware, userController.exportUserData);
+router.delete('/user', authMiddleware, userController.deleteAccount);
 
 // ===== Tasks =====
 router.get('/tasks', authMiddleware, taskController.list);
