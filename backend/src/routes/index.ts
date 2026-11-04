@@ -93,6 +93,9 @@ router.get('/ai/history', authMiddleware, aiController.getHistory);
 router.delete('/ai/history', authMiddleware, aiController.clearHistory);
 router.get('/ai/daily-briefing', authMiddleware, aiController.dailyBriefing);
 router.get('/ai/suggest-tasks', authMiddleware, aiController.suggestTasksEndpoint);
+router.post('/ai/audit/:auditId/approve', authMiddleware, aiController.approveAIActions);
+router.post('/ai/audit/:auditId/reject', authMiddleware, aiController.rejectAIActions);
+router.get('/ai/audit/history', authMiddleware, aiController.getAIAuditHistory);
 
 // ===== AI Settings =====
 router.get('/ai/settings', authMiddleware, aiController.getAISettings);

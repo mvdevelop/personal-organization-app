@@ -3,8 +3,10 @@ const API_BASE = rawBase.replace(/\/+$/, '')
 const CSRF_ENDPOINT = '/api/csrf-token'
 const CSRF_HEADER = 'x-csrf-token'
 const TOKEN_KEY = 'auth_token'
+const CSRF_TOKEN_CACHE_TIME = 55 * 60 * 1000 // Cache for 55 minutes, refresh at 60
 
 let csrfToken: string | null = null
+let csrfTokenFetchTime: number = 0
 
 interface ApiError {
   status: number
@@ -34,6 +36,8 @@ export function setAuthToken(token: string | null): void {
   } else {
     sessionStorage.removeItem(TOKEN_KEY)
   }
+  // Reset CSRF token when auth changes
+  resetCsrfToken()
 }
 
 export function getAuthToken(): string | null {
@@ -42,6 +46,7 @@ export function getAuthToken(): string | null {
 
 export function resetCsrfToken(): void {
   csrfToken = null
+  csrfTokenFetchTime = 0
 }
 
 function isMutation(method: string | undefined): boolean {
@@ -49,7 +54,11 @@ function isMutation(method: string | undefined): boolean {
 }
 
 async function getCsrfToken(): Promise<string> {
-  if (csrfToken) return csrfToken
+  // Check if cached token is still valid (less than 55 minutes old)
+  const now = Date.now()
+  if (csrfToken && (now - csrfTokenFetchTime) < CSRF_TOKEN_CACHE_TIME) {
+    return csrfToken
+  }
 
   const response = await fetch(`${API_BASE}${CSRF_ENDPOINT}`, {
     method: 'GET',
@@ -69,6 +78,7 @@ async function getCsrfToken(): Promise<string> {
   }
 
   csrfToken = body.csrfToken
+  csrfTokenFetchTime = now
   return csrfToken
 }
 
