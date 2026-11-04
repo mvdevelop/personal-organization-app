@@ -87,8 +87,8 @@ function App() {
   return (
     <>
       <SplashScreen isVisible={!isLoaded} isDark={isDark} />
-      <QuickCommand isOpen={quickCommandOpen} onClose={() => setQuickCommandOpen(false)} />
       <BrowserRouter>
+        <QuickCommand isOpen={quickCommandOpen} onClose={() => setQuickCommandOpen(false)} />
         <Toaster position="top-right" />
         <Routes>
           <Route path="/sign-in" element={<Login />} />
