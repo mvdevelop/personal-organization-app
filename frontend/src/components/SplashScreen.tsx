@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppMark } from './AppMark';
+import AppMark from './AppMark';
 
 interface SplashScreenProps {
   isVisible: boolean;

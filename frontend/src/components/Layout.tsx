@@ -7,6 +7,7 @@ import NativeBottomNav from './NativeBottomNav';
 import InstallPWA from './InstallPWA';
 import ThemeCustomizer from './ThemeCustomizer';
 import PWAStatusNotifier from './PWAStatusNotifier';
+import PushNotificationManager from './PushNotificationManager';
 import { useAppSelector } from '../hooks/redux';
 import toast from 'react-hot-toast';
 
@@ -70,6 +71,7 @@ const Layout: React.FC = () => {
       <InstallPWA />
       <NativeBottomNav />
       <PWAStatusNotifier />
+      <PushNotificationManager />
 
       {themeCustomizerOpen && (
         <ThemeCustomizer onClose={() => setThemeCustomizerOpen(false)} />

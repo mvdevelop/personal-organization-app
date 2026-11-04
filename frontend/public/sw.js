@@ -30,6 +30,11 @@ self.addEventListener('activate', (event) => {
 // session. The app can send this message after displaying an update prompt.
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+
+  if (event.data?.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = event.data;
+    self.registration.showNotification(title, options);
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -145,3 +150,19 @@ async function networkFirstSPA(request) {
     );
   }
 }
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.notification.tag === 'welcome') {
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then((clientList) => {
+        if (clientList.length > 0) {
+          return clientList[0].focus();
+        }
+        return clients.openWindow('/');
+      }),
+    );
+  }
+});
