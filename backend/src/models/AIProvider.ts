@@ -30,7 +30,6 @@ const aiProviderSchema = new Schema<IAIProvider>(
       ref: 'User',
       required: true,
       unique: true,
-      index: true,
     },
     providers: [
       {

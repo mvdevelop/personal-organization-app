@@ -40,7 +40,7 @@ const Settings: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProvider, setEditingProvider] = useState<AIProviderType | null>(null)
   const [formData, setFormData] = useState({
-    type: 'openrouter' as string,
+    type: 'openrouter' as AIProviderType,
     apiKey: '',
     model: '',
   })
@@ -63,13 +63,13 @@ const Settings: React.FC = () => {
     dispatch(clearTestConnection())
   }
 
-  const handleDelete = async (type: string) => {
+  const handleDelete = async (type: AIProviderType) => {
     if (!confirm('Remover este provedor de IA? Suas chaves serão excluídas.')) return
     try {
-      await dispatch(deleteProvider(type as AIProviderType)).unwrap()
+      await dispatch(deleteProvider(type)).unwrap()
       toast.success('Provedor removido')
-    } catch {
-      toast.error('Erro ao remover provedor')
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Erro ao remover provedor'))
     }
   }
 
@@ -114,7 +114,7 @@ const Settings: React.FC = () => {
 
       toast.success(editingProvider ? 'Provedor atualizado' : 'Provedor salvo')
       setShowAddModal(false)
-      setFormData({ type: 'openrouter', apiKey: '', model: '' })
+      setFormData({ type: 'openrouter' as AIProviderType, apiKey: '', model: '' })
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Erro ao salvar'))
     }
@@ -181,10 +181,12 @@ const Settings: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => dispatch(saveProviderConfig({
-                      type: provider.type,
-                      isEnabled: !provider.isEnabled,
-                    })).unwrap().then(() => toast.success(provider.isEnabled ? 'Provedor desativado' : 'Provedor ativado')).catch(() => toast.error('Erro ao alterar status'))}
+                    onClick={() => {
+                      void dispatch(saveProviderConfig({
+                        type: provider.type,
+                        isEnabled: !provider.isEnabled,
+                      })).unwrap().then(() => toast.success(provider.isEnabled ? 'Provedor desativado' : 'Provedor ativado')).catch((error: unknown) => toast.error(getErrorMessage(error, 'Erro ao alterar status')))
+                    }}
                   >
                     {provider.isEnabled ? 'Desativar' : 'Ativar'}
                   </Button>
@@ -210,7 +212,7 @@ const Settings: React.FC = () => {
             <select
               value={formData.type}
               onChange={e => {
-                const newType = e.target.value
+                const newType = e.target.value as AIProviderType
                 setFormData(prev => ({
                   ...prev,
                   type: newType,

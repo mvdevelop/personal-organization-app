@@ -16,7 +16,6 @@ const userSettingsSchema = new Schema<IUserSettings>(
       ref: 'User',
       required: true,
       unique: true,
-      index: true,
     },
     openRouterApiKey: {
       type: String,
@@ -34,7 +33,5 @@ const userSettingsSchema = new Schema<IUserSettings>(
   },
 );
 
-// Índice composto para garantir unicidade por usuário
-userSettingsSchema.index({ userId: 1 });
-
+// The unique constraint on userId already creates an index
 export const UserSettings = mongoose.model<IUserSettings>('UserSettings', userSettingsSchema);

@@ -42,7 +42,6 @@ const taskSchema = new Schema<ITask>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
   },
   {

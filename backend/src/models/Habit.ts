@@ -47,7 +47,6 @@ const habitSchema = new Schema<IHabit>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
   },
   {

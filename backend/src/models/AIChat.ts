@@ -26,6 +26,6 @@ const aiChatSchema = new Schema<IAIChat>(
   { timestamps: true },
 );
 
-aiChatSchema.index({ userId: 1 });
+// unique: true already creates an index, so no need for schema.index()
 
 export const AIChat = mongoose.model<IAIChat>('AIChat', aiChatSchema);

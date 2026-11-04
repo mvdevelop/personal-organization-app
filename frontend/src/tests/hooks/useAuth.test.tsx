@@ -155,8 +155,9 @@ describe('useAuth Hook', () => {
     const signInButton = screen.getByText('Sign In');
     fireEvent.click(signInButton);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('isSignedIn')).toHaveTextContent('false');
-    });
+    // Allow the async error to be caught
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    expect(screen.getByTestId('isSignedIn')).toHaveTextContent('false');
   });
 });

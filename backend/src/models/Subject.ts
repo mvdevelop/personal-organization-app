@@ -34,7 +34,6 @@ const subjectSchema = new Schema<ISubject>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
   },
   {
@@ -69,7 +68,6 @@ const studySessionSchema = new Schema<IStudySession>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     duration: {
       type: Number,
