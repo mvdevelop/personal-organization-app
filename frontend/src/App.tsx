@@ -1,9 +1,11 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import SplashScreen from './components/SplashScreen';
+import QuickCommand from './components/QuickCommand';
 import { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -49,6 +51,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   const { isLoaded } = useAuth();
   const [isDark, setIsDark] = useState(true);
+  const [quickCommandOpen, setQuickCommandOpen] = useState(false);
 
   useEffect(() => {
     const prefs = localStorage.getItem('userPreferences');
@@ -71,9 +74,20 @@ function App() {
     return () => window.removeEventListener('storage', handleThemeChange);
   }, []);
 
+  // Register keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: 'k',
+      ctrlOrCmd: true,
+      callback: () => setQuickCommandOpen(true),
+      description: 'Abrir comando rápido',
+    },
+  ]);
+
   return (
     <>
       <SplashScreen isVisible={!isLoaded} isDark={isDark} />
+      <QuickCommand isOpen={quickCommandOpen} onClose={() => setQuickCommandOpen(false)} />
       <BrowserRouter>
         <Toaster position="top-right" />
         <Routes>
