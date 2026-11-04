@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Target, Zap, Clock } from 'lucide-react';
 import { api } from '../services/api';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
 
 interface AttentionSignal {
@@ -35,6 +35,7 @@ interface DailyPlan {
     actions: Array<{
       sequence: number;
       type: string;
+      entityId: string;
       entityTitle: string;
       estimatedDuration: number;
       completed: boolean;
@@ -46,16 +47,15 @@ interface DailyPlan {
 }
 
 const SmartLifeOS: React.FC = () => {
+  const navigate = useNavigate();
   const [signals, setSignals] = useState<AttentionSignal[]>([]);
   const [nextAction, setNextAction] = useState<NextAction | null>(null);
   const [dailyPlan, setDailyPlan] = useState<DailyPlan | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        setLoading(true);
         setError(null);
 
         const [signalsRes, nextActionRes, planRes] = await Promise.all([
@@ -69,8 +69,6 @@ const SmartLifeOS: React.FC = () => {
         setDailyPlan(planRes);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -99,13 +97,37 @@ const SmartLifeOS: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const handleStartFocus = async (actionSequence: number) => {
+    try {
+      const action = dailyPlan?.plan.actions[actionSequence];
+      if (!action) return;
+
+      // Create a focus session
+      const session = await api.post<{ session: { _id: string } }>('/smart-os/focus-session/start', {
+        focusedOn: action.type,
+        entityId: action.entityId,
+        entityTitle: action.entityTitle,
+        plannedDuration: action.estimatedDuration,
+      });
+
+      // Store in sessionStorage for Focus page to access
+      sessionStorage.setItem(
+        `focus_session_${session.session._id}`,
+        JSON.stringify({
+          _id: session.session._id,
+          entityTitle: action.entityTitle,
+          entityType: action.type,
+          plannedDuration: action.estimatedDuration,
+          startedAt: new Date().toISOString(),
+        }),
+      );
+
+      // Navigate to focus page
+      navigate(`/smart-os/focus/${session.session._id}`);
+    } catch (err) {
+      console.error('Failed to start focus session', err);
+    }
+  };
 
   const now = new Date();
   const hour = now.getHours();
@@ -326,7 +348,7 @@ const SmartLifeOS: React.FC = () => {
                   textDecoration: action.completed ? 'line-through' : 'none',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <input
                     type="checkbox"
                     checked={action.completed}
@@ -343,6 +365,14 @@ const SmartLifeOS: React.FC = () => {
                       {action.estimatedDuration} min • {action.type}
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleStartFocus(action.sequence)}
+                    style={{ marginLeft: 'auto' }}
+                  >
+                    Focar
+                  </Button>
                 </div>
               </div>
             ))}

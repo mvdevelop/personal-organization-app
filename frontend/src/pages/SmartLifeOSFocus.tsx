@@ -25,7 +25,7 @@ const SmartLifeOSFocus: React.FC = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [completionMode, setCompletionMode] = useState<'complete' | 'extend' | 'abandon' | null>(null);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize session
