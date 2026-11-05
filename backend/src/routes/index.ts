@@ -14,6 +14,7 @@ import * as aiController from '../controllers/aiController.js';
 import * as dashboardController from '../controllers/dashboardController.js';
 import * as gamificationController from '../controllers/gamificationController.js';
 import * as smartLifeOSController from '../controllers/smartLifeOSController.js';
+import * as analyticsController from '../controllers/analyticsController.js';
 
 const router = Router();
 
@@ -88,6 +89,13 @@ router.delete('/study-sessions/:id', authMiddleware, studyController.deleteSessi
 
 // ===== Dashboard =====
 router.get('/dashboard', authMiddleware, dashboardController.getDashboardData);
+
+// ===== Analytics =====
+router.get('/analytics/trends', authMiddleware, analyticsController.getTrends);
+router.get('/analytics/habits', authMiddleware, analyticsController.getHabitAnalytics);
+router.get('/analytics/studies', authMiddleware, analyticsController.getStudyAnalytics);
+router.get('/analytics/metrics', authMiddleware, analyticsController.getMetrics);
+router.get('/analytics/export', authMiddleware, analyticsController.exportData);
 
 // ===== Gamification =====
 router.get('/gamification/stats', authMiddleware, gamificationController.getStats);
