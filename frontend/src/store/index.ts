@@ -11,6 +11,7 @@ import aiReducer from './slices/aiSlice';
 import aiSettingsReducer from './slices/aiSettingsSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import gamificationReducer from './slices/gamificationSlice';
+import analyticsReducer from './slices/analyticsSlice';
 import { preferencesMiddleware, initPreferences } from './preferencesMiddleware';
 
 export const store = configureStore({
@@ -28,6 +29,7 @@ export const store = configureStore({
     aiSettings: aiSettingsReducer,
     dashboard: dashboardReducer,
     gamification: gamificationReducer,
+    analytics: analyticsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(preferencesMiddleware),
