@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 import { isIP } from 'net';
@@ -262,14 +263,11 @@ function hashIp(ip: string | undefined): string {
   return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16);
 }
 
-import crypto from 'crypto';
-
 const securityLogger = (req: Request, res: Response, next: NextFunction): void => {
   const startTime = Date.now();
 
   // Gerar ID de requisição único para rastreamento
-  const requestId = (req as any).requestId || crypto.randomUUID();
-  (req as any).requestId = requestId;
+  const requestId = req.get('X-Request-ID') || crypto.randomUUID();
   res.setHeader('X-Request-ID', requestId);
 
   // Interceptar respostas de erro

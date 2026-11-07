@@ -24,6 +24,19 @@ import { env } from '../config/env.js';
 const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 
+function getBodyCsrfToken(body: unknown): string | undefined {
+  if (!body || typeof body !== 'object' || !('_csrf' in body)) return undefined;
+  const token = (body as { _csrf?: unknown })._csrf;
+  return typeof token === 'string' ? token : undefined;
+}
+
+function tokensMatch(expected: string, received: string): boolean {
+  const expectedBuffer = Buffer.from(expected);
+  const receivedBuffer = Buffer.from(received);
+  return expectedBuffer.length === receivedBuffer.length && crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+}
+
+
 /**
  * Generate a CSRF token and set it as a cookie.
  * The cookie is NOT httpOnly (frontend JS needs to read it to send in header).
@@ -65,9 +78,9 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
 
   // For state-changing requests, validate CSRF token
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
-  const headerToken = req.get(CSRF_HEADER_NAME) || (req.body as any)?._csrf;
+  const headerToken = req.get(CSRF_HEADER_NAME) || getBodyCsrfToken(req.body);
 
-  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+  if (!cookieToken || !headerToken || !tokensMatch(cookieToken, headerToken)) {
     res.status(403).json({
       error: 'CSRF token inválido ou ausente',
       code: 'CSRF_FAILURE',
