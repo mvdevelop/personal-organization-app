@@ -1,9 +1,9 @@
 import React from 'react';
 import { ListChecks, Flame, Notebook, Flag } from 'lucide-react';
-import type { ProductivityMetrics } from '../../types/analytics';
+import type { ProductivityMetrics as ProductivityMetricsData } from '../../types/analytics';
 
 interface ProductivityMetricsProps {
-  data: ProductivityMetrics | null;
+  data: ProductivityMetricsData | null;
   loading: boolean;
 }
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   PieChart,
   Pie,
@@ -6,9 +6,7 @@ import {
   Legend,
   Tooltip,
   ResponsiveContainer,
-  TooltipProps,
 } from 'recharts';
-import { useAppSelector } from '../../hooks/redux';
 
 interface ResponsivePieChartProps {
   data: Array<{ name: string; value: number }>;
@@ -28,7 +26,7 @@ const COLORS = [
   '#f97316',
 ];
 
-const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name?: string | number; value?: string | number }> }) => {
   if (!active || !payload) return null;
 
   return (
@@ -45,11 +43,6 @@ export const ResponsivePieChart: React.FC<ResponsivePieChartProps> = ({
   height = 300,
   title,
 }) => {
-  const { theme } = useAppSelector((s) => s.userPreferences);
-  const isDark = theme === 'dark';
-
-  const textColor = useMemo(() => (isDark ? '#e5e7eb' : '#374151'), [isDark]);
-
   return (
     <div className="w-full h-full">
       {title && <h3 className="text-lg font-semibold mb-4">{title}</h3>}
@@ -65,7 +58,7 @@ export const ResponsivePieChart: React.FC<ResponsivePieChartProps> = ({
             fill="#8884d8"
             dataKey="value"
           >
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
             ))}
           </Pie>

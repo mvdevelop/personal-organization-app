@@ -34,7 +34,7 @@ export const TaskTrendsChart: React.FC<TaskTrendsChartProps> = ({ data, loading 
         </p>
       </div>
       <ResponsiveLineChart
-        data={data.data}
+        data={data.data.map((point) => ({ ...point }))}
         lines={[
           { key: 'rate', name: 'Taxa de Conclusão (%)', color: '#10b981' },
           { key: 'completed', name: 'Concluídas', color: '#3b82f6', strokeWidth: 2 },

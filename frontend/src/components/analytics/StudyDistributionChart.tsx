@@ -49,7 +49,7 @@ export const StudyDistributionChart: React.FC<StudyDistributionChartProps> = ({ 
 
         <div>
           <ResponsiveBarChart
-            data={data.analytics.bySubject}
+            data={data.analytics.bySubject.map((subject) => ({ ...subject }))}
             bars={[
               {
                 key: 'hours',

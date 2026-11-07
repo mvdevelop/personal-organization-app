@@ -8,12 +8,12 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  TooltipProps,
 } from 'recharts';
+import type { TooltipPayloadEntry } from 'recharts';
 import { useAppSelector } from '../../hooks/redux';
 
 interface ResponsiveLineChartProps {
-  data: Array<{ date: string; [key: string]: any }>;
+  data: Array<Record<string, string | number> & { date: string }>;
   lines: Array<{
     key: string;
     name: string;
@@ -24,13 +24,13 @@ interface ResponsiveLineChartProps {
   title?: string;
 }
 
-const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string | number }) => {
   if (!active || !payload) return null;
 
   return (
     <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg">
       <p className="text-sm font-semibold">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx: number) => (
         <p key={idx} style={{ color: entry.color }} className="text-sm">
           {entry.name}: {entry.value}
         </p>
