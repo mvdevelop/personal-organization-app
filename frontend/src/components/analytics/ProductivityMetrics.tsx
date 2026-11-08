@@ -7,7 +7,7 @@ interface ProductivityMetricsProps {
   loading: boolean;
 }
 
-export const ProductivityMetrics: React.FC<ProductivityMetricsProps> = ({ data, loading }) => {
+const ProductivityMetricsCard: React.FC<ProductivityMetricsProps> = ({ data, loading }) => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -87,3 +87,5 @@ export const ProductivityMetrics: React.FC<ProductivityMetricsProps> = ({ data, 
     </div>
   );
 };
+
+export { ProductivityMetricsCard as ProductivityMetrics };

@@ -133,19 +133,27 @@ export async function processSyncQueue(): Promise<void> {
   }
 }
 
-/** Listen for online/offline events and process the sync queue. */
+/**
+ * Listen for connectivity changes and publish the current state.
+ *
+ * Queue processing is intentionally owned by `syncManager`. Keeping a single
+ * processor prevents the legacy IndexedDB path and the idempotent sync path
+ * from sending the same mutation concurrently during reconnects.
+ */
 export function initOfflineSync(): () => void {
   const onOnline = () => {
-    void processSyncQueue()
+    window.dispatchEvent(new CustomEvent('orgapp:offline-state-changed', {
+      detail: { online: true },
+    }))
   }
   const onOffline = () => {
-    window.dispatchEvent(new CustomEvent('orgapp:offline-state-changed'))
+    window.dispatchEvent(new CustomEvent('orgapp:offline-state-changed', {
+      detail: { online: false },
+    }))
   }
 
   window.addEventListener('online', onOnline)
   window.addEventListener('offline', onOffline)
-
-  if (navigator.onLine) void processSyncQueue()
 
   return () => {
     window.removeEventListener('online', onOnline)
