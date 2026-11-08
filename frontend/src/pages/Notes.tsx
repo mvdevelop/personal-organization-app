@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchNotes, deleteNote, type Note } from '../store/slices/notesSlice';
+import { createNote, updateNote, fetchNotes, deleteNote, type Note, type CreateNoteInput } from '../store/slices/notesSlice';
+import NoteModal from '../components/NoteModal';
+import type { UpdateNoteInput } from '../store/slices/notesSlice';
+import { ApiClientError } from '../services/api';
+import { useCallback } from 'react';
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof ApiClientError || error instanceof Error ? error.message : 'Não foi possível salvar a nota'
+}
 import NoteCard from '../components/NoteCard';
 import PageHeader from '../components/ui/PageHeader';
 import SearchInput from '../components/ui/SearchInput';
@@ -13,13 +22,48 @@ import toast from 'react-hot-toast';
 
 const Notes: React.FC = () => {
   const dispatch = useAppDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { notes, loading, error } = useAppSelector(state => state.notes);
-  const [, setIsModalOpen] = useState(false);
-  const [saving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     dispatch(fetchNotes());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setEditingNote(null)
+      setIsModalOpen(true)
+      searchParams.delete('new')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams]);
+
+  const openNewNote = () => {
+    setEditingNote(null)
+    setIsModalOpen(true)
+  }
+
+  const handleSave = useCallback(async (data: CreateNoteInput) => {
+    setSaving(true)
+    try {
+      if (editingNote) {
+        await dispatch(updateNote({ id: editingNote.id, data: data as UpdateNoteInput })).unwrap()
+        toast.success('Nota atualizada!')
+      } else {
+        await dispatch(createNote(data)).unwrap()
+        toast.success('Nota criada!')
+      }
+      setIsModalOpen(false)
+      setEditingNote(null)
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setSaving(false)
+    }
+  }, [dispatch, editingNote]);
 
   useEffect(() => {
     if (error) {
@@ -27,8 +71,9 @@ const Notes: React.FC = () => {
     }
   }, [error]);
 
-  const handleEdit = (_note: Note) => {
-    // Note editor modal not yet implemented
+  const handleEdit = (note: Note) => {
+    setEditingNote(note)
+    setIsModalOpen(true)
   };
 
   const handleDelete = (id: string) => {
@@ -95,7 +140,7 @@ const Notes: React.FC = () => {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={openNewNote}
             disabled={saving}
             className="flex items-center gap-2"
           >
@@ -130,7 +175,7 @@ const Notes: React.FC = () => {
           action={
             <Button
               variant="primary"
-              onClick={() => setIsModalOpen(true)}
+              onClick={openNewNote}
               disabled={saving}
             >
               Nova Nota
@@ -138,6 +183,13 @@ const Notes: React.FC = () => {
           }
         />
       ) : null}
+
+      <NoteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        editingNote={editingNote}
+      />
 
       <ConfirmDialog
         isOpen={false}

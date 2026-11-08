@@ -105,7 +105,10 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
  * making POST/PUT/DELETE/PATCH requests.
  */
 export function csrfTokenHandler(req: Request, res: Response) {
-  const token = req.cookies?.[CSRF_COOKIE_NAME] || setCsrfToken(req, res);
+  const shouldRotate = req.query.refresh === '1';
+  const token = !shouldRotate && req.cookies?.[CSRF_COOKIE_NAME]
+    ? req.cookies[CSRF_COOKIE_NAME]
+    : setCsrfToken(req, res);
   res.json({ csrfToken: token });
 }
 

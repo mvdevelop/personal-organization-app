@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchTasks, createTask, updateTask, deleteTask, toggleTask, setFilter, clearError, type Task, type CreateTaskInput, type UpdateTaskInput } from '../store/slices/tasksSlice';
 import TaskCard from '../components/TaskCard';
@@ -13,6 +14,7 @@ import toast from 'react-hot-toast';
 
 const Tasks: React.FC = () => {
   const dispatch = useAppDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { tasks, filter, searchQuery, loading, error } = useAppSelector(state => state.tasks);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -23,6 +25,20 @@ const Tasks: React.FC = () => {
   useEffect(() => {
     dispatch(fetchTasks({ filter, search: searchQuery || undefined }));
   }, [dispatch, filter, searchQuery]);
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setEditingTask(null)
+      setIsModalOpen(true)
+      searchParams.delete('new')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams]);
+
+  const openNewTask = () => {
+    setEditingTask(null)
+    setIsModalOpen(true)
+  }
 
   useEffect(() => {
     if (error) {
@@ -124,7 +140,7 @@ const Tasks: React.FC = () => {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={openNewTask}
             disabled={saving}
             className="flex items-center gap-2"
           >
@@ -184,7 +200,7 @@ const Tasks: React.FC = () => {
           action={
             <Button
               variant="primary"
-              onClick={() => setIsModalOpen(true)}
+              onClick={openNewTask}
               disabled={saving}
             >
               Nova Tarefa
