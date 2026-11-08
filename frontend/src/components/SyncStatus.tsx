@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { CloudOff, RefreshCw, CheckCircle2, AlertCircle, ChevronDown } from 'lucide-react'
-import { getSyncQueue, processSyncQueue } from '../services/offlineDB'
+import { getSyncQueue } from '../services/offlineDB'
+import { processSyncQueue } from '../services/syncManager'  // centralized idempotent processor
+
 
 interface SyncStats {
   pending: number;
