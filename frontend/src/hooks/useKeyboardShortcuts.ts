@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-interface Shortcut {
+export interface Shortcut {
   key: string;
   ctrlOrCmd: boolean;
   shift?: boolean;
@@ -9,9 +9,16 @@ interface Shortcut {
   description: string;
 }
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+}
+
 export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isEditableTarget(event.target)) return
+
       for (const shortcut of shortcuts) {
         const ctrlOrCmdPressed = event.ctrlKey || event.metaKey;
         const shiftPressed = shortcut.shift ? event.shiftKey : !event.shiftKey;

@@ -53,6 +53,10 @@ function App() {
   const [isDark, setIsDark] = useState(true);
   const [quickCommandOpen, setQuickCommandOpen] = useState(false);
 
+  useKeyboardShortcuts([
+    { key: 'k', ctrlOrCmd: true, callback: () => setQuickCommandOpen(true), description: 'Abrir comando rápido' },
+  ]);
+
   useEffect(() => {
     const prefs = localStorage.getItem('userPreferences');
     if (prefs) {
@@ -73,16 +77,6 @@ function App() {
     window.addEventListener('storage', handleThemeChange);
     return () => window.removeEventListener('storage', handleThemeChange);
   }, []);
-
-  // Register keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: 'k',
-      ctrlOrCmd: true,
-      callback: () => setQuickCommandOpen(true),
-      description: 'Abrir comando rápido',
-    },
-  ]);
 
   return (
     <>
