@@ -13,12 +13,15 @@ interface DashboardCardProps {
   className?: string
 }
 
-const toHeadingId = (title: string) => `dashboard-card-${title
-  .normalize('NFKD')
-  .replace(/[̀-ͯ]/g, '')
-  .replace(/[^a-zA-Z0-9]+/g, '-')
-  .replace(/^-|-$/g, '')
-  .toLowerCase()}`
+const toHeadingId = (title: string | undefined) => {
+  const normalizedTitle = typeof title === 'string' && title.trim() ? title : 'card'
+  return `dashboard-card-${normalizedTitle
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()}`
+}
 
 const DashboardCard: React.FC<DashboardCardProps> = ({
   title,

@@ -64,6 +64,14 @@ export function setCsrfToken(req: Request, res: Response): string {
  * - _csrf body field
  */
 export function csrfProtection(req: Request, res: Response, next: NextFunction): void {
+  // Login and registration do not rely on an existing authentication cookie.
+  // Exempting them also allows a first-time cross-origin client to establish
+  // a session when the CSRF cookie has not been persisted yet.
+  if (req.method === 'POST' && ['/auth/login', '/auth/register'].includes(req.path)) {
+    next();
+    return;
+  }
+
   // Skip CSRF for GET, HEAD, OPTIONS
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     // Ensure CSRF cookie exists for initial GET requests
