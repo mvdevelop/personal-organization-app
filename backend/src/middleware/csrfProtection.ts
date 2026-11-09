@@ -30,7 +30,31 @@ function getBodyCsrfToken(body: unknown): string | undefined {
   return typeof token === 'string' ? token : undefined;
 }
 
+function signToken(token: string): string {
+  return crypto.createHmac('sha256', env.csrfSecret).update(token).digest('hex');
+}
+
+function createToken(): string {
+  const value = crypto.randomUUID();
+  return `${value}.${signToken(value)}`;
+}
+
+function isValidToken(token: string): boolean {
+  const separator = token.lastIndexOf('.');
+  if (separator <= 0) return false;
+
+  const value = token.slice(0, separator);
+  const signature = token.slice(separator + 1);
+  const expectedSignature = signToken(value);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  const receivedBuffer = Buffer.from(signature);
+
+  return expectedBuffer.length === receivedBuffer.length
+    && crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+}
+
 function tokensMatch(expected: string, received: string): boolean {
+  if (!isValidToken(expected) || !isValidToken(received)) return false;
   const expectedBuffer = Buffer.from(expected);
   const receivedBuffer = Buffer.from(received);
   return expectedBuffer.length === receivedBuffer.length && crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
@@ -43,7 +67,7 @@ function tokensMatch(expected: string, received: string): boolean {
  * The cookie IS signed (can't be forged).
  */
 export function setCsrfToken(req: Request, res: Response): string {
-  const token = crypto.randomUUID();
+  const token = createToken();
   // Set cookie with signed value
   res.cookie(CSRF_COOKIE_NAME, token, {
     httpOnly: false,  // MUST be readable by JS for double-submit pattern

@@ -29,6 +29,17 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 const isVercel = process.env.VERCEL === '1';
 const isProduction = nodeEnv === 'production' || isVercel;
 
+function getRequiredSecret(key: string): string {
+  const secret = process.env[key];
+  if (secret && secret.length >= 32) return secret;
+
+  if (isProduction) {
+    throw new Error(`${key} must be at least 32 characters in production`);
+  }
+
+  return crypto.randomBytes(48).toString('base64');
+}
+
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (secret && secret.length >= 32) {
@@ -60,6 +71,7 @@ export const env = {
   useCrossOriginCookies,
   mongodbUri: requireEnv('MONGODB_URI', 'mongodb://localhost:27017/personal-org'),
   jwtSecret: getJwtSecret(),
+  csrfSecret: getRequiredSecret('CSRF_SECRET'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim()),
