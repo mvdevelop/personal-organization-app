@@ -73,8 +73,11 @@ export const env = {
   jwtSecret: getJwtSecret(),
   csrfSecret: getRequiredSecret('CSRF_SECRET'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim()),
+  corsOrigin: process.env.CORS_ORIGIN || (isVercel ? 'https://personal-organization.vercel.app' : 'http://localhost:5173'),
+  corsOrigins: (process.env.CORS_ORIGIN || (isVercel ? 'https://personal-organization.vercel.app' : 'http://localhost:5173'))
+    .split(',')
+    .map(s => s.trim().replace(/\/$/, ''))
+    .filter(Boolean),
   openRouterKey: process.env.OPENROUTER_API_KEY || '',
   openRouterModel: process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini',
 };

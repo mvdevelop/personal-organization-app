@@ -37,14 +37,15 @@ app.use(helmet({
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (curl, mobile apps, server-to-server)
-    if (!origin || env.corsOrigins.includes(origin) || env.corsOrigins.includes('*')) {
+    const normalizedOrigin = origin?.replace(/\/$/, '');
+    if (!normalizedOrigin || env.corsOrigins.includes(normalizedOrigin) || env.corsOrigins.includes('*')) {
       callback(null, true);
     } else {
       // In development, be more permissive
-      if (env.nodeEnv !== 'production') {
+      if (env.nodeEnv === 'development') {
         callback(null, true);
       } else {
-        console.warn(`[SECURITY] CORS blocked origin: ${origin}`);
+        console.warn(`[SECURITY] CORS blocked origin: ${normalizedOrigin}`);
         callback(null, false);
       }
     }

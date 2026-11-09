@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 process.env.JWT_SECRET = 'test-secret-key-for-jest-min-32-chars';
 process.env.JWT_EXPIRES_IN = '1h';
 process.env.NODE_ENV = 'test';
+process.env.CSRF_SECRET = 'test-csrf-secret-key-for-jest-min-32-chars';
 process.env.CORS_ORIGIN = 'http://localhost:5173';
 
 let mongoServer: MongoMemoryServer;

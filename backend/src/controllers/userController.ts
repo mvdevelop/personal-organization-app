@@ -1,12 +1,41 @@
 import { Request, Response, NextFunction } from 'express';
 import { Task } from '../models/Task.js';
 import { Note } from '../models/Note.js';
-import { Habit } from '../models/Habit.js';
+import { Habit, HabitLog } from '../models/Habit.js';
 import { Goal } from '../models/Goal.js';
-import { Subject } from '../models/Subject.js';
+import { Subject, StudySession } from '../models/Subject.js';
 import { User } from '../models/User.js';
 import { AIAudit } from '../models/AIAudit.js';
+import { AIChat } from '../models/AIChat.js';
+import { AIProvider } from '../models/AIProvider.js';
 import { SmartLifeOSSession } from '../models/SmartLifeOSSession.js';
+import { SmartLifeOSPlan } from '../models/SmartLifeOSPlan.js';
+import { UserSettings } from '../models/UserSettings.js';
+import { UserStats } from '../models/UserStats.js';
+import { Domain } from '../models/Domain.js';
+import { Types } from 'mongoose';
+
+function getAuthenticatedUserId(req: Request): string {
+  const userId = req.user?.userId;
+  if (!userId || !Types.ObjectId.isValid(userId)) throw new AppError('Unauthorized', 401);
+  return userId;
+}
+
+function sanitizeProvider(provider: Record<string, unknown>): Record<string, unknown> {
+  const { apiKey: _apiKey, ...safeProvider } = provider;
+  return safeProvider;
+}
+
+function sanitizeAIProvider(document: { toObject: () => Record<string, unknown> } | null): Record<string, unknown> | null {
+  if (!document) return null;
+  const data = document.toObject();
+  return {
+    ...data,
+    providers: Array.isArray(data.providers)
+      ? data.providers.map(provider => sanitizeProvider(provider as Record<string, unknown>))
+      : [],
+  };
+}
 import { AppError } from '../middleware/errorHandler.js';
 
 /**
@@ -15,21 +44,19 @@ import { AppError } from '../middleware/errorHandler.js';
  */
 export async function exportUserData(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getAuthenticatedUserId(req);
     if (!userId) throw new AppError('Unauthorized', 401);
 
     console.log('[User] Data export requested', { userId });
 
     // Fetch all user data in parallel
-    const [user, tasks, notes, habits, goals, subjects, focusSessions, aiAudits] = await Promise.all([
+    const [user, tasks, notes, habits, habitLogs, goals, subjects, studySessions, focusSessions, plans, domains, aiAudits, aiChats, aiProvider, settings, stats] = await Promise.all([
       User.findById(userId).select('-password'),
-      Task.find({ userId }),
-      Note.find({ userId }),
-      Habit.find({ userId }),
-      Goal.find({ userId }),
-      Subject.find({ userId }),
-      SmartLifeOSSession.find({ userId }),
-      AIAudit.find({ userId }).select('-prompt'), // Exclude full prompts for size
+      Task.find({ userId }), Note.find({ userId }), Habit.find({ userId }), HabitLog.find({ userId }),
+      Goal.find({ userId }), Subject.find({ userId }), StudySession.find({ userId }),
+      SmartLifeOSSession.find({ userId }), SmartLifeOSPlan.find({ userId }), Domain.find({ userId }),
+      AIAudit.find({ userId }).select('-prompt'), AIChat.find({ userId }).select('-messages'),
+      AIProvider.findOne({ userId }), UserSettings.findOne({ userId }), UserStats.findOne({ userId }),
     ]);
 
     // Construct export object
@@ -44,19 +71,32 @@ export async function exportUserData(req: Request, res: Response, next: NextFunc
         tasks,
         notes,
         habits,
+        habitLogs,
         goals,
         subjects,
+        studySessions,
         focusSessions,
+        plans,
+        domains,
         aiAudits,
+        aiChats,
+        aiProvider: sanitizeAIProvider(aiProvider),
+        settings,
+        stats,
       },
       summary: {
         totalTasks: tasks.length,
         totalNotes: notes.length,
         totalHabits: habits.length,
+        totalHabitLogs: habitLogs.length,
         totalGoals: goals.length,
         totalSubjects: subjects.length,
+        totalStudySessions: studySessions.length,
         totalFocusSessions: focusSessions.length,
+        totalPlans: plans.length,
+        totalDomains: domains.length,
         totalAIAudits: aiAudits.length,
+        totalAIChats: aiChats.length,
       },
     };
 
@@ -78,7 +118,7 @@ export async function exportUserData(req: Request, res: Response, next: NextFunc
  */
 export async function deleteAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getAuthenticatedUserId(req);
     if (!userId) throw new AppError('Unauthorized', 401);
 
     const { password } = req.body;
@@ -87,7 +127,7 @@ export async function deleteAccount(req: Request, res: Response, next: NextFunct
     }
 
     // Verify password before deletion
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('+password');
     if (!user) throw new AppError('User not found', 404);
 
     const passwordMatch = await user.comparePassword(password);
@@ -100,10 +140,18 @@ export async function deleteAccount(req: Request, res: Response, next: NextFunct
       Task.deleteMany({ userId }),
       Note.deleteMany({ userId }),
       Habit.deleteMany({ userId }),
+      HabitLog.deleteMany({ userId }),
       Goal.deleteMany({ userId }),
       Subject.deleteMany({ userId }),
+      StudySession.deleteMany({ userId }),
       SmartLifeOSSession.deleteMany({ userId }),
+      SmartLifeOSPlan.deleteMany({ userId }),
+      Domain.deleteMany({ userId }),
       AIAudit.deleteMany({ userId }),
+      AIChat.deleteMany({ userId }),
+      AIProvider.deleteMany({ userId }),
+      UserSettings.deleteMany({ userId }),
+      UserStats.deleteMany({ userId }),
       User.findByIdAndDelete(userId),
     ]);
 
@@ -125,7 +173,7 @@ export async function deleteAccount(req: Request, res: Response, next: NextFunct
  */
 export async function getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getAuthenticatedUserId(req);
     if (!userId) throw new AppError('Unauthorized', 401);
 
     const user = await User.findById(userId).select('-password');
