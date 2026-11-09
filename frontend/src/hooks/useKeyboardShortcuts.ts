@@ -14,8 +14,9 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
 }
 
-export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
+export function useKeyboardShortcuts(shortcuts: Shortcut[], options: { enabled?: boolean } = {}): void {
   useEffect(() => {
+    if (options.enabled === false) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event.target)) return
 
@@ -39,7 +40,7 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcuts]);
+  }, [shortcuts, options.enabled]);
 }
 
 export const DEFAULT_SHORTCUTS: Record<string, Shortcut> = {

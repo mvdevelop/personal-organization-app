@@ -140,7 +140,7 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
   ];
 
   const filtered = commands
-    .map(cmd => ({ ...cmd, score: fuzzyMatch(query, cmd.label + ' ' + cmd.description) }))
+    .map(cmd => ({ ...cmd, score: query ? fuzzyMatch(query, cmd.label + ' ' + cmd.description) : 100 }))
     .filter(cmd => cmd.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
@@ -162,7 +162,16 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (selectedIndex >= filtered.length) setSelectedIndex(Math.max(0, filtered.length - 1));
+  }, [filtered.length, selectedIndex]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (filtered.length === 0 && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter')) {
+      e.preventDefault();
+      return;
+    }
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -221,6 +230,10 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
+            role="combobox"
+            aria-controls="quick-command-list"
+            aria-expanded="true"
+            aria-activedescendant={filtered[selectedIndex] ? `quick-command-option-${filtered[selectedIndex].id}` : undefined}
             className="flex-1 bg-transparent border-0 outline-none text-sm"
             style={{ color: 'var(--text)' }}
           />
@@ -234,7 +247,7 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Results */}
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto" role="listbox" aria-label="Comandos disponíveis" id="quick-command-list">
           {filtered.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm" style={{ color: 'var(--text-tertiary)' }}>
               Nenhum comando encontrado
@@ -243,6 +256,9 @@ const QuickCommand: React.FC<QuickCommandProps> = ({ isOpen, onClose }) => {
             filtered.map((cmd, index) => (
               <button
                 key={cmd.id}
+                id={`quick-command-option-${cmd.id}`}
+                role="option"
+                aria-selected={index === selectedIndex}
                 onClick={() => cmd.action()}
                 className="w-full px-4 py-3 text-left text-sm border-b transition-colors"
                 style={{

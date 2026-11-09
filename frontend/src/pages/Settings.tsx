@@ -132,6 +132,30 @@ const Settings: React.FC = () => {
         </Button>
       </PageHeader>
 
+      <section className="sa-card mb-6" aria-labelledby="keyboard-shortcuts-title">
+        <h2 id="keyboard-shortcuts-title" className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+          Atalhos de teclado
+        </h2>
+        <div className="grid gap-2 text-sm text-gray-600 dark:text-gray-300 sm:grid-cols-2">
+          {[
+            ['Ctrl/Cmd + K', 'Abrir comando rápido'],
+            ['Ctrl/Cmd + N', 'Criar nova tarefa'],
+            ['Ctrl/Cmd + Shift + N', 'Criar nova nota'],
+            ['Ctrl/Cmd + T', 'Ir para tarefas'],
+            ['Ctrl/Cmd + H', 'Ir para hábitos'],
+            ['Ctrl/Cmd + D', 'Ir para dashboard'],
+          ].map(([keys, description]) => (
+            <div key={keys} className="flex items-center justify-between gap-3">
+              <kbd className="rounded border px-2 py-1 font-mono text-xs" style={{ borderColor: 'var(--border)' }}>{keys}</kbd>
+              <span>{description}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          Os atalhos são desativados enquanto você estiver digitando ou com um modal aberto.
+        </p>
+      </section>
+
       <div className="space-y-4">
         {providers.length === 0 ? (
           <div className="text-center py-12 sa-card">

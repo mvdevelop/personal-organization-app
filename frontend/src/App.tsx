@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import Layout from './components/Layout';
@@ -48,14 +48,28 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>
 }
 
-function App() {
-  const { isLoaded } = useAuth();
+function AppContent() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const navigate = useNavigate();
   const [isDark, setIsDark] = useState(true);
   const [quickCommandOpen, setQuickCommandOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useKeyboardShortcuts([
     { key: 'k', ctrlOrCmd: true, callback: () => setQuickCommandOpen(true), description: 'Abrir comando rápido' },
-  ]);
+    { key: 'n', ctrlOrCmd: true, callback: () => navigate('/tasks?new=1'), description: 'Criar nova tarefa' },
+    { key: 'n', ctrlOrCmd: true, shift: true, callback: () => navigate('/notes?new=1'), description: 'Criar nova nota' },
+    { key: 't', ctrlOrCmd: true, callback: () => navigate('/tasks'), description: 'Ir para Tarefas' },
+    { key: 'h', ctrlOrCmd: true, callback: () => navigate('/habits'), description: 'Ir para Hábitos' },
+    { key: 'd', ctrlOrCmd: true, callback: () => navigate('/'), description: 'Ir para Dashboard' },
+  ], { enabled: isLoaded && isSignedIn && !quickCommandOpen && !dialogOpen });
+
+  useEffect(() => {
+    const handleDialogState = () => setDialogOpen(Boolean(document.querySelector('[role="dialog"]')));
+    const observer = new MutationObserver(handleDialogState);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const prefs = localStorage.getItem('userPreferences');
@@ -81,10 +95,9 @@ function App() {
   return (
     <>
       <SplashScreen isVisible={!isLoaded} isDark={isDark} />
-      <BrowserRouter>
-        <QuickCommand isOpen={quickCommandOpen} onClose={() => setQuickCommandOpen(false)} />
-        <Toaster position="top-right" />
-        <Routes>
+      <QuickCommand isOpen={quickCommandOpen} onClose={() => setQuickCommandOpen(false)} />
+      <Toaster position="top-right" />
+      <Routes>
           <Route path="/sign-in" element={<Login />} />
 
           <Route
@@ -110,8 +123,15 @@ function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
     </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   )
 }
 
